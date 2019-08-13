@@ -1,0 +1,3 @@
+[submodule "arbitration-dlib"]
+	path = arbitration-dlib
+	url = git@github.com:cartesi/arbitration-dlib.git
