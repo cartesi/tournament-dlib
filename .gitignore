@@ -1,0 +1,10 @@
+contracts.json
+coverage*
+node_modules
+test/*/
+.vscode
+.node*
+*.bin
+*.abi
+/out
+build
