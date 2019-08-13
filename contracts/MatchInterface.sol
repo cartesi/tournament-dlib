@@ -5,9 +5,11 @@ import "../../arbitration-dlib/contracts/Instantiator.sol";
 
 contract MatchInterface is Instantiator {
     enum state {
+        WaitingChallenge,
+        WaitingClaimerDefence,
+        ChallengeStarted,
         ChallengerMissedDeadline,
         ClaimerMissedDeadline,
-        WaitingChallenge,
         ChallengerWon,
         ClaimerWon
     }
@@ -21,10 +23,11 @@ contract MatchInterface is Instantiator {
         address _machineAddress,
         bytes32 _initialHash,
         bytes32 _finalHash,
-        uint256 _finalTime) public returns (uint256);
+        uint256 _finalTime,
+        uint256 _timeOfLastMove) public returns (uint256);
 
-    function claimNextRoundSpot(uint256 _index) public;
-    function challengeClaim(uint256 _index) public;
+    function challengeHighestScore(uint256 _index) public;
+    function defendHighestScore(uint256 _index) public;
     function winByVG(uint256 _index) public;
     function claimVictoryByTime(uint256 _index) public;
     function isConcerned(uint256 _index, address _user) public view returns (bool);
