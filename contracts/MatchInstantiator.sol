@@ -13,7 +13,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
     struct MatchCtx {
         address challenger;
         address claimer;
-        uint256 roundStart;
+        uint256 epochNumber;
         uint256 roundDuration; // time interval to interact with this contract
         uint256 timeOfLastMove;
         address machine; // machine which will run the challenge
@@ -30,6 +30,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         uint256 _index,
         address _challenger,
         address _claimer,
+        uint256 _epochNumber,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
@@ -38,8 +39,6 @@ contract MatchInstantiator is MatchInterface, Decorated {
         uint256 _timeOfLastMove
     );
 
-    event ClaimChallenged(uint256 _index);
-    event ClaimDefended(uint256 _index);
     event ChallengeStarted(uint256 _index);
     event MatchFinished(uint256 _index, uint8 _state);
 
@@ -50,7 +49,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
     /// @notice Instantiate a match.
     /// @param _challenger Player with the lowers alleged score.
     /// @param _claimer Player with the higher alleged score.
-    /// @param _roundStart Time in which this round started.
+    /// @param _epochNumber which epoch this match belong to.
     /// @param _roundDuration Duration of the round.
     /// @param _machineAddress Machine that will run the challenge.
     /// @param _initialHash Initial hash of claimer's machine.
@@ -61,7 +60,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
     function instantiate(
         address _challenger,
         address _claimer,
-        uint256 _roundStart,
+        uint256 _epochNumber,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
@@ -73,6 +72,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         MatchCtx storage currentInstance = instance[currentIndex];
         currentInstance.challenger = _challenger;
         currentInstance.claimer = _claimer;
+        currentInstance.epochNumber = _epochNumber;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.machine = _machineAddress;
         currentInstance.initialHash = _initialHash;
@@ -86,6 +86,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
             currentIndex,
             _challenger,
             _claimer,
+            _epochNumber,
             _roundDuration,
             _machineAddress,
             _initialHash,
@@ -106,25 +107,6 @@ contract MatchInstantiator is MatchInterface, Decorated {
     {
         require(instance[_index].currentState == state.WaitingChallenge, "State has to be Waiting Challenge");
 
-        // TO-DO: this should become a modifier on Decorated lib.
-        require(now < (instance[_index].timeOfLastMove + instance[_index].roundDuration), "Challenger cannot challenge after the round duration window");
-
-        instance[_index].currentState = state.WaitingClaimerDefence;
-        emit ClaimChallenged(_index);
-    }
-
-    /// @notice Defender can defend his highscore by verification game.
-    /// @param _index Current index.
-    function defendHighestScore(uint256 _index) public
-        onlyBy(instance[_index].claimer)
-        onlyInstantiated(_index)
-        increasesNonce(_index)
-    {
-        // TO-DO: this should become a modifier on Decorated lib.
-        require(now < (instance[_index].timeOfLastMove + instance[_index].roundDuration), "Claimer cannot defend himself after the round duration window");
-        require(instance[_index].currentState == state.WaitingClaimerDefence, "State has to be WaitingClaimerDefence");
-
-        // If claimer defends himself, a Verification Game starts
         instance[_index].vgInstance = vg.instantiate(
             instance[_index].challenger,
             instance[_index].claimer,
@@ -137,7 +119,6 @@ contract MatchInstantiator is MatchInterface, Decorated {
 
         instance[_index].currentState = state.ChallengeStarted;
         emit ChallengeStarted(_index);
-
     }
 
     /// @notice In case one of the parties wins the verification game,
@@ -148,7 +129,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         onlyInstantiated(_index)
         increasesNonce(_index)
     {
-        require(instance[_index].currentState == state.ChallengeStarted, "State is not WaitingChallenge, cannot winByVG");
+        require(instance[_index].currentState == state.ChallengeStarted, "State is not ChallengeStarted, cannot winByVG");
         uint256 vgIndex = instance[_index].vgInstance;
 
         if (vg.stateIsFinishedChallengerWon(vgIndex)) {
@@ -171,17 +152,12 @@ contract MatchInstantiator is MatchInterface, Decorated {
         increasesNonce(_index)
     {
         if ((msg.sender == instance[_index].claimer) && (instance[_index].currentState == state.WaitingChallenge)) {
-            instance[_index].currentState = state.ChallengerMissedDeadline;
+            instance[_index].currentState = state.ClaimerWon;
             deactivate(_index);
             emit MatchFinished(_index, uint8(instance[_index].currentState));
             return;
         }
-        if ((msg.sender == instance[_index].challenger) && (instance[_index].currentState == state.WaitingClaimerDefence)) {
-            instance[_index].currentState = state.ChallengerMissedDeadline;
-            deactivate(_index);
-            emit MatchFinished(_index, uint8(instance[_index].currentState));
-            return;
-        }
+
         revert("Fail to ClaimVictoryByTime in current condition");
     }
 
@@ -201,6 +177,52 @@ contract MatchInstantiator is MatchInterface, Decorated {
         emit MatchFinished(_index, uint8(instance[_index].currentState));
     }
 
+    function stateIsFinishedClaimerWon(uint256 _index) public view
+        onlyInstantiated(_index)
+        returns (bool)
+    { return instance[_index].currentState == state.ClaimerWon; }
+
+    function stateIsFinishedChallengerWon(uint256 _index) public view
+        onlyInstantiated(_index)
+        returns (bool)
+    { return instance[_index].currentState == state.ChallengerWon; }
+
+    function getEpochNumber(uint256 _index) public view returns (uint256) { return instance[_index].epochNumber;}
+
+    function isClaimer(uint256 _index, address addr) public view returns (bool) { return instance[_index].claimer == addr;}
+
+    function isChallenger(uint256 _index, address addr) public view returns (bool) { return instance[_index].challenger == addr;}
+
+    function isConcerned(uint256 _index, address _user) public view returns (bool) {
+        return isClaimer(_index, _user) || isChallenger(_index, _user);
+    }
+
+    function getState(uint256 _index, address) public view returns
+    (   address _challenger,
+        address _claimer,
+        uint256 _epochNumber,
+        uint256 _roundDuration,
+        uint256 _timeOfLastMove,
+        address _machine,
+        bytes32 _initialHash,
+        bytes32 _finalHash,
+        uint256 _finalTime,
+        state _currentState
+   ) {
+       return (
+            instance[_index].challenger,
+            instance[_index].claimer,
+            instance[_index].epochNumber,
+            instance[_index].roundDuration,
+            instance[_index].timeOfLastMove,
+            instance[_index].machine,
+            instance[_index].initialHash,
+            instance[_index].finalHash,
+            instance[_index].finalTime,
+            instance[_index].currentState
+        );
+
+   }
     // TO-DO: Implement clear instance
     function clearInstance(uint256 _index) internal {}
 }
