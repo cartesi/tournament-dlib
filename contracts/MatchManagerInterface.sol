@@ -1,4 +1,4 @@
-/// @title MatchManagerInstantiator
+/// @title MatchManagerInterface
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
@@ -13,17 +13,16 @@ contract MatchManagerInterface is Instantiator {
     }
 
     function instantiate(
-        uint256 matchRoundDuration,
-        uint256 tournamentStartTime,
-        uint256 totalPlayers,
-        uint256 playersRemaining,
-        address machineAddress) public returns (uint256);
+        uint256 _epochDuration,
+        uint256 _roundDuration,
+        uint256 _finalTime,
+        uint256 _initialHash,
+        address _machineAddress) public returns (uint256);
 
     function registerToFirstEpoch(
         uint256 _index,
         uint256 _finalTime,
         uint256 _score,
-        bytes32 _initialHash,
         bytes32 _finalHash
     ) public;
 

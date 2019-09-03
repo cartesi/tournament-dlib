@@ -14,21 +14,23 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         uint256 epochDuration;
         uint256 roundDuration;
         uint256 currentEpoch;
+        uint256 finalTime;
         uint256 lastEpochStartTime;
         mapping(uint256 => uint256) numbersOfMatchesOnEpoch;
         address unmatchedPlayer;
         mapping(address => uint256) lastMatchIndex;
         mapping(address => Player) players;
         address machineAddress;
+        bytes32 initialHash;
 
         state currentState;
     }
-
+    // M - struct player vai pro reveal
+    // M - get subInstance - só checar lastMatchIndex
     struct Player {
         address playerAddr;
         uint256 finalTime;
         uint256 score;
-        bytes32 initialHash;
         bytes32 finalHash;
     }
 
@@ -38,15 +40,20 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         mi = MatchInterface(_miAddress);
     }
 
+    // M - adicionar endereço e instancia contrato de reveal
     function instantiate(
         uint256 _epochDuration,
         uint256 _roundDuration,
+        uint256 _finalTime,
+        bytes32 _initialHash,
         address _machineAddress) public returns (uint256)
     {
         MatchManagerCtx storage currentInstance = instance[currentIndex];
         currentInstance.epochDuration= _epochDuration;
         currentInstance.roundDuration= _roundDuration;
+        currentInstance.finalTime= _finalTime;
         currentInstance.machineAddress = _machineAddress;
+        currentInstance.initialHash= _initialHash;
         currentInstance.unmatchedPlayer = address(0);
         currentInstance.currentEpoch = 0;
         currentInstance.lastEpochStartTime = now;
@@ -70,6 +77,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         );
 
         // TO-DO: find a decent way to format this
+        // require player to have won last match
         require (
             (mi.stateIsFinishedChallengerWon(matchIndex) && mi.isChallenger(matchIndex, msg.sender)) ||
             (mi.stateIsFinishedClaimerWon(matchIndex) && mi.isClaimer(matchIndex, msg.sender)),
@@ -88,16 +96,16 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         }
 
     }
-
+    // M - argumentos seriam só instancia do torneio e do reveal.
+    // o resto todo vem do reveal
     function registerToFirstEpoch(
         uint256 _index,
-        uint256 _finalTime,
         uint256 _score,
-        bytes32 _initialHash,
         bytes32 _finalHash
     ) public {
-        // Require that score is contained on finalHash
+        // Require that score is contained on finalHash // M - this has to go on commit / reveal
         // Require that player has successfully completed reveal phase
+        // M - construir linkado com o contrato reveal, fazer um mapping de jogadores aprovados ... tem que ter instancia
         require(instance[_index].currentEpoch == 0, "current round has to be zero");
         require(instance[_index].currentState == state.WaitingSignUps, "State has to be Waiting SignUps");
         //cheap way to check if player has been registered
@@ -106,8 +114,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         Player memory player;
         player.playerAddr = msg.sender;
         player.score = _score;
-        player.finalTime = _finalTime;
-        player.initialHash = _initialHash;
         player.finalHash = _finalHash;
         // add player to Match Manager intance
         instance[_index].players[msg.sender] = player;
@@ -147,7 +153,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             now,
             instance[_index].roundDuration,
             instance[_index].machineAddress,
-            instance[_index].players[claimer].initialHash,
+            instance[_index].initialHash,
             instance[_index].players[claimer].finalHash,
             instance[_index].players[claimer].finalTime,
             now
@@ -169,6 +175,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         }
     }
 
+    // TO-DO: Remove player from this if he lost it. PlayNextEpoch should remove the loser.
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
         return instance[_index].players[_user].playerAddr != address(0);
     }
