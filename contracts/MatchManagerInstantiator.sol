@@ -28,7 +28,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
         state currentState;
     }
-   // M - get subInstance - só checar lastMatchIndex
 
     mapping(uint256 => MatchManagerCtx) internal instance;
 
@@ -201,5 +200,18 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
             );
         }
+        
+        function getSubInstances(uint256 _index)
+            public view returns (address[] memory _addresses,
+                uint256[] memory _indices) 
+        {
+            address[] memory a = new address[](1);
+            uint256[] memory i = new uint256[](1);
+            a[0] = address(mi);
+            i[0] = instance[_index].lastMatchIndex[msg.sender];
+            
+            return (a, i);
+        }
+
 }
 
