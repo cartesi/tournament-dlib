@@ -57,6 +57,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
     /// @param _finalTime Final time of the claimer's machine.
     /// @return Match index.
 
+    // M - tirar final time
     function instantiate(
         address _challenger,
         address _claimer,

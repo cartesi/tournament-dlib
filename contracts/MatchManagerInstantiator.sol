@@ -4,6 +4,7 @@ pragma solidity ^0.5.0;
 
 import "../../arbitration-dlib/contracts/Decorated.sol";
 import "./MatchManagerInterface.sol";
+import "./RevealInterface.sol";
 import "./MatchInterface.sol";
 
 contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
@@ -19,20 +20,15 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         mapping(uint256 => uint256) numbersOfMatchesOnEpoch;
         address unmatchedPlayer;
         mapping(address => uint256) lastMatchIndex;
-        mapping(address => Player) players;
-        address machineAddress;
+        mapping(address => bool) registered;
         bytes32 initialHash;
+        address machineAddress;
+        address revealAddress;
+        uint256 revealInstance;
 
         state currentState;
     }
-    // M - struct player vai pro reveal
-    // M - get subInstance - só checar lastMatchIndex
-    struct Player {
-        address playerAddr;
-        uint256 finalTime;
-        uint256 score;
-        bytes32 finalHash;
-    }
+   // M - get subInstance - só checar lastMatchIndex
 
     mapping(uint256 => MatchManagerCtx) internal instance;
 
@@ -40,20 +36,23 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         mi = MatchInterface(_miAddress);
     }
 
-    // M - adicionar endereço e instancia contrato de reveal
     function instantiate(
         uint256 _epochDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
         bytes32 _initialHash,
+        address _revealAddress,
+        uint256 _revealInstance,
         address _machineAddress) public returns (uint256)
     {
         MatchManagerCtx storage currentInstance = instance[currentIndex];
-        currentInstance.epochDuration= _epochDuration;
-        currentInstance.roundDuration= _roundDuration;
-        currentInstance.finalTime= _finalTime;
+        currentInstance.epochDuration = _epochDuration;
+        currentInstance.roundDuration = _roundDuration;
+        currentInstance.finalTime = _finalTime;
+        currentInstance.initialHash = _initialHash;
         currentInstance.machineAddress = _machineAddress;
-        currentInstance.initialHash= _initialHash;
+        currentInstance.revealAddress = _revealAddress;
+        currentInstance.revealInstance = _revealInstance;
         currentInstance.unmatchedPlayer = address(0);
         currentInstance.currentEpoch = 0;
         currentInstance.lastEpochStartTime = now;
@@ -69,7 +68,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             instance[_index].lastEpochStartTime = now;
         }
 
-            uint256 matchIndex = instance[_index].lastMatchIndex[msg.sender];
+        uint256 matchIndex = instance[_index].lastMatchIndex[msg.sender];
         require (msg.sender != instance[_index].unmatchedPlayer, "Player is already registered to this epoch");
         require (
                 mi.getEpochNumber(matchIndex) + 1 == instance[_index].currentEpoch,
@@ -96,27 +95,17 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         }
 
     }
-    // M - argumentos seriam só instancia do torneio e do reveal.
-    // o resto todo vem do reveal
-    function registerToFirstEpoch(
-        uint256 _index,
-        uint256 _score,
-        bytes32 _finalHash
-    ) public {
-        // Require that score is contained on finalHash // M - this has to go on commit / reveal
-        // Require that player has successfully completed reveal phase
-        // M - construir linkado com o contrato reveal, fazer um mapping de jogadores aprovados ... tem que ter instancia
+
+    function registerToFirstEpoch(uint256 _index) public {
         require(instance[_index].currentEpoch == 0, "current round has to be zero");
         require(instance[_index].currentState == state.WaitingSignUps, "State has to be Waiting SignUps");
+        
+        RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
         //cheap way to check if player has been registered
-        require(instance[_index].players[msg.sender].playerAddr == address(0), "Player cannot register twice");
+        require(reveal.playerExist(instance[_index].revealInstance, msg.sender), "Player must have completed reveal phase");
+        require(!instance[_index].registered[msg.sender], "Player cannot register twice");
 
-        Player memory player;
-        player.playerAddr = msg.sender;
-        player.score = _score;
-        player.finalHash = _finalHash;
-        // add player to Match Manager intance
-        instance[_index].players[msg.sender] = player;
+        instance[_index].registered[msg.sender] = true;
 
         if (instance[_index].unmatchedPlayer != address(0)) {
             // there is one unmatched player ready for a match
@@ -135,17 +124,17 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         address challenger;
         address unmatchedAddr = instance[_index].unmatchedPlayer;
 
+        RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
+
         // the highest score between both is the claimer, the lowest is the challenger
-        if (instance[_index].players[msg.sender].score
- > instance[_index].players[unmatchedAddr].score) {
+        if (reveal.getScore(instance[_index].revealInstance, msg.sender) > reveal.getScore(instance[_index].revealInstance, unmatchedAddr)) {
             claimer = msg.sender;
             challenger = unmatchedAddr;
         } else {
             challenger = msg.sender;
             claimer = unmatchedAddr;
-
         }
-
+        
         // instantiate new match
         uint256 newMatchIndex = mi.instantiate(
             challenger,
@@ -154,8 +143,8 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             instance[_index].roundDuration,
             instance[_index].machineAddress,
             instance[_index].initialHash,
-            instance[_index].players[claimer].finalHash,
-            instance[_index].players[claimer].finalTime,
+            reveal.getFinalHash(instance[_index].revealInstance, claimer),
+            instance[_index].finalTime,
             now
         );
 
@@ -176,8 +165,15 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     }
 
     // TO-DO: Remove player from this if he lost it. PlayNextEpoch should remove the loser.
+    // TO-DO: this function will probably not exist
+    // doing this will make this func stopping being view
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
-        return instance[_index].players[_user].playerAddr != address(0);
+        // RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
+    
+        //bool concerned = reveal.playerExist(instance[_index].revealInstance, _user);
+
+        //return concerned;
+        return true;
     }
 
     function getState(uint256 _index, address _user) public view returns
