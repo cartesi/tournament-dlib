@@ -17,18 +17,13 @@ contract MatchManagerInterface is Instantiator {
         uint256 _roundDuration,
         uint256 _finalTime,
         uint256 _initialHash,
+        address _revealAddress,
+        uint256 _revealInstance,
         address _machineAddress) public returns (uint256);
 
-    function registerToFirstEpoch(
-        uint256 _index,
-        uint256 _finalTime,
-        uint256 _score,
-        bytes32 _finalHash
-    ) public;
+    function registerToFirstEpoch(uint256 _index) public;
 
-    function registerToFirstRound(uint256 _index) public;
-
-    function advanceToNextRound(uint256 _index) public;
+    function playNextEpoch(uint256 _index) public;
 
     function claimWin(uint256 _index) public returns (address);
 
@@ -43,6 +38,7 @@ contract MatchManagerInterface is Instantiator {
           address unmatchedPlayer,
           uint256 lastMatchIndex,
           address machineAddress,
+          address revealAddress,
           state currentState
         );
 
