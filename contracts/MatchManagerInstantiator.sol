@@ -7,6 +7,8 @@ import "./MatchManagerInterface.sol";
 import "./RevealInterface.sol";
 import "./MatchInterface.sol";
 
+// TO-DO: comment mapping - index what it means
+// TO-DO: how should the parent(reveal) be called?
 contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     MatchInterface private mi;
@@ -17,10 +19,10 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         uint256 currentEpoch;
         uint256 finalTime;
         uint256 lastEpochStartTime;
-        mapping(uint256 => uint256) numbersOfMatchesOnEpoch;
+        mapping(uint256 => uint256) numbersOfMatchesOnEpoch; // epoch index to number of matches
         address unmatchedPlayer;
-        mapping(address => uint256) lastMatchIndex;
-        mapping(address => bool) registered;
+        mapping(address => uint256) lastMatchIndex; // player address to index of his last played match
+        mapping(address => bool) registered; // player address to true if he is registered
         bytes32 initialHash;
         address machineAddress;
         address revealAddress;
@@ -98,7 +100,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     function registerToFirstEpoch(uint256 _index) public {
         require(instance[_index].currentEpoch == 0, "current round has to be zero");
         require(instance[_index].currentState == state.WaitingSignUps, "State has to be Waiting SignUps");
-        
+
         RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
         //cheap way to check if player has been registered
         require(reveal.playerExist(instance[_index].revealInstance, msg.sender), "Player must have completed reveal phase");
@@ -133,7 +135,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             challenger = msg.sender;
             claimer = unmatchedAddr;
         }
-        
+
         // instantiate new match
         uint256 newMatchIndex = mi.instantiate(
             challenger,
@@ -159,16 +161,17 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     function claimWin(uint256 _index) public returns (address) {
         bool isEpochOver = (now > (instance[_index].lastEpochStartTime + ((1 + instance[_index].currentEpoch) * instance[_index].epochDuration)));
         if (isEpochOver && (instance[_index].numbersOfMatchesOnEpoch[instance[_index].currentEpoch] == 0)) {
+            instance[_index].currentState = state.MatchesOver;
             return instance[_index].unmatchedPlayer;
         }
     }
 
     // TO-DO: Remove player from this if he lost it. PlayNextEpoch should remove the loser.
-    // TO-DO: this function will probably not exist
     // doing this will make this func stopping being view
+    // TO-DO: this function will probably not exist
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
         // RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
-    
+
         //bool concerned = reveal.playerExist(instance[_index].revealInstance, _user);
 
         //return concerned;
@@ -200,16 +203,16 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
             );
         }
-        
-        function getSubInstances(uint256 _index)
+
+        function getSubInstances(uint256 _index, address _user)
             public view returns (address[] memory _addresses,
-                uint256[] memory _indices) 
+                uint256[] memory _indices)
         {
             address[] memory a = new address[](1);
             uint256[] memory i = new uint256[](1);
             a[0] = address(mi);
-            i[0] = instance[_index].lastMatchIndex[msg.sender];
-            
+            i[0] = instance[_index].lastMatchIndex[_user];
+
             return (a, i);
         }
 
