@@ -21,8 +21,6 @@ contract RevealInstantiator is RevealInterface, Decorated {
     
     mapping(uint256 => RevealCtx) internal instance;
 
-    mapping(address => Player) players;
-
     function getScore(uint256 _index, address _playerAddr) public returns (uint256) {
         return instance[_index].players[msg.sender].score;
     }
