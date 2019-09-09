@@ -36,6 +36,16 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         mi = MatchInterface(_miAddress);
     }
 
+    /// @notice Instantiate a match manager.
+    /// @param _epochDuration epoch duration in seconds.
+    /// @param _roundDuration duration of a round in seconds.
+    /// @param _finalTime final time of matches being played.
+    /// @param _initialHash initial hash of matches being played
+    /// @param _revealAddress address of parent reveal contract
+    /// @param _revealInstance reveal instance that this contract is interacting with
+    /// @param _machineAddress Machine that will run the challenge.
+    /// @return Match Manager index.
+
     function instantiate(
         uint256 _epochDuration,
         uint256 _roundDuration,
@@ -60,6 +70,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         currentInstance.currentState = state.WaitingSignUps;
 
     }
+
+    /// @notice Register for the next Epoch, only doable if you wont a match on last one
+    /// @param _index index of matchmanager that youre interacting with
 
     function playNextEpoch(uint256 _index) public {
         // Advance epoch if deadline has been met
@@ -96,6 +109,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     }
 
+    /// @notice Register for the first Epoch
+    /// @param _index index of matchmanager that youre interacting with
+
     function registerToFirstEpoch(uint256 _index) public {
         require(instance[_index].currentEpoch == 0, "current round has to be zero");
         require(instance[_index].currentState == state.WaitingSignUps, "State has to be Waiting SignUps");
@@ -118,6 +134,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             instance[_index].unmatchedPlayer = msg.sender;
         }
     }
+
+    /// @notice Creates a match with two players
+    /// @param _index index of matchmanager that youre interacting with
 
     function createMatch(uint256 _index) private {
         address claimer;
@@ -156,6 +175,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch]++;
 
     }
+
+    /// @notice Claims win on the entire tournament. Only callable if you were unchallenged for an entire epoch
+    /// @param _index index of matchmanager that youre interacting with
 
     function claimWin(uint256 _index) public returns (address) {
         require(instance[_index].currentState != state.MatchesOver, "PLayer cannot claim win multiple times");
