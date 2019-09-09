@@ -7,7 +7,6 @@ import "./MatchManagerInterface.sol";
 import "./RevealInterface.sol";
 import "./MatchInterface.sol";
 
-// TO-DO: comment mapping - index what it means
 // TO-DO: how should the parent(reveal) be called?
 contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
@@ -19,7 +18,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         uint256 currentEpoch;
         uint256 finalTime;
         uint256 lastEpochStartTime;
-        mapping(uint256 => uint256) numbersOfMatchesOnEpoch; // epoch index to number of matches
+        mapping(uint256 => uint256) numberOfMatchesOnEpoch; // epoch index to number of matches
         address unmatchedPlayer;
         mapping(address => uint256) lastMatchIndex; // player address to index of his last played match
         mapping(address => bool) registered; // player address to true if he is registered
@@ -154,13 +153,14 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         instance[_index].lastMatchIndex[claimer] = newMatchIndex;
 
         // increase matches on epoch counter
-        instance[_index].numbersOfMatchesOnEpoch[instance[_index].currentEpoch]++;
+        instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch]++;
 
     }
 
     function claimWin(uint256 _index) public returns (address) {
+        require(instance[_index].currentState != state.MatchesOver, "PLayer cannot claim win multiple times");
         bool isEpochOver = (now > (instance[_index].lastEpochStartTime + ((1 + instance[_index].currentEpoch) * instance[_index].epochDuration)));
-        if (isEpochOver && (instance[_index].numbersOfMatchesOnEpoch[instance[_index].currentEpoch] == 0)) {
+        if (isEpochOver && (instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch] == 0)) {
             instance[_index].currentState = state.MatchesOver;
             return instance[_index].unmatchedPlayer;
         }
@@ -182,11 +182,16 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         ( uint256 epochDuration,
           uint256 roundDuration,
           uint256 currentEpoch,
+          uint256 finalTime,
           uint256 lastEpochStartTime,
-          uint256 numbersOfMatchesOnLastEpoch,
+          uint256 numberOfMatchesOnLastEpoch,
           address unmatchedPlayer,
           uint256 lastMatchIndex,
+          bytes32 initialHash,
           address machineAddress,
+          address revealAddress,
+          uint256 revealInstance,
+          uint256 lastMatchEpoch,
           state currentState
         ) {
 
@@ -194,11 +199,16 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
                 instance[_index].epochDuration,
                 instance[_index].roundDuration,
                 instance[_index].currentEpoch,
+                instance[_index].finalTime,
                 instance[_index].lastEpochStartTime,
-                instance[_index].numbersOfMatchesOnEpoch[instance[_index].currentEpoch],
+                instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch - 1],
                 instance[_index].unmatchedPlayer,
                 instance[_index].lastMatchIndex[_user],
+                instance[_index].initialHash,
                 instance[_index].machineAddress,
+                instance[_index].revealAddress,
+                instance[_index].revealInstance,
+                mi.getEpochNumber(instance[_index].lastMatchIndex[_user]),
                 instance[_index].currentState
 
             );
