@@ -7,6 +7,7 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
+use super::{Role};
 use r#match::{MatchCtx, MatchCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -88,7 +89,7 @@ impl DApp<()> for MatchManager {
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the match instance
-        let parsed: MatchCtxParsed =
+        let parsed: MatchManagerCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
                 format!(
                     "Could not parse match instance json_data: {}",
@@ -122,12 +123,12 @@ impl DApp<()> for MatchManager {
                 let zero_matches_last_epoch = ctx.number_of_matches_on_last_epoch.as_u64() == 0;
                 let user_is_unmatched = ctx.unmatched_player == instance.concern.user_address;
 
-                // if player won, claims win
+                // if player won, claims victory
                 if epoch_over && zero_matches_last_epoch && user_is_unmatched {
                     let request = TransactionRequest {
                     concern: instance.concern.clone(),
                     value: U256::from(0),
-                    function: "clamWin".into(),
+                    function: "claimWin".into(),
                     data: vec![Token::Uint(instance.index)],
                     strategy: transaction::Strategy::Simplest,
                     };
@@ -159,48 +160,44 @@ impl DApp<()> for MatchManager {
                         })?;
                 let match_ctx: MatchCtx = match_parsed.into();
 
-                match match_ctx.current_state.as_ref() {
-                    let role = match instance.concern.user_address {
-                        cl if (cl == match_ctx.claimer) => Role::Claimer,
-                        ch if (ch == match_ctx.challenger) => Role::Challenger,
-                        _ => {
-                            return Err(Error::from(ErrorKind::InvalidContractState(
-                                String::from("User is neither claimer nor challenger"),
-                            )));
-                        }
-                    };
-
-                    trace!("Role played (index {}) is: {:?}", match_instance , role);
-                    match role {
-                        Role::Claimer => match ctx.current_state.as_ref() {
-                            "ClaimerWon" => {
-                                let request = TransactionRequest {
-                                concern: instance.concern.clone(),
-                                value: U256::from(0),
-                                function: "playNextEpoch".into(),
-                                data: vec![Token::Uint(instance.index)],
-                                strategy: transaction::Strategy::Simplest,
-                            };
-                                return Ok(Reaction::Transaction(request));
-
-                            }
-                        }
-                        Role::Challenger => match ctx.current_state.as_ref() {
-                            "ChallengerWon" => {
-                                let request = TransactionRequest {
-                                concern: instance.concern.clone(),
-                                value: U256::from(0),
-                                function: "playNextEpoch".into(),
-                                data: vec![Token::Uint(instance.index)],
-                                strategy: transaction::Strategy::Simplest,
-                            };
+                let role = match instance.concern.user_address {
+                    cl if (cl == match_ctx.claimer) => Role::Claimer,
+                    ch if (ch == match_ctx.challenger) => Role::Challenger,
+                    _ => {
+                        return Err(Error::from(ErrorKind::InvalidContractState(
+                            String::from("User is neither claimer nor challenger"),
+                        )));
+                    }
+                };
+                trace!("Role played (index {}) is: {:?}", match_instance, role);
+                match role {
+                    Role::Claimer => match match_ctx.current_state.as_ref() {
+                        "ClaimerWon" => {
+                            let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "playNextEpoch".into(),
+                            data: vec![Token::Uint(instance.index)],
+                            strategy: transaction::Strategy::Simplest,
+                        };
                             return Ok(Reaction::Transaction(request));
 
-                            }
+                        }
+                    }
+                    Role::Challenger => match match_ctx.current_state.as_ref() {
+                        "ChallengerWon" => {
+                            let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "playNextEpoch".into(),
+                            data: vec![Token::Uint(instance.index)],
+                            strategy: transaction::Strategy::Simplest,
+                        };
+                        return Ok(Reaction::Transaction(request));
+
                         }
                     }
                 }
-
             }
         }
     }
