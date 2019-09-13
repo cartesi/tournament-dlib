@@ -20,7 +20,7 @@ pub struct Match();
 // obtained from a simple derive
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
-struct MatchCtxParsed(
+pub struct MatchCtxParsed(
     AddressField,  // challenger
     AddressField,  // claimer
     U256Field,     // epochNumber
@@ -34,17 +34,17 @@ struct MatchCtxParsed(
 );
 
 #[derive(Debug)]
-struct MatchCtx {
-    challenger: Address,
-    claimer: Address,
-    epoch_number: U256,
-    round_duration: U256,
-    time_of_last_move: U256,
-    machine: Address,
-    initial_hash: H256,
-    claimed_final_hash: H256,
-    final_time: U256,
-    current_state: String,
+pub struct MatchCtx {
+    pub challenger: Address,
+    pub claimer: Address,
+    pub epoch_number: U256,
+    pub round_duration: U256,
+    pub time_of_last_move: U256,
+    pub machine: Address,
+    pub initial_hash: H256,
+    pub claimed_final_hash: H256,
+    pub final_time: U256,
+    pub current_state: String,
 }
 
 impl From<MatchCtxParsed> for MatchCtx {
