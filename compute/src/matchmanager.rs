@@ -99,19 +99,14 @@ impl DApp<()> for MatchManager {
         let ctx: MatchManagerCtx = parsed.into();
         trace!("Context for match (index {}) {:?}", instance.index, ctx);
 
-        // these states should not occur as they indicate an innactive instance,
-        // but it is possible that the blockchain state changed between queries
         match ctx.current_state.as_ref() {
-            // TO-DO: First registration must come from Reveal contract?
+            // these states should not occur as they indicate an innactive instance,
+            // but it is possible that the blockchain state changed between queries
             "MatchesOver" 
             | "WaitingSignUps" => {
                 return Ok(Reaction::Idle);
             }
-            _ => {}
-        };
 
-
-        match ctx.current_state.as_ref() {
             "WaitingMatches" => {
                 // we inspect the match contract
                 let current_time = SystemTime::now()
@@ -169,63 +164,50 @@ impl DApp<()> for MatchManager {
                         )));
                     }
                 };
-                trace!("Role played (index {}) is: {:?}", match_instance, role);
+
                 match role {
                     Role::Claimer => match match_ctx.current_state.as_ref() {
                         "ClaimerWon" => {
                             let request = TransactionRequest {
-                            concern: instance.concern.clone(),
-                            value: U256::from(0),
-                            function: "playNextEpoch".into(),
-                            data: vec![Token::Uint(instance.index)],
-                            strategy: transaction::Strategy::Simplest,
-                        };
+                                concern: instance.concern.clone(),
+                                value: U256::from(0),
+                                function: "playNextEpoch".into(),
+                                data: vec![Token::Uint(instance.index)],
+                                strategy: transaction::Strategy::Simplest,
+                            };
                             return Ok(Reaction::Transaction(request));
 
                         }
+                        _ => {
+                            return Ok(Reaction::Idle);
+                        }
                     }
+
                     Role::Challenger => match match_ctx.current_state.as_ref() {
                         "ChallengerWon" => {
                             let request = TransactionRequest {
-                            concern: instance.concern.clone(),
-                            value: U256::from(0),
-                            function: "playNextEpoch".into(),
-                            data: vec![Token::Uint(instance.index)],
-                            strategy: transaction::Strategy::Simplest,
-                        };
-                        return Ok(Reaction::Transaction(request));
+                                concern: instance.concern.clone(),
+                                value: U256::from(0),
+                                function: "playNextEpoch".into(),
+                                data: vec![Token::Uint(instance.index)],
+                                strategy: transaction::Strategy::Simplest,
+                            };
+                            return Ok(Reaction::Transaction(request));
 
                         }
+
+                        _ => {
+                            return Ok(Reaction::Idle);
+                        }
                     }
+
                 }
+            }
+
+            _ => {
+                return Ok(Reaction::Idle);
             }
         }
     }
 }
 
-pub fn win_by_deadline_or_idle(
-    concern: &Concern,
-    index: U256,
-    time_of_last_move: u64,
-    round_duration: u64,
-) -> Result<Reaction> {
-    let current_time = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .chain_err(|| "System time before UNIX_EPOCH")?
-        .as_secs();
-
-    // if other party missed the deadline
-    if current_time > time_of_last_move + round_duration {
-        let request = TransactionRequest {
-            concern: concern.clone(),
-            value: U256::from(0),
-            function: "claimVictoryByTime".into(),
-            data: vec![Token::Uint(index)],
-            strategy: transaction::Strategy::Simplest,
-        };
-        return Ok(Reaction::Transaction(request));
-    } else {
-        // if not, then wait
-        return Ok(Reaction::Idle);
-    }
-}
