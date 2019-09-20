@@ -1,0 +1,211 @@
+/// @title RevealInstantiator
+/// @author Felipe Argento
+pragma solidity ^0.5.0;
+
+import "../../arbitration-dlib/contracts/Decorated.sol";
+import "./RevealInterface.sol";
+import "./MatchManagerInterface.sol";
+
+contract RevealMock is Decorated, RevealInterface {
+
+    MatchManagerInterface private mi;
+
+    struct RevealCtx {
+        uint256 commitDuration;
+        uint256 revealDuration;
+        uint256 creationTime;
+        uint256 matchManagerIndex;
+        uint256 matchManagerEpochDuration;
+        uint256 matchManagerMatchDuration;
+        uint256 finalTime;
+        bytes32 initialHash;
+        address machineAddress;
+        mapping(address => Player) players; //player address to player
+
+        state currentState;
+    }
+
+    struct Player {
+        address playerAddr;
+        bool hasRevealed;
+        bytes32 commit; //list of hashes commited by player
+        uint256 score;
+        bytes32 finalHash;
+    }
+
+    event logCommited(uint256 index, address player, bytes32 logHash, uint256 block);
+    event logRevealed(uint256 index, address player, bytes32 logHash, uint256 block);
+
+    mapping(uint256 => RevealCtx) internal instance;
+
+    function addFakePlayers(uint256 _index, address[] memory playerAddresses, uint256[] memory scores, bytes32[] memory finalHashes) public {
+        for (uint256 i=0; i < playerAddresses.length; i++) {
+            Player memory newPlayer;
+            newPlayer.playerAddr = playerAddresses[i];
+            newPlayer.score = scores[i];
+            newPlayer.finalHash = finalHashes[i];
+            newPlayer.hasRevealed = true;
+
+            instance[_index].players[playerAddresses[i]] = newPlayer;
+        }
+
+    }
+    /// @notice Instantiate a commit and reveal instance.
+    /// @param _commitDuration commit phase duration in seconds.
+    /// @param _revealDuration reveal phase duration in seconds.
+    /// @param _matchManagerEpochDuration match manager epoch duration in seconds.
+    /// @param _matchManagerMatchDuration match manager match duration in seconds.
+    /// @param _finalTime final time of matches being played.
+    /// @param _initialHash initial hash of matches being played
+    /// @param _machineAddress Machine that will run the challenge.
+    /// @return Reveal index.
+    function instantiate(
+        uint256 _commitDuration,
+        uint256 _revealDuration,
+        uint256 _matchManagerEpochDuration,
+        uint256 _matchManagerMatchDuration,
+        uint256 _finalTime,
+        bytes32 _initialHash,
+        address _machineAddress) public returns (uint256)
+    {
+        RevealCtx storage currentInstance = instance[currentIndex];
+        currentInstance.commitDuration = _commitDuration;
+        currentInstance.revealDuration = _revealDuration;
+        currentInstance.creationTime = now;
+        currentInstance.matchManagerEpochDuration = _matchManagerEpochDuration;
+        currentInstance.matchManagerMatchDuration = _matchManagerMatchDuration;
+        currentInstance.finalTime = _finalTime;
+        currentInstance.initialHash = _initialHash;
+        currentInstance.machineAddress = _machineAddress;
+
+        currentInstance.currentState = state.MatchManagerPhase;
+
+        // instantiate MatchManager
+        instance[currentIndex].matchManagerIndex = mi.instantiate(
+            instance[currentIndex].matchManagerEpochDuration,
+            instance[currentIndex].matchManagerMatchDuration,
+            instance[currentIndex].finalTime,
+            instance[currentIndex].initialHash,
+            address(this),
+            currentIndex,
+            instance[currentIndex].machineAddress);
+
+
+        return currentIndex++;
+    }
+
+    /// @notice Submits a commit.
+    /// @param _index index of reveal that is being interacted with.
+    /// @param _logHash hash of log to be revealed later.
+
+    function commit(uint256 _index, bytes32 _logHash) public {
+        require(instance[_index].currentState == state.CommitPhase, "State has to be commit phase");
+
+        if (now > instance[_index].creationTime + instance[_index].commitDuration) {
+            instance[_index].currentState = state.RevealPhase;
+        }
+        // if its first commit, creates player
+        if (instance[_index].players[msg.sender].playerAddr == address(0)) {
+            Player memory player;
+            player.playerAddr = msg.sender;
+            instance[_index].players[msg.sender] = player;
+        }
+
+        instance[_index].players[msg.sender].commit = _logHash;
+
+        emit logCommited(_index, msg.sender, _logHash, block.number);
+    }
+
+    /// @notice reveals the log and extracts its information.
+    /// @param _index index of reveal that is being interacted with.
+    /// @param _score that should be contained in the log
+    /// @param _finalHash final hash of the machine after that log has been proccessed.
+    function reveal(uint256 _index, uint256 _score, bytes32 _finalHash) public {
+        require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
+
+        if (now > instance[_index].creationTime + instance[_index].commitDuration + instance[_index].revealDuration) {
+            instance[_index].currentState = state.MatchManagerPhase;
+        }
+
+        require(!instance[_index].players[msg.sender].hasRevealed, "Player can only reveal one commit");
+        // use logger to see that the final hash matches the commit hash
+        // block number greater than original block?
+
+        // require logger.dlib instance hash == commit hash
+
+        // require that score is contained in the final hash - PROVE DRIVE
+        instance[_index].players[msg.sender].hasRevealed = true;
+//        instance[_index].players[msg.sender].score = _score;
+//        instance[_index].players[msg.sender].finalHash = _finalHash;
+        // set score
+        // set final hash
+
+        emit logRevealed(_index, msg.sender, instance[_index].players[msg.sender].commit, block.number);
+    }
+
+    function getScore(uint256 _index, address _playerAddr) public returns (uint256) {
+        return instance[_index].players[_playerAddr].score;
+    }
+
+    function getFinalHash(uint256 _index, address _playerAddr) public returns (bytes32) {
+        return instance[_index].players[_playerAddr].finalHash;
+    }
+
+    function playerExist(uint256 _index, address _playerAddr) public returns (bool) {
+        //cheap way to check if player has been registered
+        return !(instance[_index].players[_playerAddr].playerAddr == address(0));
+    }
+
+    function removePlayer(uint256 _index, address _playerAddr) public {
+        instance[_index].players[_playerAddr].playerAddr = address(0);
+    }
+
+    function isConcerned(uint256 _index, address _user) public view returns (bool) {
+
+        return instance[_index].players[_user].playerAddr != address(0)? true : false;
+    }
+
+    function getCurrentState(uint256 _index, address _user) public view returns (bytes32) {
+         return "MatchManagerPhase";
+    }
+
+    function getState(uint256 _index, address _user) public view returns
+        (   uint256 _commitDuration,
+            uint256 _revealDuration,
+            uint256 _matchManagerEpochDuration,
+            uint256 _matchManagerMatchDuration,
+            uint256 _finalTime,
+            bytes32 _initialHash,
+            address _machineAddress,
+            state currentState
+        ) {
+
+            RevealCtx memory i = instance[_index];
+         return (
+             i.commitDuration,
+             i.revealDuration,
+             i.matchManagerEpochDuration,
+             i.matchManagerMatchDuration,
+             i.finalTime,
+             i.initialHash,
+             i.machineAddress,
+
+             i.currentState
+        );
+    }
+
+    function getSubInstances(uint256 _index)
+        public view returns (address[] memory _addresses,
+            uint256[] memory _indices)
+    {
+        address[] memory a = new address[](1);
+        uint256[] memory i = new uint256[](1);
+        a[0] = address(mi);
+        i[0] = instance[_index].matchManagerIndex;
+
+        return (a, i);
+    }
+
+    function clearInstance(uint256 _index) internal {}
+
+}
