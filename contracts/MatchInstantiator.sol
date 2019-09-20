@@ -207,22 +207,52 @@ contract MatchInstantiator is MatchInterface, Decorated {
         bytes32 _initialHash,
         bytes32 _finalHash,
         uint256 _finalTime,
-        state _currentState
+        bytes32 _currentState
    ) {
-       return (
-            instance[_index].challenger,
-            instance[_index].claimer,
-            instance[_index].epochNumber,
-            instance[_index].roundDuration,
-            instance[_index].timeOfLastMove,
-            instance[_index].machine,
-            instance[_index].initialHash,
-            instance[_index].finalHash,
-            instance[_index].finalTime,
-            instance[_index].currentState
+
+        MatchCtx memory i = instance[_index];
+
+        return (
+            i.challenger,
+            i.claimer,
+            i.epochNumber,
+            i.roundDuration,
+            i.timeOfLastMove,
+            i.machine,
+            i.initialHash,
+            i.finalHash,
+            i.finalTime,
+            "WaitingClaim"
         );
 
    }
+
+   function getCurrentState(uint256 _index) public view
+        onlyInstantiated(_index)
+        returns (bytes32)
+    {
+        if (instance[_index].currentState == state.WaitingChallenge) {
+            return "WaitingChallenge";
+        }
+        if (instance[_index].currentState == state.ChallengeStarted) {
+            return "ChallengeStarted";
+        }
+        if (instance[_index].currentState == state.ChallengerWon) {
+            return "ChallengerWon";
+        }
+        if (instance[_index].currentState == state.ClaimerWon) {
+            return "ClaimerWon";
+        }
+    }
+
+   function getSubInstances(uint256)
+        public view returns (address[] memory, uint256[] memory)
+    {
+        address[] memory a = new address[](0);
+        uint256[] memory i = new uint256[](0);
+        return (a, i);
+    }
+
     // TO-DO: Implement clear instance
     function clearInstance(uint256 _index) internal {}
 }
