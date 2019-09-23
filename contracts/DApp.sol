@@ -9,8 +9,15 @@ import "../../arbitration-dlib/contracts/Instantiator.sol";
 contract DApp is Decorated, Instantiator{
 
     RevealMock private rm;
+
+    enum state {
+        DAppRunning,
+        DAppFinished
+    }
+
     struct DappCtx {
         uint256 revealIndex;
+        state currentState;
         mapping(address => bool) playersConcern; //player address to isConcerned
     }
 
@@ -40,7 +47,12 @@ contract DApp is Decorated, Instantiator{
         // also have to add yourself
         rm.addFakePlayers(instance[currentIndex].revealIndex, _playerAddresses, _scores, _finalHashes);
 
+        instance[currentIndex].currentState = state.DAppRunning;
         return currentIndex++;
+    }
+
+    function stopDApp(uint256 _index) public {
+        instance[currentIndex].currentState = state.DAppFinished;
     }
 
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
