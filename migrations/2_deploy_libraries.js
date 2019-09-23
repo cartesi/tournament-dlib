@@ -2,6 +2,7 @@ var VGMock = artifacts.require("./VGMock.sol");
 var MatchInstantiator = artifacts.require("./MatchInstantiator.sol");
 var MatchManagerInstantiator = artifacts.require("./MatchManagerInstantiator.sol");
 var RevealMock = artifacts.require("./RevealMock.sol");
+var DApp = artifacts.require("./DApp.sol");
 
 module.exports = function(deployer) {
     deployer.deploy(VGMock).then(function() {
@@ -10,5 +11,6 @@ module.exports = function(deployer) {
         });
     });
     deployer.deploy(RevealMock);
+    deployer.deploy(DApp);
 };
 
