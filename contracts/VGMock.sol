@@ -211,7 +211,7 @@ contract VGMock is Decorated, VGInterface {
 
     // state getters
 
-    function getState(uint256 _index) public view
+    function getState(uint256 _index, address) public view
         onlyInstantiated(_index)
         returns ( address _challenger,
                 address _claimer,
@@ -267,7 +267,7 @@ contract VGMock is Decorated, VGInterface {
         return ((instance[_index].challenger == _user) || (instance[_index].claimer == _user));
     }
 
-    function getSubInstances(uint256 _index)
+    function getSubInstances(uint256 _index, address)
         public view returns (address[] memory _addresses,
                             uint256[] memory _indices)
     {
