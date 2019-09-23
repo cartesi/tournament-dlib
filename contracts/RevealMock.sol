@@ -38,15 +38,15 @@ contract RevealMock is Decorated, RevealInterface {
 
     mapping(uint256 => RevealCtx) internal instance;
 
-    function addFakePlayers(uint256 _index, address[] memory playerAddresses, uint256[] memory scores, bytes32[] memory finalHashes) public {
-        for (uint256 i=0; i < playerAddresses.length; i++) {
+    function addFakePlayers(uint256 _index, address[] memory _playerAddresses, uint256[] memory _scores, bytes32[] memory _finalHashes) public {
+        for (uint256 i = 0; i < _playerAddresses.length; i++) {
             Player memory newPlayer;
-            newPlayer.playerAddr = playerAddresses[i];
-            newPlayer.score = scores[i];
-            newPlayer.finalHash = finalHashes[i];
+            newPlayer.playerAddr = _playerAddresses[i];
+            newPlayer.score = _scores[i];
+            newPlayer.finalHash = _finalHashes[i];
             newPlayer.hasRevealed = true;
 
-            instance[_index].players[playerAddresses[i]] = newPlayer;
+            instance[_index].players[_playerAddresses[i]] = newPlayer;
         }
 
     }
@@ -194,7 +194,7 @@ contract RevealMock is Decorated, RevealInterface {
         );
     }
 
-    function getSubInstances(uint256 _index)
+    function getSubInstances(uint256 _index, address)
         public view returns (address[] memory _addresses,
             uint256[] memory _indices)
     {
