@@ -23,12 +23,23 @@ contract DApp is Decorated, Instantiator{
 
     mapping(uint256 => DappCtx) internal instance;
 
+    constructor(
+        address _rmAddress,
+        address[] memory _playerAddresses,
+        uint256[] memory _scores,
+        bytes32[] memory _finalHashes
+    ) public {
+        instantiate(_rmAddress, _playerAddresses, _scores, _finalHashes);
+    }
+
     function instantiate(
+        address _rmAddress,
         address[] memory _playerAddresses,
         uint256[] memory _scores,
         bytes32[] memory _finalHashes
     ) public returns (uint256) {
         // this also instantiate match manager
+        rm = RevealMock(_rmAddress);
         instance[currentIndex].revealIndex = rm.instantiate(
             0, //commit duration
             0, //reveal duration
@@ -44,7 +55,7 @@ contract DApp is Decorated, Instantiator{
             instance[currentIndex].playersConcern[_playerAddresses[i]] = true;
         }
 
-        // also have to add yourself
+        //// also have to add yourself
         rm.addFakePlayers(instance[currentIndex].revealIndex, _playerAddresses, _scores, _finalHashes);
 
         instance[currentIndex].currentState = state.DAppRunning;
@@ -74,7 +85,5 @@ contract DApp is Decorated, Instantiator{
 
         return (a, i);
     }
-
-
 }
 
