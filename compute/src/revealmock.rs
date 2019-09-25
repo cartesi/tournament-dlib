@@ -7,11 +7,8 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{Role};
 
 use matchmanager::{MatchManagerCtx, MatchManagerCtxParsed};
-
-use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct RevealMock();
 
@@ -63,10 +60,6 @@ impl From<RevealMockCtxParsed> for RevealMockCtx {
     }
 }
 
-// TO-DO: use state to check if player is already registered
-// state check for time of last epoch
-// state check if youre unmatched player
-// state check if number of matches played on last epoch was 0
 impl DApp<()> for RevealMock {
     /// React to the Reveal contract, submitting solutions, confirming
     /// or challenging them when appropriate
@@ -113,7 +106,7 @@ impl DApp<()> for RevealMock {
                 let match_manager_ctx: MatchManagerCtx = match_manager_parsed.into();
 
                 // also has to check if player is not unmatched address
-                if (match_manager_ctx.last_match_epoch.as_u64() == 0) {
+                if match_manager_ctx.last_match_epoch.as_u64() == 0 {
                     // register to first epoch
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
