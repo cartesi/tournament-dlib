@@ -9,7 +9,7 @@ use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{Role};
 
-use matchmanager::{MatchManagerCtx, MatchManagerCtxParsed}
+use matchmanager::{MatchManagerCtx, MatchManagerCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -46,8 +46,8 @@ pub struct RevealMockCtxParsed(
     current_state: String,
     }
 
-impl From<RevealMockCtxParsed> for MockRevealCtx {
-    fn from(parsed: RevealMockCtxParsed) -> MatchManagerCtx {
+impl From<RevealMockCtxParsed> for RevealMockCtx {
+    fn from(parsed: RevealMockCtxParsed) -> RevealMockCtx {
         RevealMockCtx {
             commit_duration: parsed.0.value,
             reveal_duration: parsed.1.value,
@@ -83,7 +83,7 @@ impl DApp<()> for RevealMock {
                     &instance.json_data
                 )
             })?;
-        let ctx: RevelMockCtx = parsed.into();
+        let ctx: RevealMockCtx = parsed.into();
         trace!("Context for match (index {}) {:?}", instance.index, ctx);
 
         match ctx.current_state.as_ref() {
@@ -113,7 +113,7 @@ impl DApp<()> for RevealMock {
                 let match_manager_ctx: MatchManagerCtx = match_manager_parsed.into();
 
                 // also has to check if player is not unmatched address
-                if (match_manager_ctx.last_match_epoch == 0) {
+                if (match_manager_ctx.last_match_epoch.as_u64() == 0) {
                     // register to first epoch
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
@@ -124,6 +124,8 @@ impl DApp<()> for RevealMock {
                     };
                     return Ok(Reaction::Transaction(request));
                 }
+
+                return Ok(Reaction::Idle);
             }
 
             "TournamentOver" => {
