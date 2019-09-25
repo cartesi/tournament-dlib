@@ -4,13 +4,26 @@ var MatchManagerInstantiator = artifacts.require("./MatchManagerInstantiator.sol
 var RevealMock = artifacts.require("./RevealMock.sol");
 var DApp = artifacts.require("./DApp.sol");
 
-module.exports = function(deployer) {
+module.exports = function(deployer, network, accounts) {
     deployer.deploy(VGMock).then(function() {
         deployer.deploy(MatchInstantiator, VGMock.address).then(function(){
             deployer.deploy(MatchManagerInstantiator, MatchInstantiator.address)
         });
     });
-    deployer.deploy(RevealMock);
-    deployer.deploy(DApp);
+
+    // add main "player" values here before adding other accounts
+    var playerAddresses = [accounts[0]];
+    var scores = [100];
+    var finalHashes = ["0x01"];
+
+    for (var i = 1; i < 9; i++) {
+        playerAddresses.push(accounts[i]);
+        scores.push(i * 20);
+        finalHashes.push("0x00");
+    }
+
+    deployer.deploy(RevealMock).then(function() {
+        deployer.deploy(DApp, RevealMock.address, playerAddresses, scores, finalHashes);
+    });
 };
 
