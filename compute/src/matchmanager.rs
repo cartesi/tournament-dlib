@@ -19,7 +19,7 @@ pub struct MatchManager();
 // obtained from a simple derive
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
-struct MatchManagerCtxParsed(
+pub struct MatchManagerCtxParsed(
     U256Field,     // epochDuration
     U256Field,     // roundDuration
     U256Field,     // currentEpoch
@@ -37,7 +37,7 @@ struct MatchManagerCtxParsed(
 );
 
 #[derive(Debug)]
-struct MatchManagerCtx {
+pub struct MatchManagerCtx {
     epoch_duration: U256,
     round_duration: U256,
     current_epoch: U256,
