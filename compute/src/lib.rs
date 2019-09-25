@@ -31,6 +31,7 @@ pub mod partition;
 pub mod vg;
 pub mod r#match;
 pub mod matchmanager;
+pub mod revealmock;
 
 extern crate configuration;
 extern crate emulator;
