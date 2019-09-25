@@ -38,20 +38,20 @@ pub struct MatchManagerCtxParsed(
 
 #[derive(Debug)]
 pub struct MatchManagerCtx {
-    epoch_duration: U256,
-    round_duration: U256,
-    current_epoch: U256,
-    final_time: U256,
-    last_epoch_start_time: U256,
-    number_of_matches_on_last_epoch: U256,
-    unmatched_player: Address,
-    last_match_index: U256,
-    initial_hash: H256,
-    machine: Address,
-    reveal_address: Address,
-    reveal_instance: U256,
-    last_match_epoch: U256,
-    current_state: String,
+   pub epoch_duration: U256,
+   pub round_duration: U256,
+   pub current_epoch: U256,
+   pub final_time: U256,
+   pub last_epoch_start_time: U256,
+   pub number_of_matches_on_last_epoch: U256,
+   pub unmatched_player: Address,
+   pub last_match_index: U256,
+   pub initial_hash: H256,
+   pub machine: Address,
+   pub reveal_address: Address,
+   pub reveal_instance: U256,
+   pub last_match_epoch: U256,
+   pub current_state: String,
 }
 
 impl From<MatchManagerCtxParsed> for MatchManagerCtx {
