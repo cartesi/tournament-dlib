@@ -1,4 +1,4 @@
-/// @title Dapp
+/// @title DappMock
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
@@ -6,7 +6,7 @@ import "./RevealMock.sol";
 import "../../arbitration-dlib/contracts/Decorated.sol";
 import "../../arbitration-dlib/contracts/Instantiator.sol";
 
-contract DApp is Decorated, Instantiator{
+contract DAppMock is Decorated, Instantiator{
 
     RevealMock private rm;
 
@@ -15,13 +15,13 @@ contract DApp is Decorated, Instantiator{
         DAppFinished
     }
 
-    struct DappCtx {
+    struct DAppMockCtx {
         uint256 revealIndex;
         state currentState;
         mapping(address => bool) playersConcern; //player address to isConcerned
     }
 
-    mapping(uint256 => DappCtx) internal instance;
+    mapping(uint256 => DAppMockCtx) internal instance;
 
     constructor(
         address _rmAddress,
