@@ -2,7 +2,7 @@ var VGMock = artifacts.require("./VGMock.sol");
 var MatchInstantiator = artifacts.require("./MatchInstantiator.sol");
 var MatchManagerInstantiator = artifacts.require("./MatchManagerInstantiator.sol");
 var RevealMock = artifacts.require("./RevealMock.sol");
-var DApp = artifacts.require("./DApp.sol");
+var DAppMock = artifacts.require("./DAppMock.sol");
 
 module.exports = function(deployer, network, accounts) {
     deployer.deploy(VGMock).then(function() {
@@ -23,7 +23,7 @@ module.exports = function(deployer, network, accounts) {
     }
 
     deployer.deploy(RevealMock).then(function() {
-        deployer.deploy(DApp, RevealMock.address, playerAddresses, scores, finalHashes);
+        deployer.deploy(DAppMock, RevealMock.address, playerAddresses, scores, finalHashes);
     });
 };
 
