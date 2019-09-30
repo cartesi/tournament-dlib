@@ -33,7 +33,7 @@ extern crate dispatcher;
 extern crate env_logger;
 extern crate utils;
 
-use compute::Compute;
+use compute::revealmock::RevealMock;
 use dispatcher::Dispatcher;
 use utils::print_error;
 
@@ -48,5 +48,5 @@ fn main() {
         }
     };
 
-    dispatcher.run::<Compute>();
+    dispatcher.run::<RevealMock>();
 }
