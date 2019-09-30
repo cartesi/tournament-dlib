@@ -53,6 +53,7 @@ pub use mm::MM;
 pub use partition::Partition;
 pub use vg::VG;
 pub use r#match::Match;
+pub use revealmock::RevealMock;
 
 #[derive(Debug)]
 enum Role {
