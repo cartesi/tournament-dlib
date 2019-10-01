@@ -147,6 +147,14 @@ contract RevealMock is Decorated, RevealInterface {
         mi.registerToFirstEpoch(instance[_index].matchManagerIndex);
     }
 
+    function claimFinished(uint256 _index) public
+        onlyInstantiated(_index)
+    {
+        require(mi.getCurrentState(instance[_index].matchManagerIndex, msg.sender) == "MatchesOver", "All matches have to be over");
+
+        instance[_index].currentState = state.TournamentOver;
+    }
+
     function getScore(uint256 _index, address _playerAddr) public returns (uint256) {
         return instance[_index].players[_playerAddr].score;
     }
@@ -170,7 +178,20 @@ contract RevealMock is Decorated, RevealInterface {
     }
 
     function getCurrentState(uint256 _index, address _user) public view returns (bytes32) {
-         return "MatchManagerPhase";
+        if (instance[_index].currentState == state.CommitPhase) {
+            return "CommitPhase";
+        }
+        if (instance[_index].currentState == state.RevealPhase) {
+            return "RevealPhase";
+        }
+        if (instance[_index].currentState == state.MatchManagerPhase) {
+            return "MatchManagerPhase";
+        }
+        if (instance[_index].currentState == state.TournamentOver) {
+            return "TournamentOver";
+        }
+
+        require(false, "Unrecognized state");
     }
 
     function getState(uint256 _index, address _user) public view returns
