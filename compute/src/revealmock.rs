@@ -30,17 +30,18 @@ pub struct RevealMockCtxParsed(
     String32Field, // currentState
 );
 
-#[derive(Debug)] pub struct RevealMockCtx {
-    commit_duration: U256,
-    reveal_duration: U256,
-    creation_time: U256,
-    match_manager_index: U256,
-    match_manager_epoch_duration: U256,
-    match_manager_match_duration: U256,
-    final_time: U256,
-    initial_hash: H256,
-    machine_address: Address,
-    current_state: String,
+#[derive(Debug)] 
+pub struct RevealMockCtx {
+    pub commit_duration: U256,
+    pub reveal_duration: U256,
+    pub creation_time: U256,
+    pub match_manager_index: U256,
+    pub match_manager_epoch_duration: U256,
+    pub match_manager_match_duration: U256,
+    pub final_time: U256,
+    pub initial_hash: H256,
+    pub machine_address: Address,
+    pub current_state: String,
     }
 
 impl From<RevealMockCtxParsed> for RevealMockCtx {
