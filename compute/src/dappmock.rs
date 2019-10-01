@@ -1,5 +1,3 @@
-use super::build_machine_id;
-use super::configuration::Concern;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction, SessionRunRequest};
 use super::error::Result;
@@ -8,11 +6,7 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{Role, VG};
-use vg::{VGCtx, VGCtxParsed};
 use super::revealmock::{RevealMock, RevealMockCtx, RevealMockCtxParsed};
-
-use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct DAppMock();
 
@@ -23,23 +17,25 @@ pub struct DAppMock();
 #[derive(Serialize, Deserialize)]
 struct DAppMockCtxParsed(
     U256Field,  // revealIndex
+    String32Field, // currentState
 );
 
 #[derive(Debug)]
 struct DAppMockCtx {
     reveal_index: U256,
+    current_state: String,
 }
 
 impl From<DAppMockCtxParsed> for DAppMockCtx {
     fn from(parsed: DAppMockCtxParsed) -> DAppMockCtx {
-        DappMockCtx {
+        DAppMockCtx {
             reveal_index: parsed.0.value,
             current_state: parsed.1.value,
         }
     }
 }
 
-impl DApp<()> for DappMockCtx {
+impl DApp<()> for DAppMockCtx {
     /// React to the compute contract, submitting solutions, confirming
     /// or challenging them when appropriate
     fn react(
@@ -67,6 +63,14 @@ impl DApp<()> for DappMockCtx {
             _ => {}
         };
 
+        // we inspect the reveal contract
+        let revealmock_instance = instance.sub_instances.get(0).ok_or(
+            Error::from(ErrorKind::InvalidContractState(format!(
+                "There is no reveal instance {}",
+                ctx.current_state
+            ))),
+        )?;
+
         let revealmock_parsed: RevealMockCtxParsed =
             serde_json::from_str(&revealmock_instance.json_data)
                 .chain_err(|| {
@@ -75,7 +79,7 @@ impl DApp<()> for DappMockCtx {
                         &revealmock_instance.json_data
                     )
                 })?;
-        let revealmock_ctx: RevealMockCtx = revealMock_parsed.into();
+        let revealmock_ctx: RevealMockCtx = revealmock_parsed.into();
 
         match revealmock_ctx.current_state.as_ref() {
                 "TournamentOver" => {
@@ -94,4 +98,6 @@ impl DApp<()> for DappMockCtx {
                     // pass control to the appropriate dapp
                     return RevealMock::react(revealmock_instance, archive, &());
                 }
+        }
+    }
 }
