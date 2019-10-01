@@ -32,6 +32,7 @@ pub mod vg;
 pub mod r#match;
 pub mod matchmanager;
 pub mod revealmock;
+pub mod dappmock;
 
 extern crate configuration;
 extern crate emulator;
@@ -54,6 +55,7 @@ pub use partition::Partition;
 pub use vg::VG;
 pub use r#match::Match;
 pub use revealmock::RevealMock;
+pub use dappmock::DAppMock;
 
 #[derive(Debug)]
 enum Role {
