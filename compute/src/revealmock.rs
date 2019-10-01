@@ -30,7 +30,7 @@ pub struct RevealMockCtxParsed(
     String32Field, // currentState
 );
 
-#[derive(Debug)] 
+#[derive(Debug)]
 pub struct RevealMockCtx {
     pub commit_duration: U256,
     pub reveal_duration: U256,
@@ -123,7 +123,15 @@ impl DApp<()> for RevealMock {
             }
 
             "TournamentOver" => {
-                return Ok(Reaction::Idle);
+                // claim Finished in dappmock test contract
+                let request = TransactionRequest {
+                    concern: instance.concern.clone(),
+                    value: U256::from(0),
+                    function: "claimFinished".into(),
+                    data: vec![Token::Uint(instance.index)],
+                    strategy: transaction::Strategy::Simplest,
+                };
+                return Ok(Reaction::Transaction(request));
             }
             _ => {
                 return Ok(Reaction::Idle);
