@@ -62,8 +62,18 @@ contract DAppMock is Decorated, Instantiator{
         return currentIndex++;
     }
 
-    function stopDApp(uint256 _index) public {
-        instance[currentIndex].currentState = state.DAppFinished;
+    function claimFinished(uint256 _index) public
+        onlyInstantiated(_index)
+    {
+        require(instance[_index].currentState == state.DAppRunning, "The state is already Finished");
+
+        bytes32 mockRevealState = rm.getCurrentState(instance[_index].revealIndex, msg.sender);
+
+        if (mockRevealState == "TournamentOver") {
+            instance[currentIndex].currentState = state.DAppFinished;
+        } else {
+            revert("The subinstance compute is still active");
+        }
     }
 
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
@@ -72,6 +82,20 @@ contract DAppMock is Decorated, Instantiator{
 
     function getState(uint256 _index, address _user) public view returns (uint256) {
         return instance[_index].revealIndex;
+    }
+
+    function getCurrentState(uint256 _index, address) public view
+        onlyInstantiated(_index)
+        returns (bytes32)
+    {
+        if (instance[_index].currentState == state.DAppRunning) {
+            return "DAppRunning";
+        }
+        if (instance[_index].currentState == state.DAppFinished) {
+            return "DAppFinished";
+        }
+
+        require(false, "Unrecognized state");
     }
 
     function getSubInstances(uint256 _index, address)
