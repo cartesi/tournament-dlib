@@ -248,5 +248,22 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             return (a, i);
         }
 
+        function getCurrentState(uint256 _index) public view
+            onlyInstantiated(_index)
+            returns (bytes32)
+        {
+            if (instance[_index].currentState == state.WaitingSignUps) {
+                return "WaitingSignUps";
+            }
+            if (instance[_index].currentState == state.WaitingMatches) {
+                return "WaitingMatches";
+            }
+            if (instance[_index].currentState == state.MatchesOver) {
+                return "MatchesOver";
+            }
+
+            require(false, "Unrecognized state");
+        }
+
 }
 
