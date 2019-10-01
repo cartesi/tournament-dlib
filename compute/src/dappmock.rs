@@ -36,7 +36,7 @@ impl From<DAppMockCtxParsed> for DAppMockCtx {
     }
 }
 
-impl DApp<()> for DAppMockCtx {
+impl DApp<()> for DAppMock {
     /// React to the DApp contract, submitting solutions, confirming
     /// or challenging them when appropriate
     fn react(

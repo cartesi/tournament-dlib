@@ -34,6 +34,7 @@ extern crate env_logger;
 extern crate utils;
 
 use compute::revealmock::RevealMock;
+use compute::dappmock::DAppMock;
 use dispatcher::Dispatcher;
 use utils::print_error;
 
@@ -48,5 +49,5 @@ fn main() {
         }
     };
 
-    dispatcher.run::<RevealMock>();
+    dispatcher.run::<DAppMock>();
 }
