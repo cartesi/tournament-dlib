@@ -41,12 +41,12 @@ contract DAppMock is Decorated, Instantiator{
         // this also instantiate match manager
         rm = RevealMock(_rmAddress);
         instance[currentIndex].revealIndex = rm.instantiate(
-            0, //commit duration
-            0, //reveal duration
+            500, //commit duration
+            400, //reveal duration
             5000, //epoch duration
             200, //match duration
-            0, // final time
-            "0x00", //inital hash
+            13000, // final time
+            bytes32("0x00"), //inital hash
             address(0) //machine address
         );
 
