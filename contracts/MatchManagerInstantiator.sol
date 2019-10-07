@@ -12,6 +12,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     MatchInterface private mi;
 
+    // TO-DO: Add match duration + round duration to Instantiator/Match
+    // TO-DO: Split registering state into two: can only register if there is epoch duration - match duration time left
+    // TO-DO: Propagate changes to offchain code
     struct MatchManagerCtx {
         uint256 epochDuration;
         uint256 roundDuration;
@@ -69,6 +72,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
         currentInstance.currentState = state.WaitingSignUps;
 
+        return currentIndex++;
     }
 
     /// @notice Register for the next Epoch, only doable if you wont a match on last one
@@ -139,14 +143,17 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     /// @param _index index of matchmanager that youre interacting with
 
     function createMatch(uint256 _index) private {
+
+        MatchManagerCtx memory i = instance[_index];
+
         address claimer;
         address challenger;
-        address unmatchedAddr = instance[_index].unmatchedPlayer;
+        address unmatchedAddr = i.unmatchedPlayer;
 
         RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
 
         // the highest score between both is the claimer, the lowest is the challenger
-        if (reveal.getScore(instance[_index].revealInstance, msg.sender) > reveal.getScore(instance[_index].revealInstance, unmatchedAddr)) {
+        if (reveal.getScore(i.revealInstance, msg.sender) > reveal.getScore(i.revealInstance, unmatchedAddr)) {
             claimer = msg.sender;
             challenger = unmatchedAddr;
         } else {
@@ -159,11 +166,11 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             challenger,
             claimer,
             now,
-            instance[_index].roundDuration,
-            instance[_index].machineAddress,
-            instance[_index].initialHash,
-            reveal.getFinalHash(instance[_index].revealInstance, claimer),
-            instance[_index].finalTime,
+            i.roundDuration,
+            i.machineAddress,
+            i.initialHash,
+            reveal.getFinalHash(i.revealInstance, claimer),
+            i.finalTime,
             now
         );
 
@@ -201,38 +208,33 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     }
 
     function getState(uint256 _index, address _user) public view returns
-        ( uint256 epochDuration,
-          uint256 roundDuration,
-          uint256 currentEpoch,
-          uint256 finalTime,
-          uint256 lastEpochStartTime,
-          uint256 numberOfMatchesOnLastEpoch,
+        ( uint256[9] memory _uintValues,
           address unmatchedPlayer,
-          uint256 lastMatchIndex,
           bytes32 initialHash,
           address machineAddress,
-          address revealAddress,
-          uint256 revealInstance,
-          uint256 lastMatchEpoch,
-          state currentState
+          address revealAddress
         ) {
 
-            return (
-                instance[_index].epochDuration,
-                instance[_index].roundDuration,
-                instance[_index].currentEpoch,
-                instance[_index].finalTime,
-                instance[_index].lastEpochStartTime,
+            MatchManagerCtx memory i = instance[_index];
+            uint256[9] memory uintValues = [
+                i.epochDuration,
+                i.roundDuration,
+                i.currentEpoch,
+                i.finalTime,
+                i.lastEpochStartTime,
                 instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch - 1],
-                instance[_index].unmatchedPlayer,
                 instance[_index].lastMatchIndex[_user],
-                instance[_index].initialHash,
-                instance[_index].machineAddress,
-                instance[_index].revealAddress,
-                instance[_index].revealInstance,
-                mi.getEpochNumber(instance[_index].lastMatchIndex[_user]),
-                instance[_index].currentState
+                i.revealInstance,
+                mi.getEpochNumber(instance[_index].lastMatchIndex[_user])
 
+            ];
+
+            return (
+                uintValues,
+                i.unmatchedPlayer,
+                i.initialHash,
+                i.machineAddress,
+                i.revealAddress
             );
         }
 
@@ -248,7 +250,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             return (a, i);
         }
 
-        function getCurrentState(uint256 _index) public view
+        function getCurrentState(uint256 _index, address) public view
             onlyInstantiated(_index)
             returns (bytes32)
         {
@@ -264,6 +266,5 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
             require(false, "Unrecognized state");
         }
-
 }
 
