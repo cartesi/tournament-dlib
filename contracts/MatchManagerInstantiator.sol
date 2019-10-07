@@ -209,10 +209,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     function getState(uint256 _index, address _user) public view returns
         ( uint256[9] memory _uintValues,
-          address unmatchedPlayer,
+          address[3] memory _addressValues,
           bytes32 initialHash,
-          address machineAddress,
-          address revealAddress
+          bytes32 currentState
         ) {
 
             MatchManagerCtx memory i = instance[_index];
@@ -229,12 +228,17 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
             ];
 
-            return (
-                uintValues,
+            address[3] memory addressValues = [
                 i.unmatchedPlayer,
-                i.initialHash,
                 i.machineAddress,
                 i.revealAddress
+            ];
+
+            return (
+                uintValues,
+                addressValues,
+                i.initialHash,
+                getCurrentState(_index)
             );
         }
 
@@ -250,7 +254,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             return (a, i);
         }
 
-        function getCurrentState(uint256 _index, address) public view
+        function getCurrentState(uint256 _index) public view
             onlyInstantiated(_index)
             returns (bytes32)
         {

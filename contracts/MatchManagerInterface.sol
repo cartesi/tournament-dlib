@@ -33,13 +33,12 @@ contract MatchManagerInterface is Instantiator {
     // add corresposding state
     function getState(uint256 _index, address) public view returns
         ( uint256[9] memory _uintValues,
-          address unmatchedPlayer,
+          address[3] memory _addressValues,
           bytes32 initialHash,
-          address machineAddress,
-          address revealAddress
+          bytes32 currentState
         ); 
 
-    function getCurrentState(uint256 _index, address _concernedAddress) public view returns (bytes32);
+    function getCurrentState(uint256 _index) public view returns (bytes32);
 
 }
 
