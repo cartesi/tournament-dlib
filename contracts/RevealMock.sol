@@ -154,7 +154,7 @@ contract RevealMock is Decorated, RevealInterface {
     function claimFinished(uint256 _index) public
         onlyInstantiated(_index)
     {
-        require(mmi.getCurrentState(instance[_index].matchManagerIndex, msg.sender) == "MatchesOver", "All matches have to be over");
+        require(mmi.getCurrentState(instance[_index].matchManagerIndex) == "MatchesOver", "All matches have to be over");
 
         instance[_index].currentState = state.TournamentOver;
     }
