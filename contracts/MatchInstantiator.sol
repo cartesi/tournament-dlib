@@ -227,7 +227,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
 
    }
 
-   function getCurrentState(uint256 _index) public view
+   function getCurrentState(uint256 _index, address) public view
         onlyInstantiated(_index)
         returns (bytes32)
     {
@@ -245,7 +245,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         }
     }
 
-   function getSubInstances(uint256)
+   function getSubInstances(uint256, address)
         public view returns (address[] memory, uint256[] memory)
     {
         address[] memory a = new address[](0);
