@@ -8,7 +8,7 @@ import "./MatchManagerInterface.sol";
 
 contract RevealMock is Decorated, RevealInterface {
 
-    MatchManagerInterface private mi;
+    MatchManagerInterface private mmi;
 
     struct RevealCtx {
         uint256 commitDuration;
@@ -37,6 +37,10 @@ contract RevealMock is Decorated, RevealInterface {
     event logRevealed(uint256 index, address player, bytes32 logHash, uint256 block);
 
     mapping(uint256 => RevealCtx) internal instance;
+
+    constructor(address _mmiAddress) public {
+        mmi = MatchManagerInterface(_mmiAddress);
+    }
 
     function addFakePlayers(uint256 _index, address[] memory _playerAddresses, uint256[] memory _scores, bytes32[] memory _finalHashes) public {
         for (uint256 i = 0; i < _playerAddresses.length; i++) {
@@ -81,7 +85,7 @@ contract RevealMock is Decorated, RevealInterface {
         currentInstance.currentState = state.MatchManagerPhase;
 
         // instantiate MatchManager
-        instance[currentIndex].matchManagerIndex = mi.instantiate(
+        instance[currentIndex].matchManagerIndex = mmi.instantiate(
             instance[currentIndex].matchManagerEpochDuration,
             instance[currentIndex].matchManagerMatchDuration,
             instance[currentIndex].finalTime,
@@ -144,13 +148,13 @@ contract RevealMock is Decorated, RevealInterface {
     }
 
     function registerToFirstEpoch(uint256 _index) public {
-        mi.registerToFirstEpoch(instance[_index].matchManagerIndex);
+        mmi.registerToFirstEpoch(instance[_index].matchManagerIndex);
     }
 
     function claimFinished(uint256 _index) public
         onlyInstantiated(_index)
     {
-        require(mi.getCurrentState(instance[_index].matchManagerIndex, msg.sender) == "MatchesOver", "All matches have to be over");
+        require(mmi.getCurrentState(instance[_index].matchManagerIndex, msg.sender) == "MatchesOver", "All matches have to be over");
 
         instance[_index].currentState = state.TournamentOver;
     }
@@ -225,7 +229,7 @@ contract RevealMock is Decorated, RevealInterface {
     {
         address[] memory a = new address[](1);
         uint256[] memory i = new uint256[](1);
-        a[0] = address(mi);
+        a[0] = address(mmi);
         i[0] = instance[_index].matchManagerIndex;
 
         return (a, i);
