@@ -31,18 +31,13 @@ contract MatchManagerInterface is Instantiator {
 
     // TO-DO: Add registration duration - Also update offchain
     // add corresposding state
-    function getState(uint256 _index) public view returns
-        ( uint256 epochDuration,
-          uint256 roundDuration,
-          uint256 currentEpoch,
-          uint256 lastEpochStartTime,
-          uint256 numbersOfMatchesOnLastEpoch, //this changes to current epoch
+    function getState(uint256 _index, address) public view returns
+        ( uint256[9] memory _uintValues,
           address unmatchedPlayer,
-          uint256 lastMatchIndex,
+          bytes32 initialHash,
           address machineAddress,
-          address revealAddress,
-          state currentState
-        );
+          address revealAddress
+        ); 
 
     function getCurrentState(uint256 _index, address _concernedAddress) public view returns (bytes32);
 
