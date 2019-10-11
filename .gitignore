@@ -1,6 +1,7 @@
 contracts.json
 coverage*
 node_modules
+compute/target
 test/*/
 .vscode
 .node*
