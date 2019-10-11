@@ -20,20 +20,22 @@ pub struct MatchManager();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
 pub struct MatchManagerCtxParsed(
-    U256Field,     // epochDuration
-    U256Field,     // roundDuration
-    U256Field,     // currentEpoch
-    U256Field,     // finalTime
-    U256Field,     // lastEpochStartTime
-    U256Field,     // numberOfMatchesOnEpoch
-    AddressField,  // unmatchedPlayer
-    U256Field,     // lastMatchIndex
-    Bytes32Field,  // initialHash
-    AddressField,  // machine
-    AddressField,  // RevealAddress
-    U256Field,     // revealInstance
-    U256Field,     // lastMatchEpoch
-    String32Field, // currentState
+    U256Array9,     // epochDuration
+                    // roundDuration
+                    // currentEpoch
+                    // finalTime
+                    // lastEpochStartTime
+                    // numberOfMatchesOnEpoch
+                    // lastMatchIndex
+                    // revealInstance
+                    // lastMatchEpoch
+
+    addressArray3,  // unmatchedplayer
+                    // machine
+                    // revealaddress
+
+    Bytes32Field,   // initialhash
+    String32Field,  // currentstate
 );
 
 #[derive(Debug)]
@@ -54,24 +56,26 @@ pub struct MatchManagerCtx {
    pub current_state: String,
 }
 
+
 impl From<MatchManagerCtxParsed> for MatchManagerCtx {
     fn from(parsed: MatchManagerCtxParsed) -> MatchManagerCtx {
         MatchManagerCtx {
-            epoch_duration: parsed.0.value,
-            round_duration: parsed.1.value,
-            current_epoch: parsed.2.value,
-            final_time: parsed.3.value,
-            last_epoch_start_time: parsed.4.value,
-            number_of_matches_on_last_epoch: parsed.5.value,
-            unmatched_player: parsed.6.value,
-            last_match_index: parsed.7.value,
-            initial_hash: parsed.8.value,
-            machine: parsed.9.value,
-            reveal_address: parsed.10.value,
-            reveal_instance: parsed.11.value,
-            last_match_epoch: parsed.12.value,
-            current_state: parsed.13.value,
+            epoch_duration: parsed.0.value[0],
+            round_duration: parsed.0.value[1],
+            current_epoch: parsed.0.value[2],
+            final_time: parsed.0.value[3],
+            last_epoch_start_time: parsed.0.value[4],
+            number_of_matches_on_last_epoch: parsed.0.value[5],
+            last_match_index: parsed.0.value[6],
+            reveal_instance: parsed.0.value[7],
+            last_match_epoch: parsed.0.value[8],
 
+            unmatched_player: parsed.1.value[0],
+            machine: parsed.1.value[1],
+            reveal_address: parsed.1.value[2],
+
+            initial_hash: parsed.2.value,
+            current_state: parsed.3.value,
         }
     }
 }
