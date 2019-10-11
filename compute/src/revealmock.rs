@@ -5,6 +5,7 @@ use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
+use matchmanager::MatchManager;
 use super::transaction;
 use super::transaction::TransactionRequest;
 
@@ -42,7 +43,7 @@ pub struct RevealMockCtx {
     pub initial_hash: H256,
     pub machine_address: Address,
     pub current_state: String,
-    }
+}
 
 impl From<RevealMockCtxParsed> for RevealMockCtx {
     fn from(parsed: RevealMockCtxParsed) -> RevealMockCtx {
@@ -105,9 +106,11 @@ impl DApp<()> for RevealMock {
                             )
                         })?;
                 let match_manager_ctx: MatchManagerCtx = match_manager_parsed.into();
+                let user_is_unmatched = match_manager_ctx.unmatched_player == instance.concern.user_address;
 
-                // also has to check if player is not unmatched address
-                if match_manager_ctx.last_match_epoch.as_u64() == 0 {
+                // Reveal is responsible for registering player to first epoch.
+                // this should probably change soon
+                if match_manager_ctx.last_match_epoch.as_u64() == 0 && !user_is_unmatched {
                     // register to first epoch
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
@@ -119,7 +122,12 @@ impl DApp<()> for RevealMock {
                     return Ok(Reaction::Transaction(request));
                 }
 
-                return Ok(Reaction::Idle);
+               // if last_match_epoch > zero, control goes to matchmanager
+                return MatchManager::react(
+                    match_manager_instance,
+                    archive,
+                    &(),
+                );
             }
 
             "TournamentOver" => {
