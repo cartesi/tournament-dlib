@@ -1,0 +1,25 @@
+dispatcher_base:
+  url: 'http://172.18.0.22:8545'
+  testing: true
+  max_delay: 500
+  warn_delay: 30
+  main_concern:
+    abi: DAppMock.json
+  query_port: 3001
+  confirmations: 0
+# contracts that needed to be deployed to blockchain
+blockchain:
+  number_of_accounts: 10
+  networks: '7777'
+  projects:
+    tournament:
+      dependencies: []
+      path: './'
+      concerns:
+        - 'DAppMock'
+        - 'MatchInstantiator'
+        - 'MatchManagerInstantiator'
+        - 'RevealMock'
+        - 'VGMock'
+      migrate_from: '1'
+      migrate_to: '2'
