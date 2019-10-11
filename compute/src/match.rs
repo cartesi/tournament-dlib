@@ -1,14 +1,15 @@
-use super::build_machine_id;
+
+use super::{build_machine_id, build_session_run_key};
 use super::configuration::Concern;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
-use super::dispatcher::{Archive, DApp, Reaction, SessionRunRequest};
+use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{Role, VG};
+use super::{Role, VG, SessionRunRequest, SessionRunResult, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
 use vg::{VGCtx, VGCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -172,48 +173,55 @@ impl DApp<()> for Match {
                         instance.index,
                         &instance.concern.contract_address,
                     );
-
-                    // TO-DO: Reassemble the machine each time
-                    // TO-DO: check if machine was instantiated
-                    trace!("Calculating final hash of machine {}", id);
-                    // have we sampled this machine yet?
-                    if let Some(samples) = archive.get(&id) {
-                        let run_samples = &samples.run;
-                        // have we sampled the final time?
-                        if let Some(hash) = run_samples.get(&ctx.final_time) {
-                            if hash == &ctx.claimed_final_hash {
-                                info!(
-                                    "Confirming final hash {:?} for {}",
-                                    hash, id
-                                );
-                                return Ok(Reaction::Idle);
-
-                            } else {
-                                warn!(
-                                    "Disputing final hash {:?} != {} for {}",
-                                    hash, ctx.claimed_final_hash, id
-                                );
-                                let request = TransactionRequest {
-                                    concern: instance.concern.clone(),
-                                    value: U256::from(0),
-                                    function: "challengeHighestScore".into(),
-                                    data: vec![Token::Uint(instance.index)],
-                                    strategy: transaction::Strategy::Simplest,
-                                };
-
-                                return Ok(Reaction::Transaction(request));
-                            }
-                        }
-                    };
-                    // final hash has not been calculated yet, request it
                     let sample_points: Vec<u64> =
                         vec![0, ctx.final_time.as_u64()];
-                    return Ok(Reaction::Request(SessionRunRequest {
-                        session_id: id,
-                        times: sample_points,
-                    }));
-                }
+                    let request = SessionRunRequest {
+                        session_id: id.clone(),
+                        times: sample_points.clone(),
+                    };
+                    let archive_key = build_session_run_key(
+                        id.clone(),
+                        sample_points.clone());
+                    let id_clone = id.clone();
 
+                    trace!("Calculating final hash of machine {}", id);
+                    // have we sampled the final time?
+                    let processed_response: SessionRunResult = archive.get_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        archive_key.clone(),
+                        EMULATOR_METHOD_RUN.to_string(),
+                        request.into())?
+                        .map_err(move |_e| {
+                            Error::from(ErrorKind::ArchiveInvalidError(
+                                EMULATOR_SERVICE_NAME.to_string(),
+                                id_clone,
+                                EMULATOR_METHOD_RUN.to_string()))
+                        })?
+                        .into();
+
+                    let hash = processed_response.hashes[1];
+                    if hash == ctx.claimed_final_hash {
+                        info!(
+                            "Confirming final hash {:?} for {}",
+                            hash, id
+                        );
+                        return Ok(Reaction::Idle);
+                    } else {
+                        warn!(
+                            "Disputing final hash {:?} != {} for {}",
+                            hash, ctx.claimed_final_hash, id
+                        );
+                        let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "challengeHighestScore".into(),
+                            data: vec![Token::Uint(instance.index)],
+                            strategy: transaction::Strategy::Simplest,
+                        };
+
+                        return Ok(Reaction::Transaction(request));
+                    }
+                }
                 "ChallengeStarted" => {
                     // we inspect the verification contract
                     let vg_instance = instance.sub_instances.get(0).ok_or(
