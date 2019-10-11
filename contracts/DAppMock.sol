@@ -3,8 +3,8 @@
 pragma solidity ^0.5.0;
 
 import "./RevealMock.sol";
-import "../../arbitration-dlib/contracts/Decorated.sol";
-import "../../arbitration-dlib/contracts/Instantiator.sol";
+import ".//Decorated.sol";
+import ".//Instantiator.sol";
 
 contract DAppMock is Decorated, Instantiator{
 

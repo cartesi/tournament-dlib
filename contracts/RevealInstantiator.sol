@@ -2,8 +2,8 @@
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
-import "../../arbitration-dlib/contracts/Decorated.sol";
-import "../../arbitration-dlib/contracts/VGInterface.sol";
+import ".//Decorated.sol";
+import ".//VGInterface.sol";
 import "./RevealInterface.sol";
 
 contract RevealInstantiator is RevealInterface, Decorated {

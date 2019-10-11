@@ -2,7 +2,7 @@
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
-import "../../arbitration-dlib/contracts/Instantiator.sol";
+import ".//Instantiator.sol";
 
 contract MatchManagerInterface is Instantiator {
 

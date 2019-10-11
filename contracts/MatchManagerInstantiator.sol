@@ -2,7 +2,7 @@
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
-import "../../arbitration-dlib/contracts/Decorated.sol";
+import ".//Decorated.sol";
 import "./MatchManagerInterface.sol";
 import "./RevealInterface.sol";
 import "./MatchInterface.sol";
