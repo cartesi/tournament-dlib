@@ -55,11 +55,11 @@ def run():
             if idx >= number_of_dispatchers:
                 break
             # start dispatcher
-            print("starting dispatcher...")
+            print("starting dispatcher {}...".format(idx))
             bash_cmd = 'bash -c "export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace && export CARTESI_CONCERN_KEY={} && mkdir -p /opt/cartesi/working_path && cat /opt/cartesi/dispatcher_config_{}.yaml && cargo run -- --config_path /opt/cartesi/dispatcher_config_{}.yaml --working_path /opt/cartesi/working_path"'.format(account["key"], idx, idx)
             container = client.containers.create("cartesi/image-tournament-test",
                 #detach=True
-                # auto_remove=True,
+                auto_remove=True,
                 command=bash_cmd,
                 tty=True,
                 stdin_open=True,
