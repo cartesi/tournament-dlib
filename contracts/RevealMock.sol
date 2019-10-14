@@ -104,19 +104,6 @@ contract RevealMock is Decorated, RevealInterface {
 
     function commit(uint256 _index, bytes32 _logHash) public {
         require(instance[_index].currentState == state.CommitPhase, "State has to be commit phase");
-
-        if (now > instance[_index].creationTime + instance[_index].commitDuration) {
-            instance[_index].currentState = state.RevealPhase;
-        }
-        // if its first commit, creates player
-        if (instance[_index].players[msg.sender].playerAddr == address(0)) {
-            Player memory player;
-            player.playerAddr = msg.sender;
-            instance[_index].players[msg.sender] = player;
-        }
-
-        instance[_index].players[msg.sender].commit = _logHash;
-
         emit logCommited(_index, msg.sender, _logHash, block.number);
     }
 
@@ -126,24 +113,6 @@ contract RevealMock is Decorated, RevealInterface {
     /// @param _finalHash final hash of the machine after that log has been proccessed.
     function reveal(uint256 _index, uint256 _score, bytes32 _finalHash) public {
         require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
-
-        if (now > instance[_index].creationTime + instance[_index].commitDuration + instance[_index].revealDuration) {
-            instance[_index].currentState = state.MatchManagerPhase;
-        }
-
-        require(!instance[_index].players[msg.sender].hasRevealed, "Player can only reveal one commit");
-        // use logger to see that the final hash matches the commit hash
-        // block number greater than original block?
-
-        // require logger.dlib instance hash == commit hash
-
-        // require that score is contained in the final hash - PROVE DRIVE
-        instance[_index].players[msg.sender].hasRevealed = true;
-//        instance[_index].players[msg.sender].score = _score;
-//        instance[_index].players[msg.sender].finalHash = _finalHash;
-        // set score
-        // set final hash
-
         emit logRevealed(_index, msg.sender, instance[_index].players[msg.sender].commit, block.number);
     }
 

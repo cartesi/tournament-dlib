@@ -132,82 +132,14 @@ contract VGMock is Decorated, VGInterface {
         return(currentIndex++);
     }
 
-    /// @notice In case one of the parties wins the partition challenge by
-    /// timeout, then he or she can call this function to claim victory in
-    /// the hireCPU contract as well.
-    function winByPartitionTimeout(uint256 _index) public
-        onlyInstantiated(_index)
-    {
-        require(instance[_index].currentState == state.WaitPartition, "State should be WaitPartition");
-        uint256 partitionIndex = instance[_index].partitionInstance;
-        if (partition.stateIsChallengerWon(partitionIndex)) {
-            challengerWins(_index);
-            return;
-        }
-        if (partition.stateIsClaimerWon(partitionIndex)) {
-            claimerWins(_index);
-            return;
-        }
-        revert("Fail to WinByPartitionTimeout in current condition");
-    }
+    // empty function to conform to interface
+    function winByPartitionTimeout(uint256 _index) public {}
 
-    /// @notice After the partition challenge has lead to a divergence in the hash
-    /// within one time step, anyone can start a mechine run challenge to decide
-    /// whether the claimer was correct about that particular step transition.
-    /// This function call solely instantiate a memory manager, so the
-    /// provider must fill the appropriate addresses that will be read by the
-    /// machine.
-    function startMachineRunChallenge(uint256 _index) public
-        onlyInstantiated(_index)
-        increasesNonce(_index)
-    {
-        require(instance[_index].currentState == state.WaitPartition, "State should be WaitPartition");
-        require(partition.stateIsDivergenceFound(instance[_index].partitionInstance), "Divergence should be found");
-        uint256 partitionIndex = instance[_index].partitionInstance;
-        uint divergenceTime = partition.divergenceTime(partitionIndex);
-        instance[_index].divergenceTime = divergenceTime;
-        instance[_index].hashBeforeDivergence = partition.timeHash(partitionIndex, divergenceTime);
-        instance[_index].hashAfterDivergence = partition.timeHash(partitionIndex, divergenceTime + 1);
-        address memoryInteractorAddress = instance[_index].machine.getMemoryInteractor();
-        instance[_index].mmInstance = mm.instantiate(
-            instance[_index].challenger,
-            memoryInteractorAddress,
-            instance[_index].hashBeforeDivergence
-        );
-        // !!!!!!!!! should call clear in partitionInstance !!!!!!!!!
-        delete instance[_index].partitionInstance;
-        instance[_index].timeOfLastMove = now;
-        instance[_index].currentState = state.WaitMemoryProveValues;
-        emit PartitionDivergenceFound(_index, instance[_index].mmInstance);
-    }
+    function startMachineRunChallenge(uint256 _index) public {}
 
-    /// @notice After having filled the memory manager with the necessary data,
-    /// the provider calls this function to instantiate the machine and perform
-    /// one step on it. The machine will write to memory now. Later, the
-    /// provider will be expected to update the memory hash accordingly.
-    function settleVerificationGame(uint256 _index) public
-        onlyInstantiated(_index)
-        onlyBy(instance[_index].challenger)
-    {
-        require(instance[_index].currentState == state.WaitMemoryProveValues, "State should be WaitMemoryProveValues");
-        uint256 mmIndex = instance[_index].mmInstance;
-        require(mm.stateIsWaitingReplay(mmIndex), "State of MM should be WaitingReplay");
-        instance[_index].machine.step(mmIndex);
-        require(mm.stateIsFinishedReplay(mmIndex), "State of MM  should be FinishedReplay");
-        require(mm.newHash(mmIndex) != instance[_index].hashAfterDivergence, "newHash should match");
-        challengerWins(_index);
-    }
+    function settleVerificationGame(uint256 _index) public {}
 
-    /// @notice Claimer can claim victory if challenger has lost the deadline
-    /// for some of the steps in the protocol.
-    function claimVictoryByTime(uint256 _index) public
-        onlyInstantiated(_index)
-        onlyBy(instance[_index].claimer)
-        onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
-    {
-        require(instance[_index].currentState == state.WaitMemoryProveValues, "State should be WaitMemoryProveValues");
-        claimerWins(_index);
-    }
+    function claimVictoryByTime(uint256 _index) public {}
 
     // state getters
 
@@ -310,17 +242,6 @@ contract VGMock is Decorated, VGInterface {
         }
         require(false, "Unrecognized state");
     }
-
-    // remove these functions and change tests accordingly
-    /* function stateIsWaitPartition(uint256 _index) public view */
-    /*   onlyInstantiated(_index) */
-    /*   returns (bool) */
-    /* { return instance[_index].currentState == state.WaitPartition; } */
-
-    /* function stateIsWaitMemoryProveValues(uint256 _index) public view */
-    /*   onlyInstantiated(_index) */
-    /*   returns (bool) */
-    /* { return instance[_index].currentState == state.WaitMemoryProveValues; } */
 
     function stateIsFinishedClaimerWon(uint256 _index) public view
         onlyInstantiated(_index)
