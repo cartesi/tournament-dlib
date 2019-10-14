@@ -82,9 +82,8 @@ impl DApp<()> for RevealMock {
         trace!("Context for match (index {}) {:?}", instance.index, ctx);
 
         match ctx.current_state.as_ref() {
-            // these states should not occur as they indicate an innactive instance,
-            // but it is possible that the blockchain state changed between queries
-            "CommitPhase" 
+            // TO-DO: RevealMock should never be in these states. Add warning.
+            "CommitPhase"
             | "RevealPhase" => {
                 return Ok(Reaction::Idle);
             }
