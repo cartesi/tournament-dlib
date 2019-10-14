@@ -1,0 +1,25 @@
+[package]
+description = "Cartesi Verification Game"
+homepage = "https://cartesi.io"
+name = "compute"
+version = "0.1.0"
+authors = ["Cartesi Team"]
+
+[dependencies]
+log = "0.4"
+env_logger = "0.6.0"
+error = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+transaction = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+configuration = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+utils = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+ethereum-types = "0.4"
+ethabi = "6.1.0"
+serde_json = "1.0"
+serde = "1.0.0"
+serde_derive = "1.0.0"
+
+state = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+dispatcher = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+emulator = { git = "ssh://git@github.com/cartesi/dispatcher", tag = "v0.1.0-rc.1"}
+
+

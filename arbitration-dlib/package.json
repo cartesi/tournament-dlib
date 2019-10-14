@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "bignumber.js": "^6.0.0",
+    "chai": "^4.2.0",
+    "ganache-cli": "^6.2.5",
+    "js-yaml": "^3.13.1",
+    "truffle": "^5.0.12",
+    "web3": "^1.0.0-beta.36"
+  },
+  "devDependencies": {
+    "solidity-coverage": "^0.5.11"
+  }
+}
