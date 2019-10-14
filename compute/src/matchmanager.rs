@@ -1,5 +1,5 @@
 use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, AddressArray3, U256Array9};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -30,7 +30,7 @@ pub struct MatchManagerCtxParsed(
                     // revealInstance
                     // lastMatchEpoch
 
-    addressArray3,  // unmatchedplayer
+    AddressArray3,  // unmatchedplayer
                     // machine
                     // revealaddress
 
