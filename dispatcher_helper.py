@@ -62,8 +62,7 @@ def run():
                 stdin_open=True,
                 name="tournament-test-{}".format(idx),
                 volumes=volumes,
-                ports={"3001/tcp": ("127.0.0.1", 3001)}
-                )
+                ports={"{}/tcp".format(60051+idx): ("127.0.0.1", 60051+idx)})
             cartesi_network.connect(container, ipv4_address="172.18.0.{}".format(24 + idx))
             print(bash_cmd)
             container.exec_run(cmd=bash_cmd,
