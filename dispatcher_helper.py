@@ -36,10 +36,13 @@ def run():
         cartesi_network = networks[0]
     else:
         ipam_pool = docker.types.IPAMPool(
-            subnet='172.18.0.0/16',
-            gateway='172.18.0.1'
+            subnet='172.19.0.0/16',
+            gateway='172.19.0.1'
         )
-        cartesi_network = client.networks.create(name="cartesi-network", driver="bridge", ipam=ipam_pool)
+        ipam_config = docker.types.IPAMConfig(
+            pool_configs=[ipam_pool]
+        )
+        cartesi_network = client.networks.create(name="cartesi-network", driver="bridge", ipam=ipam_config)
     volumes={"{}/transferred_files".format(cwd):{"bind":"/opt/cartesi/transferred_files", "mode":"rw"}}
 
     with open(BASE_CONFIG_FILE, 'r') as base_file:
@@ -53,22 +56,18 @@ def run():
                 break
             # start dispatcher
             print("starting dispatcher...")
-            bash_cmd = '"bash -c export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace && export CARTESI_CONCERN_KEY={} && mkdir -p /opt/cartesi/working_path && cat /opt/cartesi/dispatcher_config_{}.yaml && cargo run -- --config_path /opt/cartesi/dispatcher_config_{}.yaml --working_path /opt/cartesi/working_path"'.format(account["key"], idx, idx)
+            bash_cmd = 'bash -c "export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace && export CARTESI_CONCERN_KEY={} && mkdir -p /opt/cartesi/working_path && cat /opt/cartesi/dispatcher_config_{}.yaml && cargo run -- --config_path /opt/cartesi/dispatcher_config_{}.yaml --working_path /opt/cartesi/working_path"'.format(account["key"], idx, idx)
             container = client.containers.create("cartesi/image-tournament-test",
                 #detach=True
-                #auto_remove=True,
-                command="/bin/bash",
+                # auto_remove=True,
+                command=bash_cmd,
                 tty=True,
                 stdin_open=True,
                 name="tournament-test-{}".format(idx),
                 volumes=volumes,
                 ports={"{}/tcp".format(60051+idx): ("127.0.0.1", 60051+idx)})
-            cartesi_network.connect(container, ipv4_address="172.18.0.{}".format(24 + idx))
-            print(bash_cmd)
-            container.exec_run(cmd=bash_cmd,
-                stdout=True,
-                stderr=True,
-                stream=True)
+            cartesi_network.connect(container, ipv4_address="172.19.0.{}".format(24 + idx))
+            container.start()
 
     print("done!")
 
