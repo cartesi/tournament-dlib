@@ -29,6 +29,7 @@ contract DAppMock is Decorated, Instantiator{
         uint256[] memory _scores,
         bytes32[] memory _finalHashes
     ) public {
+        require(_playerAddresses.length == _scores.length && _scores.length == _finalHashes.length, "Arrays should have the same length");
         instantiate(_rmAddress, _playerAddresses, _scores, _finalHashes);
     }
 
