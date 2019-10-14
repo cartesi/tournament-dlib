@@ -1,4 +1,5 @@
 dispatcher_base:
+  number_of_dispatchers: 10
   url: 'http://172.18.0.22:8545'
   testing: true
   max_delay: 500
