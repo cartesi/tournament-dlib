@@ -25,15 +25,11 @@ WALLETS_FILE = "wallets.yaml"
 WALLETS_FILE_PATH = BLOCKCHAIN_DIR + WALLETS_FILE
 BASE_CONFIG_FILE = "cartesi_dapp_config.yaml"
 
-def run():
+def get_cartesi_network(docker_client):
 
-    cwd = os.getcwd()
-    client = docker.from_env()
-    number_of_dispatchers = 0
-    
-    networks=client.networks.list(names=["cartesi-network"])
+    networks=docker_client.networks.list(names=["cartesi-network"])
     if len(networks) > 0:
-        cartesi_network = networks[0]
+        return networks[0]
     else:
         ipam_pool = docker.types.IPAMPool(
             subnet='172.19.0.0/16',
@@ -42,7 +38,34 @@ def run():
         ipam_config = docker.types.IPAMConfig(
             pool_configs=[ipam_pool]
         )
-        cartesi_network = client.networks.create(name="cartesi-network", driver="bridge", ipam=ipam_config)
+        return client.networks.create(name="cartesi-network", driver="bridge", ipam=ipam_config)
+
+def run_blockchain():
+
+    cwd = os.getcwd()
+    client = docker.from_env()
+
+    cartesi_network = get_cartesi_network(client)
+
+    print("starting blockchain...")
+    container = client.containers.create("cartesi/image-tournament-blockchain-base",
+        #detach=True
+        auto_remove=True,
+        tty=True,
+        name="tournament-blockchain-base",
+        ports={"8545/tcp": ("0.0.0.0", 8545)})
+    cartesi_network.connect(container, ipv4_address="172.19.0.22")
+    container.start()
+
+    print("done!")
+
+def run_dispatcher():
+
+    cwd = os.getcwd()
+    client = docker.from_env()
+    number_of_dispatchers = 0
+    
+    cartesi_network = get_cartesi_network(client)
     volumes={"{}/transferred_files".format(cwd):{"bind":"/opt/cartesi/transferred_files", "mode":"rw"}}
 
     with open(BASE_CONFIG_FILE, 'r') as base_file:
@@ -62,7 +85,6 @@ def run():
                 auto_remove=True,
                 command=bash_cmd,
                 tty=True,
-                stdin_open=True,
                 name="tournament-test-{}".format(idx),
                 volumes=volumes,
                 ports={"{}/tcp".format(60051+idx): ("127.0.0.1", 60051+idx)})
@@ -71,4 +93,5 @@ def run():
 
     print("done!")
 
-run()
+run_blockchain()
+run_dispatcher()
