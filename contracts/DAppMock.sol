@@ -60,6 +60,8 @@ contract DAppMock is Decorated, Instantiator{
         rm.addFakePlayers(instance[currentIndex].revealIndex, _playerAddresses, _scores, _finalHashes);
 
         instance[currentIndex].currentState = state.DAppRunning;
+        active[currentIndex] = true;
+
         return currentIndex++;
     }
 
@@ -81,8 +83,8 @@ contract DAppMock is Decorated, Instantiator{
         return instance[_index].playersConcern[_user];
     }
 
-    function getState(uint256 _index, address _user) public view returns (uint256) {
-        return instance[_index].revealIndex;
+    function getState(uint256 _index, address _user) public view returns (uint256, bytes32) {
+        return (instance[_index].revealIndex, getCurrentState(_index, _user));
     }
 
     function getCurrentState(uint256 _index, address) public view
