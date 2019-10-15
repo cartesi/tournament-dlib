@@ -71,6 +71,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         currentInstance.lastEpochStartTime = now;
 
         currentInstance.currentState = state.WaitingSignUps;
+        active[currentIndex] = true;
 
         return currentIndex++;
     }

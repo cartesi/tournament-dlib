@@ -94,7 +94,7 @@ contract RevealMock is Decorated, RevealInterface {
             currentIndex,
             instance[currentIndex].machineAddress);
 
-
+        active[currentIndex] = true;
         return currentIndex++;
     }
 
