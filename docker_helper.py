@@ -38,7 +38,7 @@ def get_cartesi_network(docker_client):
         ipam_config = docker.types.IPAMConfig(
             pool_configs=[ipam_pool]
         )
-        return client.networks.create(name="cartesi-network", driver="bridge", ipam=ipam_config)
+        return docker_client.networks.create(name="cartesi-network", driver="bridge", ipam=ipam_config)
 
 def run_blockchain():
 
