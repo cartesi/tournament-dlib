@@ -136,7 +136,7 @@ contract RevealMock is Decorated, RevealInterface {
 
     function playerExist(uint256 _index, address _playerAddr) public returns (bool) {
         //cheap way to check if player has been registered
-        return !(instance[_index].players[_playerAddr].playerAddr == address(0));
+        return true; //!(instance[_index].players[_playerAddr].playerAddr == address(0));
     }
 
     function removePlayer(uint256 _index, address _playerAddr) public {
@@ -166,27 +166,28 @@ contract RevealMock is Decorated, RevealInterface {
     }
 
     function getState(uint256 _index, address _user) public view returns
-        (   uint256 _commitDuration,
-            uint256 _revealDuration,
-            uint256 _matchManagerEpochDuration,
-            uint256 _matchManagerMatchDuration,
-            uint256 _finalTime,
+        (
+            uint[5] memory _uintValues,
             bytes32 _initialHash,
             address _machineAddress,
-            state currentState
+            bytes32 currentState
         ) {
 
-            RevealCtx memory i = instance[_index];
-         return (
-             i.commitDuration,
-             i.revealDuration,
-             i.matchManagerEpochDuration,
-             i.matchManagerMatchDuration,
-             i.finalTime,
-             i.initialHash,
-             i.machineAddress,
+        RevealCtx memory i = instance[_index];
 
-             i.currentState
+        uint[5] memory uintValues = [
+            i.commitDuration,
+            i.revealDuration,
+            i.matchManagerEpochDuration,
+            i.matchManagerMatchDuration,
+            i.finalTime
+        ];
+
+        return (
+            uintValues,
+            i.initialHash,
+            i.machineAddress,
+            getCurrentState(_index, _user)
         );
     }
 

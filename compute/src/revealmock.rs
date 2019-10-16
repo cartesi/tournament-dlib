@@ -1,5 +1,5 @@
 use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array5};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -19,14 +19,14 @@ pub struct RevealMock();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
 pub struct RevealMockCtxParsed(
-    U256Field,     // commitDuration;
-    U256Field,     // revealDuration;
-    U256Field,     // matchManagerEpochDuration;
-    U256Field,     // matchManagerMatchDuration;
-    U256Field,     // finalTime;
-    Bytes32Field,  // initialHash;
-    AddressField,  // machineAddress;
-    String32Field, // currentState
+    pub U256Array5,     // commitDuration;
+                       // revealDuration;
+                       // matchManagerEpochDuration;
+                       // matchManagerMatchDuration;
+                       // finalTime;
+    pub Bytes32Field,  // initialHash;
+    pub AddressField,  // machineAddress;
+    pub String32Field, // currentState
 );
 
 #[derive(Debug)]
@@ -44,14 +44,14 @@ pub struct RevealMockCtx {
 impl From<RevealMockCtxParsed> for RevealMockCtx {
     fn from(parsed: RevealMockCtxParsed) -> RevealMockCtx {
         RevealMockCtx {
-            commit_duration: parsed.0.value,
-            reveal_duration: parsed.1.value,
-            match_manager_epoch_duration: parsed.2.value,
-            match_manager_match_duration: parsed.3.value,
-            final_time: parsed.4.value,
-            initial_hash: parsed.5.value,
-            machine_address: parsed.6.value,
-            current_state: parsed.7.value,
+            commit_duration: parsed.0.value[0],
+            reveal_duration: parsed.0.value[1],
+            match_manager_epoch_duration: parsed.0.value[2],
+            match_manager_match_duration: parsed.0.value[3],
+            final_time: parsed.0.value[4],
+            initial_hash: parsed.1.value,
+            machine_address: parsed.2.value,
+            current_state: parsed.3.value,
         }
     }
 }
