@@ -1,6 +1,6 @@
 dispatcher_base:
-  number_of_dispatchers: 10
-  url: 'http://172.19.0.22:8545'
+  number_of_dispatchers: 4
+  url: 'http://tournament-blockchain-base:8545'
   testing: true
   max_delay: 500
   warn_delay: 30
