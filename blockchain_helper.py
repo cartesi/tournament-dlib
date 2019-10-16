@@ -46,7 +46,7 @@ WALLETS_FILE_PATH = BLOCKCHAIN_DIR + WALLETS_FILE
 BASE_CONFIG_FILE = "cartesi_dapp_config.yaml"
 
 def get_args():
-    parser = argparse.ArgumentParser(description='Simple helper program to manager the blockchain service, including deploying contracts and starting ganache')
+    parser = argparse.ArgumentParser(description='Simple helper program to manage the blockchain service, including deploying contracts and starting ganache')
     parser.add_argument('--base_config_file', '-b', dest='base_config_file', help="Specify the name of the cartesi config file to use (Default: cartesi_dapp_config.yaml)")
     parser.add_argument('--deploy', '-d', dest='is_deploy', action='store_true', default=False, help="Deploy contracts to the blockchain (Default: False)")
     parser.add_argument('--run', '-r', dest='is_run', action='store_true', default=False, help="Run ganache (Default: False)")
