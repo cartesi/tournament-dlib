@@ -1,1 +1,1 @@
-DOCKER_BUILDKIT=1 docker build --ssh default -f DockerfileDev -t cartesi/image-tournament-test .
+docker build -f DockerfileTest -t cartesi/image-tournament-test .

@@ -1,11 +1,8 @@
-# syntax=docker/dockerfile:1.0.0-experimental
 FROM cartesi/image-tournament-blockchain-base:latest as blockchain-base
 
 FROM ubuntu:18.04
 
 MAINTAINER Stephen Chen <stephen@cartesi.io>
-
-ENV DEBIAN_FRONTEND=noninteractive
 
 ENV BASE /opt/cartesi
 
@@ -56,13 +53,23 @@ ENV PATH="/root/.cargo/bin:$PATH"
 COPY ./lib/ $BASE/lib
 RUN \
     rm -rf $BASE/protobuf
+
+RUN mkdir -p $BASE/compute
 COPY ./dispatcher/ $BASE/dispatcher
-COPY ./compute/ $BASE/compute
-COPY --from=blockchain-base $BASE/*.yaml $BASE
-COPY --from=blockchain-base $BASE/blockchain_files $BASE/blockchain_files
+
+WORKDIR $BASE/compute
+RUN cargo install cargo-build-deps
+
+# Compile dependencies
+COPY ./compute/Cargo.toml ./
+COPY ./compute/Cargo.lock ./
+RUN cargo build-deps
 
 # Compile tournament test
-WORKDIR $BASE/compute
-RUN --mount=type=ssh cargo build
+COPY ./compute/src ./src
+RUN cargo build
+
+COPY --from=blockchain-base $BASE/*.yaml $BASE/
+COPY --from=blockchain-base $BASE/blockchain_files $BASE/blockchain_files
 
 USER root
