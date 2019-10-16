@@ -54,16 +54,17 @@ COPY ./lib/ $BASE/lib
 RUN \
     rm -rf $BASE/protobuf
 
-RUN mkdir -p $BASE/compute
+RUN mkdir -p $BASE/compute/src
 COPY ./dispatcher/ $BASE/dispatcher
 
 WORKDIR $BASE/compute
-RUN cargo install cargo-build-deps
+# RUN cargo install cargo-build-deps
 
 # Compile dependencies
 COPY ./compute/Cargo.toml ./
 COPY ./compute/Cargo.lock ./
-RUN cargo build-deps
+RUN echo "fn main() { }" > ./src/main.rs
+RUN cargo build
 
 # Compile tournament test
 COPY ./compute/src ./src

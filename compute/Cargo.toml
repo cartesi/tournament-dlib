@@ -1,9 +1,13 @@
 [package]
-description = "Cartesi Verification Game"
+description = "Cartesi Tournament"
 homepage = "https://cartesi.io"
 name = "compute"
 version = "0.1.0"
 authors = ["Cartesi Team"]
+
+[[bin]]
+name = "test"
+path = "src/main.rs"
 
 [dependencies]
 log = "0.4"
