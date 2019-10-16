@@ -13,7 +13,6 @@ contract RevealMock is Decorated, RevealInterface {
     struct RevealCtx {
         uint256 commitDuration;
         uint256 revealDuration;
-        uint256 creationTime;
         uint256 matchManagerIndex;
         uint256 matchManagerEpochDuration;
         uint256 matchManagerMatchDuration;
@@ -75,7 +74,6 @@ contract RevealMock is Decorated, RevealInterface {
         RevealCtx storage currentInstance = instance[currentIndex];
         currentInstance.commitDuration = _commitDuration;
         currentInstance.revealDuration = _revealDuration;
-        currentInstance.creationTime = now;
         currentInstance.matchManagerEpochDuration = _matchManagerEpochDuration;
         currentInstance.matchManagerMatchDuration = _matchManagerMatchDuration;
         currentInstance.finalTime = _finalTime;
