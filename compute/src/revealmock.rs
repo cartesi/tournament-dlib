@@ -21,8 +21,6 @@ pub struct RevealMock();
 pub struct RevealMockCtxParsed(
     U256Field,     // commitDuration;
     U256Field,     // revealDuration;
-    U256Field,     // creationTime;
-    U256Field,     // matchManagerIndex;
     U256Field,     // matchManagerEpochDuration;
     U256Field,     // matchManagerMatchDuration;
     U256Field,     // finalTime;
@@ -35,8 +33,6 @@ pub struct RevealMockCtxParsed(
 pub struct RevealMockCtx {
     pub commit_duration: U256,
     pub reveal_duration: U256,
-    pub creation_time: U256,
-    pub match_manager_index: U256,
     pub match_manager_epoch_duration: U256,
     pub match_manager_match_duration: U256,
     pub final_time: U256,
@@ -50,14 +46,12 @@ impl From<RevealMockCtxParsed> for RevealMockCtx {
         RevealMockCtx {
             commit_duration: parsed.0.value,
             reveal_duration: parsed.1.value,
-            creation_time: parsed.2.value,
-            match_manager_index: parsed.3.value,
-            match_manager_epoch_duration: parsed.4.value,
-            match_manager_match_duration: parsed.5.value,
-            final_time: parsed.6.value,
-            initial_hash: parsed.7.value,
-            machine_address: parsed.8.value,
-            current_state: parsed.9.value,
+            match_manager_epoch_duration: parsed.2.value,
+            match_manager_match_duration: parsed.3.value,
+            final_time: parsed.4.value,
+            initial_hash: parsed.5.value,
+            machine_address: parsed.6.value,
+            current_state: parsed.7.value,
         }
     }
 }
@@ -74,12 +68,12 @@ impl DApp<()> for RevealMock {
         let parsed: RevealMockCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
                 format!(
-                    "Could not parse match instance json_data: {}",
+                    "Could not parse reveal instance json_data: {}",
                     &instance.json_data
                 )
             })?;
         let ctx: RevealMockCtx = parsed.into();
-        trace!("Context for match (index {}) {:?}", instance.index, ctx);
+        trace!("Context for revealmock (index {}) {:?}", instance.index, ctx);
 
         match ctx.current_state.as_ref() {
             // TO-DO: RevealMock should never be in these states. Add warning.
@@ -91,7 +85,7 @@ impl DApp<()> for RevealMock {
             "MatchManagerPhase" => {
                 let match_manager_instance = instance.sub_instances.get(0).ok_or(
                     Error::from(ErrorKind::InvalidContractState(format!(
-                        "There is no match instance {}",
+                        "There is no match manager instance {}",
                         ctx.current_state
                     ))),
                 )?;
