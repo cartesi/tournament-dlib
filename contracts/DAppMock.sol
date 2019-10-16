@@ -2,13 +2,13 @@
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
-import "./RevealMock.sol";
+import "./RevealInterface.sol";
 import ".//Decorated.sol";
 import ".//Instantiator.sol";
 
 contract DAppMock is Decorated, Instantiator{
 
-    RevealMock private rm;
+    RevealInterface private rm;
 
     enum state {
         DAppRunning,
@@ -40,14 +40,14 @@ contract DAppMock is Decorated, Instantiator{
         bytes32[] memory _finalHashes
     ) public returns (uint256) {
         // this also instantiate match manager
-        rm = RevealMock(_rmAddress);
+        rm = RevealInterface(_rmAddress);
         instance[currentIndex].revealIndex = rm.instantiate(
-            500, //commit duration
-            400, //reveal duration
-            5000, //epoch duration
-            200, //match duration
+            200, //commit duration
+            200, //reveal duration
+            300, //epoch duration
+            150, //match duration
             13000, // final time
-            bytes32("0x00"), //inital hash
+            bytes32("0xc7e2"), //inital hash
             address(0) //machine address
         );
 
