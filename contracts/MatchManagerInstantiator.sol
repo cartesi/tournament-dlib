@@ -70,7 +70,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         currentInstance.currentEpoch = 0;
         currentInstance.lastEpochStartTime = now;
 
-        currentInstance.currentState = state.WaitingSignUps;
+        currentInstance.currentState = state.WaitingMatches;
         active[currentIndex] = true;
 
         return currentIndex++;
@@ -80,26 +80,39 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     /// @param _index index of matchmanager that youre interacting with
 
     function playNextEpoch(uint256 _index) public {
+        require(instance[_index].currentState == state.WaitingMatches, "State has to be WaitingMatches");
         // Advance epoch if deadline has been met
         if (now > (instance[_index].lastEpochStartTime + ((1 + instance[_index].currentEpoch) * instance[_index].epochDuration))) {
             instance[_index].currentEpoch++;
             instance[_index].lastEpochStartTime = now;
         }
 
-        uint256 matchIndex = instance[_index].lastMatchIndex[msg.sender];
-        require (msg.sender != instance[_index].unmatchedPlayer, "Player is already registered to this epoch");
-        require (
+        // if it is first Epoch:
+        // check if player completed the Reveal phase
+        // check if player has already registered
+        if (instance[_index].currentEpoch == 0) {
+            RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
+            require(!instance[_index].registered[msg.sender], "Player cannot register twice");
+            require(reveal.playerExist(instance[_index].revealInstance, msg.sender), "Player must have completed reveal phase");
+
+            instance[_index].registered[msg.sender] = true;
+
+        } else {
+            uint256 matchIndex = instance[_index].lastMatchIndex[msg.sender];
+            require (msg.sender != instance[_index].unmatchedPlayer, "Player is waiting for a opponent");
+            require (
                 mi.getEpochNumber(matchIndex) + 1 == instance[_index].currentEpoch,
                 "Last match played by player has to be compatible with current currentEpoch"
-        );
+            );
 
-        // TO-DO: find a decent way to format this
-        // require player to have won last match
-        require (
-            (mi.stateIsFinishedChallengerWon(matchIndex) && mi.isChallenger(matchIndex, msg.sender)) ||
-            (mi.stateIsFinishedClaimerWon(matchIndex) && mi.isClaimer(matchIndex, msg.sender)),
-            "Player must have won last match played"
-         );
+            // TO-DO: find a decent way to format this
+            // require player to have won last match
+            require (
+                (mi.stateIsFinishedChallengerWon(matchIndex) && mi.isChallenger(matchIndex, msg.sender)) ||
+                (mi.stateIsFinishedClaimerWon(matchIndex) && mi.isClaimer(matchIndex, msg.sender)),
+                "Player must have won last match played"
+             );
+        }
 
          if (instance[_index].unmatchedPlayer != address(0)) {
             // there is one unmatched player ready for a match
@@ -112,32 +125,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             instance[_index].unmatchedPlayer = msg.sender;
         }
 
-    }
-
-    /// @notice Register for the first Epoch
-    /// @param _index index of matchmanager that youre interacting with
-
-    function registerToFirstEpoch(uint256 _index) public {
-        require(instance[_index].currentEpoch == 0, "current round has to be zero");
-        require(instance[_index].currentState == state.WaitingSignUps, "State has to be Waiting SignUps");
-
-        RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
-        //cheap way to check if player has been registered
-        require(reveal.playerExist(instance[_index].revealInstance, msg.sender), "Player must have completed reveal phase");
-        require(!instance[_index].registered[msg.sender], "Player cannot register twice");
-
-        instance[_index].registered[msg.sender] = true;
-
-        if (instance[_index].unmatchedPlayer != address(0)) {
-            // there is one unmatched player ready for a match
-            createMatch(_index);
-
-            // clears unmatched player
-            instance[_index].unmatchedPlayer = address(0);
-
-        } else {
-            instance[_index].unmatchedPlayer = msg.sender;
-        }
     }
 
     /// @notice Creates a match with two players
@@ -208,10 +195,12 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         return true;
     }
 
+    // TO-DO: update msg.sender to _user
     function getState(uint256 _index, address _user) public view returns
         ( uint256[9] memory _uintValues,
           address[3] memory _addressValues,
           bytes32 initialHash,
+          bool registered,
           bytes32 currentState
         ) {
 
@@ -223,9 +212,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
                 i.finalTime,
                 i.lastEpochStartTime,
                 instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch - 1],
-                instance[_index].lastMatchIndex[_user],
+                instance[_index].lastMatchIndex[msg.sender],
                 i.revealInstance,
-                mi.getEpochNumber(instance[_index].lastMatchIndex[_user])
+                mi.getEpochNumber(instance[_index].lastMatchIndex[msg.sender])
 
             ];
 
@@ -239,10 +228,12 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
                 uintValues,
                 addressValues,
                 i.initialHash,
+                instance[_index].registered[msg.sender],
                 getCurrentState(_index)
             );
         }
 
+        // TO-DO: update this to use _user
         function getSubInstances(uint256 _index, address _user)
             public view returns (address[] memory _addresses,
                 uint256[] memory _indices)
@@ -250,7 +241,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             address[] memory a = new address[](1);
             uint256[] memory i = new uint256[](1);
             a[0] = address(mi);
-            i[0] = instance[_index].lastMatchIndex[_user];
+            i[0] = instance[_index].lastMatchIndex[msg.sender];
 
             return (a, i);
         }
@@ -259,9 +250,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             onlyInstantiated(_index)
             returns (bytes32)
         {
-            if (instance[_index].currentState == state.WaitingSignUps) {
-                return "WaitingSignUps";
-            }
             if (instance[_index].currentState == state.WaitingMatches) {
                 return "WaitingMatches";
             }
