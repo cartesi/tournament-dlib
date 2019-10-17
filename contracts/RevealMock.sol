@@ -114,10 +114,6 @@ contract RevealMock is Decorated, RevealInterface {
         emit logRevealed(_index, msg.sender, instance[_index].players[msg.sender].commit, block.number);
     }
 
-    function registerToFirstEpoch(uint256 _index) public {
-        mmi.registerToFirstEpoch(instance[_index].matchManagerIndex);
-    }
-
     function claimFinished(uint256 _index) public
         onlyInstantiated(_index)
     {
