@@ -17,9 +17,6 @@ import argparse
 import docker
 
 # cartesi files
-BLOCKCHAIN_DIR = "blockchain_files/"
-WALLETS_FILE = "wallets.yaml"
-WALLETS_FILE_PATH = BLOCKCHAIN_DIR + WALLETS_FILE
 BASE_CONFIG_FILE = "cartesi_dapp_config.yaml"
 
 IS_BUILD = False
@@ -95,26 +92,22 @@ def run_dispatcher():
         base = yaml.safe_load(base_file)
         number_of_dispatchers = base["dispatcher_base"]["number_of_dispatchers"]
 
-    with open(WALLETS_FILE_PATH, 'r') as wallets_file:
-        wallets = yaml.safe_load(wallets_file)
-        for idx, account in enumerate(wallets):
-            if idx >= number_of_dispatchers:
-                break
-            # start dispatcher
-            print("starting dispatcher {}...".format(idx))
-            dispatcher = client.containers.create("cartesi/image-tournament-test",
-                #detach=True
-                auto_remove=True,
-                tty=True,
-                name="tournament-test-{}".format(idx))
-            cartesi_network.connect(dispatcher)
+    for idx in range(number_of_dispatchers):
+        # start dispatcher
+        print("starting dispatcher {}...".format(idx))
+        dispatcher = client.containers.create("cartesi/image-tournament-test",
+            #detach=True
+            auto_remove=True,
+            tty=True,
+            name="tournament-test-{}".format(idx))
+        cartesi_network.connect(dispatcher)
 
-            key_bits, stat = blockchain_container.get_archive("/opt/cartesi/wallet_{}/cartesi_concern_key".format(idx))
-            config_bits, stat = blockchain_container.get_archive("/opt/cartesi/wallet_{}/dispatcher_config.yaml".format(idx))
-            dispatcher.put_archive("/opt/cartesi/wallet", key_bits)
-            dispatcher.put_archive("/opt/cartesi/wallet", config_bits)
+        key_bits, stat = blockchain_container.get_archive("/opt/cartesi/wallet_{}/cartesi_concern_key".format(idx))
+        config_bits, stat = blockchain_container.get_archive("/opt/cartesi/wallet_{}/dispatcher_config.yaml".format(idx))
+        dispatcher.put_archive("/opt/cartesi/wallet", key_bits)
+        dispatcher.put_archive("/opt/cartesi/wallet", config_bits)
 
-            dispatcher.start()
+        dispatcher.start()
 
     print("done!")
 
