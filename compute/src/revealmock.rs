@@ -90,32 +90,7 @@ impl DApp<()> for RevealMock {
                     ))),
                 )?;
 
-                let match_manager_parsed: MatchManagerCtxParsed =
-                    serde_json::from_str(&match_manager_instance.json_data)
-                        .chain_err(|| {
-                            format!(
-                                "Could not parse match manager instance json_data: {}",
-                                &match_manager_instance.json_data
-                            )
-                        })?;
-                let match_manager_ctx: MatchManagerCtx = match_manager_parsed.into();
-                let user_is_unmatched = match_manager_ctx.unmatched_player == instance.concern.user_address;
-
-                // Reveal is responsible for registering player to first epoch.
-                // this should probably change soon
-                if match_manager_ctx.last_match_epoch.as_u64() == 0 && !user_is_unmatched {
-                    // register to first epoch
-                    let request = TransactionRequest {
-                        concern: instance.concern.clone(),
-                        value: U256::from(0),
-                        function: "registerToFirstEpoch".into(),
-                        data: vec![Token::Uint(instance.index)],
-                        strategy: transaction::Strategy::Simplest,
-                    };
-                    return Ok(Reaction::Transaction(request));
-                }
-
-               // if last_match_epoch > zero, control goes to matchmanager
+               // if state is MatchManagerPhase, control goes to matchmanager
                 return MatchManager::react(
                     match_manager_instance,
                     archive,
