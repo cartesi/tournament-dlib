@@ -21,8 +21,6 @@ contract MatchManagerInterface is Instantiator {
         uint256 _revealInstance,
         address _machineAddress) public returns (uint256);
 
-    function registerToFirstEpoch(uint256 _index) public;
-
     function playNextEpoch(uint256 _index) public;
 
     function claimWin(uint256 _index) public returns (address);
@@ -35,6 +33,7 @@ contract MatchManagerInterface is Instantiator {
         ( uint256[9] memory _uintValues,
           address[3] memory _addressValues,
           bytes32 initialHash,
+          bool registered,
           bytes32 currentState
         ); 
 
