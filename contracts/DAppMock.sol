@@ -44,7 +44,7 @@ contract DAppMock is Decorated, Instantiator{
         instance[currentIndex].revealIndex = rm.instantiate(
             200, //commit duration
             200, //reveal duration
-            300, //epoch duration
+            1000, //epoch duration
             150, //match duration
             13000, // final time
             bytes32("0xc7e2"), //inital hash
