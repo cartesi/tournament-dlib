@@ -72,5 +72,15 @@ RUN cargo build
 
 COPY --from=blockchain-base $BASE/*.yaml $BASE/
 COPY --from=blockchain-base $BASE/blockchain_files $BASE/blockchain_files
+RUN mkdir -p $BASE/wallet
 
 USER root
+
+SHELL ["/bin/bash", "-c"]
+
+CMD \
+    export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace && \
+    source /opt/cartesi/wallet/cartesi_concern_key && \
+    mkdir -p /opt/cartesi/working_path && \
+    cat /opt/cartesi/wallet/dispatcher_config.yaml && \
+    cargo run -- --config_path /opt/cartesi/wallet/dispatcher_config.yaml --working_path /opt/cartesi/working_path

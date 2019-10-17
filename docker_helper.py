@@ -58,7 +58,7 @@ def get_cartesi_network(docker_client):
 
 def clean():
     client = docker.from_env()
-    containers = client.containers.list(filters={"name": "tournament"})
+    containers = client.containers.list(all=True, filters={"name": "tournament"})
     for container in containers:
         print("Removing {}...".format(container.name))
         container.remove(force=True)
@@ -89,7 +89,7 @@ def run_dispatcher():
     number_of_dispatchers = 0
     
     cartesi_network = get_cartesi_network(client)
-    volumes={"{}/transferred_files".format(cwd):{"bind":"/opt/cartesi/transferred_files", "mode":"rw"}}
+    blockchain_container = client.containers.get("tournament-blockchain-base")
 
     with open(BASE_CONFIG_FILE, 'r') as base_file:
         base = yaml.safe_load(base_file)
@@ -102,16 +102,19 @@ def run_dispatcher():
                 break
             # start dispatcher
             print("starting dispatcher {}...".format(idx))
-            bash_cmd = 'bash -c "export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace && export CARTESI_CONCERN_KEY={} && mkdir -p /opt/cartesi/working_path && cat /opt/cartesi/dispatcher_config_{}.yaml && cargo run -- --config_path /opt/cartesi/dispatcher_config_{}.yaml --working_path /opt/cartesi/working_path"'.format(account["key"], idx, idx)
-            container = client.containers.create("cartesi/image-tournament-test",
+            dispatcher = client.containers.create("cartesi/image-tournament-test",
                 #detach=True
                 auto_remove=True,
-                command=bash_cmd,
                 tty=True,
-                name="tournament-test-{}".format(idx),
-                volumes=volumes)
-            cartesi_network.connect(container)
-            container.start()
+                name="tournament-test-{}".format(idx))
+            cartesi_network.connect(dispatcher)
+
+            key_bits, stat = blockchain_container.get_archive("/opt/cartesi/wallet_{}/cartesi_concern_key".format(idx))
+            config_bits, stat = blockchain_container.get_archive("/opt/cartesi/wallet_{}/dispatcher_config.yaml".format(idx))
+            dispatcher.put_archive("/opt/cartesi/wallet", key_bits)
+            dispatcher.put_archive("/opt/cartesi/wallet", config_bits)
+
+            dispatcher.start()
 
     print("done!")
 
