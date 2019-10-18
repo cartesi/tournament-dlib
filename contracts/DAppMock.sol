@@ -30,9 +30,12 @@ contract DAppMock is Decorated, Instantiator{
         bytes32[] memory _finalHashes
     ) public {
         require(_playerAddresses.length == _scores.length && _scores.length == _finalHashes.length, "Arrays should have the same length");
+        rm = RevealInterface(_rmAddress);
+
         instantiate(_rmAddress, _playerAddresses, _scores, _finalHashes);
     }
 
+    // TO-DO: remove _rmAddress from param list
     function instantiate(
         address _rmAddress,
         address[] memory _playerAddresses,
@@ -40,7 +43,6 @@ contract DAppMock is Decorated, Instantiator{
         bytes32[] memory _finalHashes
     ) public returns (uint256) {
         // this also instantiate match manager
-        rm = RevealInterface(_rmAddress);
         instance[currentIndex].revealIndex = rm.instantiate(
             200, //commit duration
             200, //reveal duration
