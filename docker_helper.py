@@ -64,9 +64,9 @@ def build():
     client = docker.from_env()
     cwd = os.getcwd()
 
-    client.images.build(path=cwd, dockerfile="Dockerfile", tag="cartesi/image-{}-blockchain-base".format(PROJECT))
+    client.images.build(path=cwd, rm=True, dockerfile="Dockerfile", tag="cartesi/image-{}-blockchain-base".format(PROJECT))
         
-    client.images.build(path=cwd, dockerfile="DockerfileTest", tag="cartesi/image-{}-test".format(PROJECT))
+    client.images.build(path=cwd, rm=True, dockerfile="DockerfileTest", tag="cartesi/image-{}-test".format(PROJECT))
 
 
 def run_blockchain():
