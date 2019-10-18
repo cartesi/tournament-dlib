@@ -61,14 +61,12 @@ def clean():
         container.remove(force=True)
 
 def build():
-    cwd = os.getcwd()
     client = docker.from_env()
+    cwd = os.getcwd()
 
-    with open("Dockerfile", 'r') as f:
-        client.images.build(fileobj=f, name="cartesi/image-{}-blockchain-base".format(PROJECT))
+    client.images.build(path=cwd, dockerfile="Dockerfile", tag="cartesi/image-{}-blockchain-base".format(PROJECT))
         
-    with open("DockerfileTest", 'r') as f:
-        client.images.build(fileobj=f, name="cartesi/image-{}-test".format(PROJECT))
+    client.images.build(path=cwd, dockerfile="DockerfileTest", tag="cartesi/image-{}-test".format(PROJECT))
 
 
 def run_blockchain():
