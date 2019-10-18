@@ -16,8 +16,9 @@ import glob
 import argparse
 import docker
 
-# cartesi files
+# cartesi configs
 BASE_CONFIG_FILE = "cartesi_dapp_config.yaml"
+PROJECT = "tournament"
 
 IS_BUILD = False
 IS_CLEAN = False
@@ -46,7 +47,6 @@ def get_args():
         IS_RUN = True
 
 def get_cartesi_network(docker_client):
-
     networks=docker_client.networks.list(names=["cartesi-network"])
     if len(networks) > 0:
         return networks[0]
@@ -55,38 +55,43 @@ def get_cartesi_network(docker_client):
 
 def clean():
     client = docker.from_env()
-    containers = client.containers.list(all=True, filters={"name": "tournament"})
+    containers = client.containers.list(all=True, filters={"name": PROJECT})
     for container in containers:
         print("Removing {}...".format(container.name))
         container.remove(force=True)
 
-
-def run_blockchain():
-
+def build():
     cwd = os.getcwd()
     client = docker.from_env()
 
+    with open("Dockerfile", 'r') as f:
+        client.images.build(fileobj=f, name="cartesi/image-{}-blockchain-base".format(PROJECT))
+        
+    with open("DockerfileTest", 'r') as f:
+        client.images.build(fileobj=f, name="cartesi/image-{}-test".format(PROJECT))
+
+
+def run_blockchain():
+    client = docker.from_env()
     cartesi_network = get_cartesi_network(client)
 
     print("starting blockchain...")
-    container = client.containers.create("cartesi/image-tournament-blockchain-base",
+    container = client.containers.create("cartesi/image-{}-blockchain-base".format(PROJECT),
         #detach=True
         auto_remove=True,
         tty=True,
-        name="tournament-blockchain-base")
+        name="{}-blockchain-base".format(PROJECT))
     cartesi_network.connect(container)
     container.start()
 
     print("done!")
 
 def run_dispatcher():
-
-    cwd = os.getcwd()
     client = docker.from_env()
     number_of_dispatchers = 0
     
     cartesi_network = get_cartesi_network(client)
-    blockchain_container = client.containers.get("tournament-blockchain-base")
+    blockchain_container = client.containers.get("{}-blockchain-base".format(PROJECT))
 
     with open(BASE_CONFIG_FILE, 'r') as base_file:
         base = yaml.safe_load(base_file)
@@ -95,13 +100,14 @@ def run_dispatcher():
     for idx in range(number_of_dispatchers):
         # start dispatcher
         print("starting dispatcher {}...".format(idx))
-        dispatcher = client.containers.create("cartesi/image-tournament-test",
+        dispatcher = client.containers.create("cartesi/image-{}-test".format(PROJECT),
             #detach=True
             auto_remove=True,
             tty=True,
-            name="tournament-test-{}".format(idx))
+            name="{}-test-{}".format(PROJECT, idx))
         cartesi_network.connect(dispatcher)
 
+        # copy config and keys from blockchain container to dispatcher container
         key_bits, stat = blockchain_container.get_archive("/opt/cartesi/wallet_{}/cartesi_concern_key".format(idx))
         config_bits, stat = blockchain_container.get_archive("/opt/cartesi/wallet_{}/dispatcher_config.yaml".format(idx))
         dispatcher.put_archive("/opt/cartesi/wallet", key_bits)
@@ -112,6 +118,9 @@ def run_dispatcher():
     print("done!")
 
 get_args()
+
+if IS_BUILD:
+    build()
 
 if IS_CLEAN:
     clean()
