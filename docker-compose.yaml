@@ -1,0 +1,28 @@
+version: '3'
+services:
+  ganache:
+    image: trufflesuite/ganache-cli
+    command: ["ganache-cli", "--accounts", "4", "--account_keys_path", "/ganache-data/keys"]
+    volumes:
+      - ganache-data:/ganache-data
+    ports: 
+      - 8545:8545
+    networks:
+      - ganache
+  key-distributor:
+    build: ./key-distributor
+    volumes:
+      - ganache-data:/keys
+      - dispatcher-0:/key-0
+      - dispatcher-1:/key-1
+      - dispatcher-2:/key-2
+      - dispatcher-3:/key-3
+volumes:
+  ganache-data:
+  dispatcher-0:
+  dispatcher-1:
+  dispatcher-2:
+  dispatcher-3:
+networks:
+  ganache:
+  dispatcher:
