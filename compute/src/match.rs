@@ -34,7 +34,7 @@ pub struct MatchCtxParsed(
     String32Field, // currentState
 );
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct MatchCtx {
     pub challenger: Address,
     pub claimer: Address,
@@ -270,6 +270,48 @@ impl DApp<()> for Match {
                 }
             },
         }
+    }
+    
+    fn get_pretty_instance(
+        instance: &state::Instance,
+        _: &(),
+    ) -> Result<state::Instance> {
+        
+        // get context (state) of the match instance
+        let parsed: MatchCtxParsed =
+            serde_json::from_str(&instance.json_data).chain_err(|| {
+                format!(
+                    "Could not parse match instance json_data: {}",
+                    &instance.json_data
+                )
+            })?;
+        let ctx: MatchCtx = parsed.into();
+        let json_data = serde_json::to_string(&ctx).unwrap();
+
+        // get context (state) of the sub instances
+
+        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+
+        for sub in &instance.sub_instances {
+            pretty_sub_instances.push(
+                Box::new(
+                    VG::get_pretty_instance(
+                        sub,
+                        &(),
+                    )
+                    .unwrap()
+                )
+            )
+        }
+
+        let pretty_instance = state::Instance {
+            concern: instance.concern.clone(),
+            index: instance.index,
+            json_data: json_data,
+            sub_instances: pretty_sub_instances,
+        };
+
+        return Ok(pretty_instance)
     }
 }
 

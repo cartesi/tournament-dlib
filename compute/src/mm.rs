@@ -50,7 +50,7 @@ pub struct MMCtxParsed(
     pub String32Field, // currentState
 );
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct MMCtx {
     pub provider: Address,
     pub client: Address,
@@ -214,5 +214,35 @@ impl DApp<U256> for MM {
         }
 
         return Ok(Reaction::Idle);
+    }
+    
+    fn get_pretty_instance(
+        instance: &state::Instance,
+        divergence_time: &U256,
+    ) -> Result<state::Instance> {
+        
+        // get context (state) of the match instance
+        let parsed: MMCtxParsed =
+            serde_json::from_str(&instance.json_data).chain_err(|| {
+                format!(
+                    "Could not parse match instance json_data: {}",
+                    &instance.json_data
+                )
+            })?;
+        let ctx: MMCtx = parsed.into();
+        let json_data = serde_json::to_string(&ctx).unwrap();
+
+        // get context (state) of the sub instances
+
+        let pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+
+        let pretty_instance = state::Instance {
+            concern: instance.concern.clone(),
+            index: instance.index,
+            json_data: json_data,
+            sub_instances: pretty_sub_instances,
+        };
+
+        return Ok(pretty_instance)
     }
 }
