@@ -117,6 +117,7 @@ impl DApp<()> for RevealMock {
     
     fn get_pretty_instance(
         instance: &state::Instance,
+        archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
         
@@ -140,6 +141,7 @@ impl DApp<()> for RevealMock {
                 Box::new(
                     MatchManager::get_pretty_instance(
                         sub,
+                        archive,
                         &(),
                     )
                     .unwrap()

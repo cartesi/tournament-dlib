@@ -262,6 +262,7 @@ impl DApp<()> for MatchManager {
     
     fn get_pretty_instance(
         instance: &state::Instance,
+        archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
         
@@ -285,6 +286,7 @@ impl DApp<()> for MatchManager {
                 Box::new(
                     Match::get_pretty_instance(
                         sub,
+                        archive,
                         &(),
                     )
                     .unwrap()

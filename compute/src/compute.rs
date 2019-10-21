@@ -362,6 +362,7 @@ impl DApp<()> for Compute {
     
     fn get_pretty_instance(
         instance: &state::Instance,
+        archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
         
@@ -385,6 +386,7 @@ impl DApp<()> for Compute {
                 Box::new(
                     VG::get_pretty_instance(
                         sub,
+                        archive,
                         &(),
                     )
                     .unwrap()

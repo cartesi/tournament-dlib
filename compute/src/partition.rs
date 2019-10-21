@@ -369,6 +369,7 @@ impl DApp<()> for Partition {
     
     fn get_pretty_instance(
         instance: &state::Instance,
+        archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
         

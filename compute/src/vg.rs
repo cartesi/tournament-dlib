@@ -350,6 +350,7 @@ impl DApp<()> for VG {
     
     fn get_pretty_instance(
         instance: &state::Instance,
+        archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
         
@@ -375,6 +376,7 @@ impl DApp<()> for VG {
                         Box::new(
                             Partition::get_pretty_instance(
                                 sub,
+                                archive,
                                 &(),
                             )
                             .unwrap()
@@ -388,6 +390,7 @@ impl DApp<()> for VG {
                         Box::new(
                             MM::get_pretty_instance(
                                 sub,
+                                archive,
                                 &ctx.divergence_time,
                             )
                             .unwrap()

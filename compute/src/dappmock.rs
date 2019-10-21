@@ -106,6 +106,7 @@ impl DApp<()> for DAppMock {
     
     fn get_pretty_instance(
         instance: &state::Instance,
+        archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
         
@@ -129,6 +130,7 @@ impl DApp<()> for DAppMock {
                 Box::new(
                     RevealMock::get_pretty_instance(
                         sub,
+                        archive,
                         &(),
                     )
                     .unwrap()

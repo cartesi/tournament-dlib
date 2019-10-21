@@ -218,6 +218,7 @@ impl DApp<U256> for MM {
     
     fn get_pretty_instance(
         instance: &state::Instance,
+        archive: &Archive,
         divergence_time: &U256,
     ) -> Result<state::Instance> {
         
