@@ -86,7 +86,7 @@ def run_blockchain():
     print("starting blockchain...")
     container = client.containers.create("cartesi/image-{}-blockchain-base".format(PROJECT),
         #detach=True
-        auto_remove=True,
+        #auto_remove=True,
         tty=True,
         name="{}-blockchain-base".format(PROJECT))
     cartesi_network.connect(container)
@@ -110,10 +110,10 @@ def run_dispatcher():
         print("starting dispatcher {}...".format(idx))
         dispatcher = client.containers.create("cartesi/image-{}-test".format(PROJECT),
             #detach=True
-            auto_remove=True,
+            #auto_remove=True,
             tty=True,
             name="{}-test-{}".format(PROJECT, idx),
-            ports={"{}/tcp".format(60051+idx): ("0.0.0.0", 3001)}))
+            ports={"{}/tcp".format(60051+idx): ("0.0.0.0", 3001)})
         cartesi_network.connect(dispatcher)
 
         # copy config and keys from blockchain container to dispatcher container
