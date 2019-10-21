@@ -88,6 +88,7 @@ CMD \
     dockerize --wait "tcp://tournament-blockchain-base:8545" && \
     export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace && \
     source /opt/cartesi/wallet/cartesi_concern_key && \
+    export DOCKER=TRUE && \
     mkdir -p /opt/cartesi/working_path && \
     cat /opt/cartesi/wallet/dispatcher_config.yaml && \
     cargo run -- --config_path /opt/cartesi/wallet/dispatcher_config.yaml --working_path /opt/cartesi/working_path
