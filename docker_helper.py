@@ -112,7 +112,8 @@ def run_dispatcher():
             #detach=True
             auto_remove=True,
             tty=True,
-            name="{}-test-{}".format(PROJECT, idx))
+            name="{}-test-{}".format(PROJECT, idx),
+            ports={"{}/tcp".format(60051+idx): ("0.0.0.0", 3001)}))
         cartesi_network.connect(dispatcher)
 
         # copy config and keys from blockchain container to dispatcher container
