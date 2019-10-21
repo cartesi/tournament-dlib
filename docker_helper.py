@@ -12,6 +12,7 @@
 import os
 import json
 import sys
+import time
 import yaml
 import glob
 import argparse
@@ -113,7 +114,7 @@ def run_dispatcher():
             #auto_remove=True,
             tty=True,
             name="{}-test-{}".format(PROJECT, idx),
-            ports={"{}/tcp".format(60051+idx): ("0.0.0.0", 3001)})
+            ports={"3001/tcp".format(60051+idx): ("127.0.0.1", 60051+idx)})
         cartesi_network.connect(dispatcher)
 
         # copy config and keys from blockchain container to dispatcher container
@@ -128,12 +129,13 @@ def run_dispatcher():
 
 get_args()
 
-if IS_BUILD:
-    build()
-
 if IS_CLEAN:
     clean()
 
+if IS_BUILD:
+    build()
+
 if IS_RUN:
     run_blockchain()
+    time.sleep(10)
     run_dispatcher()
