@@ -114,12 +114,12 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
              );
         }
 
-         if (instance[_index].unmatchedPlayer != address(0)) {
-            // there is one unmatched player ready for a match
-            createMatch(_index);
+        if (instance[_index].unmatchedPlayer != address(0)) {
+           // there is one unmatched player ready for a match
+           createMatch(_index);
 
-            // clears unmatched player
-            instance[_index].unmatchedPlayer = address(0);
+           // clears unmatched player
+           instance[_index].unmatchedPlayer = address(0);
 
         } else {
             instance[_index].unmatchedPlayer = msg.sender;
@@ -153,7 +153,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         uint256 newMatchIndex = mi.instantiate(
             challenger,
             claimer,
-            now,
+            i.currentEpoch,
             i.roundDuration,
             i.machineAddress,
             i.initialHash,
@@ -212,9 +212,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
                 i.finalTime,
                 i.lastEpochStartTime,
                 instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch - 1],
-                instance[_index].lastMatchIndex[msg.sender],
+                instance[_index].lastMatchIndex[_user],
                 i.revealInstance,
-                mi.getEpochNumber(instance[_index].lastMatchIndex[msg.sender])
+                mi.getEpochNumber(instance[_index].lastMatchIndex[_user])
 
             ];
 
@@ -228,7 +228,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
                 uintValues,
                 addressValues,
                 i.initialHash,
-                instance[_index].registered[msg.sender],
+                instance[_index].registered[_user],
                 getCurrentState(_index)
             );
         }
