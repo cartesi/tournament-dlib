@@ -368,16 +368,34 @@ impl DApp<()> for VG {
 
         let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
 
-        for sub in &instance.sub_instances {
-            pretty_sub_instances.push(
-                Box::new(
-                    Partition::get_pretty_instance(
-                        sub,
-                        &(),
+        match ctx.current_state.as_ref() {
+            "WaitPartition" => {
+                for sub in &instance.sub_instances {
+                    pretty_sub_instances.push(
+                        Box::new(
+                            Partition::get_pretty_instance(
+                                sub,
+                                &(),
+                            )
+                            .unwrap()
+                        )
                     )
-                    .unwrap()
-                )
-            )
+                }
+            },
+            "WaitMemoryProveValues" => {
+                for sub in &instance.sub_instances {
+                    pretty_sub_instances.push(
+                        Box::new(
+                            MM::get_pretty_instance(
+                                sub,
+                                &ctx.divergence_time,
+                            )
+                            .unwrap()
+                        )
+                    )
+                }
+            }
+            _ => {}
         }
 
         let pretty_instance = state::Instance {
