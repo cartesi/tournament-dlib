@@ -198,36 +198,39 @@ contract MatchInstantiator is MatchInterface, Decorated {
     }
 
     function getState(uint256 _index, address) public view returns
-    (   address _challenger,
-        address _claimer,
-        uint256 _epochNumber,
-        uint256 _roundDuration,
-        uint256 _timeOfLastMove,
-        address _machine,
+    (   address[3] memory _addressValues,
+        uint256[4] memory _uintValues,
         bytes32 _initialHash,
         bytes32 _finalHash,
-        uint256 _finalTime,
         bytes32 _currentState
-   ) {
+    )
+    {
 
         MatchCtx memory i = instance[_index];
 
-        return (
-            i.challenger,
-            i.claimer,
+        uint256[4] memory uintValues = [
             i.epochNumber,
             i.roundDuration,
             i.timeOfLastMove,
-            i.machine,
+            i.finalTime
+        ];
+
+        address[3] memory addressValues = [
+            i.challenger,
+            i.claimer,
+            i.machine
+        ];
+
+        return (
+            addressValues,
+            uintValues,
             i.initialHash,
             i.finalHash,
-            i.finalTime,
-            "WaitingClaim"
+            getCurrentState(_index)
         );
-
    }
 
-   function getCurrentState(uint256 _index, address) public view
+   function getCurrentState(uint256 _index) public view
         onlyInstantiated(_index)
         returns (bytes32)
     {

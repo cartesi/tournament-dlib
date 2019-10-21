@@ -34,15 +34,10 @@ contract MatchInterface is Instantiator {
     function isChallenger(uint256 _index, address addr) public view returns (bool);
     function isConcerned(uint256 _index, address _user) public view returns (bool);
     function getState(uint256 _index, address) public view returns
-    (   address challenger,
-        address claimer,
-        uint256 epochNumber,
-        uint256 roundDuration,
-        uint256 timeOfLastMove,
-        address machine,
+    (   address[3] memory _addressValues,
+        uint256[4] memory _uintValues,
         bytes32 initialHash,
         bytes32 finalHash,
-        uint256 finalTime,
         bytes32 currentState
    );
 
