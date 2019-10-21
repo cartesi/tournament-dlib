@@ -10,6 +10,7 @@
 # specific language governing permissions and limitations under the License.
 
 import os
+import json
 import sys
 import yaml
 import glob
@@ -61,12 +62,19 @@ def clean():
         container.remove(force=True)
 
 def build():
-    client = docker.from_env()
+    client = docker.APIClient(base_url='unix://var/run/docker.sock')
     cwd = os.getcwd()
 
-    client.images.build(path=cwd, rm=True, dockerfile="Dockerfile", tag="cartesi/image-{}-blockchain-base".format(PROJECT))
-        
-    client.images.build(path=cwd, rm=True, dockerfile="DockerfileTest", tag="cartesi/image-{}-test".format(PROJECT))
+    logs = client.build(path=cwd, rm=True, dockerfile="Dockerfile", tag="cartesi/image-{}-blockchain-base".format(PROJECT))
+    for log in logs:
+        output = json.loads(log)
+        if "stream" in output:
+            print(output["stream"].strip('\n'))
+    logs = client.build(path=cwd, rm=True, dockerfile="DockerfileTest", tag="cartesi/image-{}-test".format(PROJECT))
+    for log in logs:
+        output = json.loads(log)
+        if "stream" in output:
+            print(output["stream"].strip('\n'))
 
 
 def run_blockchain():
