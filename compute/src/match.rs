@@ -1,7 +1,7 @@
 
 use super::{build_machine_id, build_session_run_key};
 use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
+use super::dispatcher::{AddressField, AddressArray3, U256Array4, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -22,15 +22,15 @@ pub struct Match();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
 pub struct MatchCtxParsed(
-    AddressField,  // challenger
-    AddressField,  // claimer
-    U256Field,     // epochNumber
-    U256Field,     // roundDuration
-    U256Field,     // timeOfLastMove
-    AddressField,  // machine
+    AddressArray3, // challenger
+                   // claimer
+                   // machine
+    U256Array4,    // epochNumber
+                   // roundDuration
+                   // timeOfLastMove
+                   // finalTime
     Bytes32Field,  // initialHash
     Bytes32Field,  // claimedFinalHash
-    U256Field,     // finalTime
     String32Field, // currentState
 );
 
@@ -38,10 +38,10 @@ pub struct MatchCtxParsed(
 pub struct MatchCtx {
     pub challenger: Address,
     pub claimer: Address,
+    pub machine: Address,
     pub epoch_number: U256,
     pub round_duration: U256,
     pub time_of_last_move: U256,
-    pub machine: Address,
     pub initial_hash: H256,
     pub claimed_final_hash: H256,
     pub final_time: U256,
@@ -51,16 +51,16 @@ pub struct MatchCtx {
 impl From<MatchCtxParsed> for MatchCtx {
     fn from(parsed: MatchCtxParsed) -> MatchCtx {
         MatchCtx {
-            challenger: parsed.0.value,
-            claimer: parsed.1.value,
-            epoch_number: parsed.2.value,
-            round_duration: parsed.3.value,
-            time_of_last_move: parsed.4.value,
-            machine: parsed.5.value,
-            initial_hash: parsed.6.value,
-            claimed_final_hash: parsed.7.value,
-            final_time: parsed.8.value,
-            current_state: parsed.9.value,
+            challenger: parsed.0.value[0],
+            claimer: parsed.0.value[1],
+            machine: parsed.0.value[2],
+            epoch_number: parsed.1.value[0],
+            round_duration: parsed.1.value[1],
+            time_of_last_move: parsed.1.value[2],
+            final_time: parsed.1.value[3],
+            initial_hash: parsed.2.value,
+            claimed_final_hash: parsed.3.value,
+            current_state: parsed.4.value,
         }
     }
 }
