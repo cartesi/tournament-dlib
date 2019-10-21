@@ -1,0 +1,25 @@
+FROM rust:1.38
+
+ENV BASE /opt/cartesi
+
+RUN apt-get update && apt-get install --no-install-recommends -y cmake
+
+WORKDIR $BASE
+
+COPY ./lib/ $BASE/lib
+COPY ./dispatcher/ $BASE/dispatcher
+
+WORKDIR $BASE/compute
+
+# Compile dependencies
+COPY ./compute/Cargo.toml ./
+COPY ./compute/Cargo.lock ./
+RUN mkdir -p ./src && echo "fn main() { }" > ./src/main.rs
+RUN cargo build
+
+# Compile tournament test
+COPY ./compute/src ./src
+
+RUN cargo install --path .
+
+CMD ["dispatcher"]

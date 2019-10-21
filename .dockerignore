@@ -4,3 +4,6 @@ dispatcher/target
 test/*/
 .vscode
 build
+.git
+.venv
+.cargo

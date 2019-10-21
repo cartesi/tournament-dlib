@@ -9,7 +9,15 @@ services:
       - 8545:8545
     networks:
       - ganache
+  deployer:
+    depends_on: [ganache]
+    build:
+      context: .
+      dockerfile: ./deployer/Dockerfile
+    networks:
+      - ganache
   key-distributor:
+    depends_on: [ganache]
     build: ./key-distributor
     volumes:
       - ganache-data:/keys
