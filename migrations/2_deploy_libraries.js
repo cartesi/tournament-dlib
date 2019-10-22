@@ -16,7 +16,7 @@ module.exports = function(deployer, network, accounts) {
         var scores = [100];
         var finalHashes = ["0x01"];
 
-        for (var i = 1; i < 9; i++) {
+        for (var i = 1; i < accounts.length; i++) {
             playerAddresses.push(accounts[i]);
             scores.push(i * 20);
             finalHashes.push("0x00");
