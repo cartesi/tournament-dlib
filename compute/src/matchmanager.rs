@@ -128,6 +128,7 @@ impl DApp<()> for MatchManager {
                 // if epoch is over and user is unmatched, they need to either
                 // claim the win (if zero matches were played last epoch) or
                 // advance epoch
+                //  TO-DO: The epoch doesnt have to be over if there were zero matchets last epoch
                 if epoch_over && user_is_unmatched {
                     if zero_matches_last_epoch  {
                         let request = TransactionRequest {
@@ -211,6 +212,9 @@ impl DApp<()> for MatchManager {
                 match role {
                     Role::Claimer => match match_ctx.current_state.as_ref() {
                         "ClaimerWon" => {
+                            if !epoch_over {
+                                return Ok(Reaction::Idle);
+                            }
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
@@ -239,6 +243,10 @@ impl DApp<()> for MatchManager {
 
                     Role::Challenger => match match_ctx.current_state.as_ref() {
                         "ChallengerWon" => {
+                            if !epoch_over {
+                                return Ok(Reaction::Idle);
+                            }
+
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
