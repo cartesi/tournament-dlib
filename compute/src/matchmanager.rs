@@ -125,17 +125,32 @@ impl DApp<()> for MatchManager {
                 let zero_matches_last_epoch = ctx.number_of_matches_on_last_epoch.as_u64() == 0;
                 let user_is_unmatched = ctx.unmatched_player == instance.concern.user_address;
 
-                // if player won, claims victory
-                if epoch_over && zero_matches_last_epoch && user_is_unmatched {
+                // if epoch is over and user is unmatched, they need to either
+                // claim the win (if zero matches were played last epoch) or
+                // advance epoch
+                if epoch_over && user_is_unmatched {
+                    if zero_matches_last_epoch  {
+                        let request = TransactionRequest {
+                            concern: instance.concern.clone(),
+                            value: U256::from(0),
+                            function: "claimWin".into(),
+                            data: vec![Token::Uint(instance.index)],
+                            strategy: transaction::Strategy::Simplest,
+                        };
+
+                        return Ok(Reaction::Transaction(request));
+                    }
+
                     let request = TransactionRequest {
-                    concern: instance.concern.clone(),
-                    value: U256::from(0),
-                    function: "claimWin".into(),
-                    data: vec![Token::Uint(instance.index)],
-                    strategy: transaction::Strategy::Simplest,
+                        concern: instance.concern.clone(),
+                        value: U256::from(0),
+                        function: "advanceEpoch".into(),
+                        data: vec![Token::Uint(instance.index)],
+                        strategy: transaction::Strategy::Simplest,
                     };
 
                     return Ok(Reaction::Transaction(request));
+
                 }
 
                 // if player hasnt registered yet and epoch is zero, register:
@@ -235,7 +250,7 @@ impl DApp<()> for MatchManager {
 
                         }
 
-                        // you lost the previous game, so nothing else to do 
+                        // you lost the previous game, so nothing else to do
                         "ClaimerWon" => {
                             return Ok(Reaction::Idle);
                         }
@@ -259,13 +274,13 @@ impl DApp<()> for MatchManager {
             }
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
-        
+
         // get context (state) of the match instance
         let parsed: MatchManagerCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
