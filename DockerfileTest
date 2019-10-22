@@ -70,11 +70,15 @@ WORKDIR $BASE/compute
 COPY ./compute/Cargo.toml ./
 COPY ./compute/Cargo.lock ./
 RUN echo "fn main() { }" > ./src/main.rs
-RUN cargo build
+RUN \
+    NPROC=$(nproc) && \
+    cargo build -j`expr $NPROC - 1`
 
 # Compile tournament test
 COPY ./compute/src ./src
-RUN cargo build
+RUN \
+    NPROC=$(nproc) && \
+    cargo build -j`expr $NPROC - 1`
 
 COPY --from=blockchain-base $BASE/*.yaml $BASE/
 COPY --from=blockchain-base $BASE/blockchain_files $BASE/blockchain_files
