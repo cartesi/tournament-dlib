@@ -173,6 +173,10 @@ impl DApp<()> for Match {
                         instance.index,
                         &instance.concern.contract_address,
                     );
+
+                    // TO-DO: instead of building sessionRUn youre gonna run a newSession queryy with ?
+                    // if the code continues after ? it means that machine is initialized
+                    // then we can run build session run request and so on.
                     let sample_points: Vec<u64> =
                         vec![0, ctx.final_time.as_u64()];
                     let request = SessionRunRequest {
@@ -271,13 +275,13 @@ impl DApp<()> for Match {
             },
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
-        
+
         // get context (state) of the match instance
         let parsed: MatchCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
