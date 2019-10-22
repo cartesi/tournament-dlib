@@ -248,12 +248,23 @@ contract MatchInstantiator is MatchInterface, Decorated {
         }
     }
 
-   function getSubInstances(uint256, address)
+   function getSubInstances(uint256 _index, address)
         public view returns (address[] memory, uint256[] memory)
     {
-        address[] memory a = new address[](0);
-        uint256[] memory i = new uint256[](0);
+        address[] memory a;
+        uint256[] memory i;
+
+        if (instance[_index].currentState == state.ChallengeStarted) {
+            a = new address[](1);
+            i = new uint256[](1);
+            a[0] = address(vg);
+            i[0] = instance[_index].vgInstance;
+            return (a, i);
+        }
+        a = new address[](0);
+        i = new uint256[](0);
         return (a, i);
+
     }
 
     // TO-DO: Implement clear instance
