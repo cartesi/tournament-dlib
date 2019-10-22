@@ -76,9 +76,17 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         return currentIndex++;
     }
 
-    /// @notice Register for the next Epoch, only doable if you wont a match on last one
+    /// @notice Advances Epoch if the deadline has been met
     /// @param _index index of matchmanager that youre interacting with
+    function advanceEpoch(uint256 _index) public {
+        if (now > (instance[_index].lastEpochStartTime + ((1 + instance[_index].currentEpoch) * instance[_index].epochDuration))) {
+            instance[_index].currentEpoch++;
+            instance[_index].lastEpochStartTime = now;
+        }
+    }
 
+    /// @notice Register for the next Epoch, only doable if you won a match on last one
+    /// @param _index index of matchmanager that youre interacting with
     function playNextEpoch(uint256 _index) public {
         require(instance[_index].currentState == state.WaitingMatches, "State has to be WaitingMatches");
         // Advance epoch if deadline has been met
@@ -129,7 +137,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     /// @notice Creates a match with two players
     /// @param _index index of matchmanager that youre interacting with
-
     function createMatch(uint256 _index) private {
 
         MatchManagerCtx memory i = instance[_index];
