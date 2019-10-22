@@ -238,12 +238,21 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             public view returns (address[] memory _addresses,
                 uint256[] memory _indices)
         {
-            address[] memory a = new address[](1);
-            uint256[] memory i = new uint256[](1);
+            address[] memory a;
+            uint256[] memory i;
+
+            if (instance[_index].currentEpoch == 0 && (instance[_index].unmatchedPlayer == _user || !instance[_index].registered[_user])) {
+                a = new address[](0);
+                i = new uint256[](0);
+                return (a, i);
+
+            }
+            a = new address[](1);
+            i = new uint256[](1);
             a[0] = address(mi);
             i[0] = instance[_index].lastMatchIndex[msg.sender];
-
             return (a, i);
+
         }
 
         function getCurrentState(uint256 _index) public view
