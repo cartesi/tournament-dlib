@@ -4,44 +4,138 @@ services:
     image: trufflesuite/ganache-cli
     command: ["ganache-cli", "--accounts", "4", "--account_keys_path", "/ganache-data/keys"]
     volumes:
-      - ganache-data:/ganache-data
-    ports: 
-      - 8545:8545
+      - ganache_data:/ganache-data
+    expose:
+      - 8545
     networks:
       - ganache
+  
   deployer:
     depends_on: [ganache]
     build:
       context: .
       dockerfile: ./deployer/Dockerfile
     volumes:
-      - truffle-data:/usr/src/app/build
+      - truffle_data:/usr/src/app/build
     networks:
       - ganache
-  key-distributor:
+  
+  key_distributor:
     depends_on: [ganache]
     build: ./key-distributor
     volumes:
-      - ganache-data:/keys
-      - dispatcher-0:/key-0
-      - dispatcher-1:/key-1
-      - dispatcher-2:/key-2
-      - dispatcher-3:/key-3
-  app:
+      - ganache_data:/keys
+      - dispatcher_data_0:/key-0
+      - dispatcher_data_1:/key-1
+      - dispatcher_data_2:/key-2
+      - dispatcher_data_3:/key-3
+  
+  dispatcher_0:
     depends_on: [deployer]
     build: ./test
     volumes:
-      - truffle-data:/truffle-data
+      - truffle_data:/truffle-data
+      - dispatcher_data_0:/opt/cartesi/dispatcher/config
+    networks:
+      - ganache
+      - node_0
+
+  logger_0:
+    depends_on: [deployer]
+    image: busybox
+    volumes:
+      - truffle_data:/truffle-data
+      - logger_data_0:/opt/cartesi/logger/data
+    networks:
+      - ganache
+      - node_0
+
+  machine_manager_0:
+    depends_on: [deployer]
+    image: busybox
+    volumes:
+      - truffle_data:/truffle-data
+    networks:
+      - ganache
+      - node_0
+
+  anuto_server_0:
+    depends_on: [dispatcher_0]
+    image: nginx
+    ports:
+      - "8070:80"
+    networks:
+      - node_0
+
+  anuto_web_0:
+    depends_on: [anuto_server_0]
+    image: nginx
+    ports:
+      - "8090:80"
+    networks:
+      - node_0
+
+  
+  dispatcher_1:
+    depends_on: [deployer]
+    build: ./test
+    volumes:
+      - truffle_data:/truffle-data
+      - dispatcher_data_1:/opt/cartesi/dispatcher/config
+    networks:
+      - ganache
+      - node_1
+
+  logger_1:
+    depends_on: [deployer]
+    image: busybox
+    volumes:
+      - truffle_data:/truffle-data
+      - logger_data_1:/opt/cartesi/logger/data
+    networks:
+      - ganache
+      - node_1
+
+  machine_manager_1:
+    depends_on: [deployer]
+    image: busybox
+    volumes:
+      - truffle_data:/truffle-data
+    networks:
+      - ganache
+      - node_1
+
+  anuto_server_1:
+    depends_on: [dispatcher_1]
+    image: nginx
+    ports:
+      - "8071:80"
+    networks:
+      - node_1
+
+  anuto_web_1:
+    depends_on: [anuto_server_1]
+    image: nginx
+    ports:
+      - "8091:80"
+    networks:
+      - node_1
+
 volumes:
-  ganache-data:
-  truffle-data:
-  dispatcher-0:
-  dispatcher-1:
-  dispatcher-2:
-  dispatcher-3:
+  ganache_data:
+  truffle_data:
+  dispatcher_data_0:
+  dispatcher_data_1:
+  dispatcher_data_2:
+  dispatcher_data_3:
+  logger_data_0:
+  logger_data_1:
+  logger_data_2:
+  logger_data_3:
+
 networks:
   ganache:
-  dispatcher-0:
-  dispatcher-1:
-  dispatcher-2:
-  dispatcher-3:
+  node_0:
+  node_1:
+  node_2:
+  node_3:
