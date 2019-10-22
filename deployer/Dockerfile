@@ -12,15 +12,13 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 # https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md#global-npm-dependencies
 ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
 ENV PATH=$PATH:/home/node/.npm-global/bin
-
-RUN apk add --no-cache --virtual .gyp python make g++ \
-    && npm install truffle@5.0.35 \
-    && apk del .gyp
-#RUN npm install -g truffle
+RUN npm install truffle@5.0.35 -g
 
 ENV BASE /usr/src/app
 
+# must create base dir before switching to user node, so its owned by root
 WORKDIR $BASE
+
 COPY deployer/truffle-config.js $BASE/
 COPY ./contracts/ $BASE/contracts
 COPY ./migrations/ $BASE/migrations

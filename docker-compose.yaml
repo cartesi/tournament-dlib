@@ -14,6 +14,8 @@ services:
     build:
       context: .
       dockerfile: ./deployer/Dockerfile
+    volumes:
+      - truffle-data:/usr/src/app/build
     networks:
       - ganache
   key-distributor:
@@ -25,12 +27,21 @@ services:
       - dispatcher-1:/key-1
       - dispatcher-2:/key-2
       - dispatcher-3:/key-3
+  app:
+    depends_on: [deployer]
+    build: ./test
+    volumes:
+      - truffle-data:/truffle-data
 volumes:
   ganache-data:
+  truffle-data:
   dispatcher-0:
   dispatcher-1:
   dispatcher-2:
   dispatcher-3:
 networks:
   ganache:
-  dispatcher:
+  dispatcher-0:
+  dispatcher-1:
+  dispatcher-2:
+  dispatcher-3:
