@@ -56,4 +56,5 @@ RUN \
     ./make_dispatcher_configs.sh
 
 CMD \
+    export DOCKER=TRUE && \
     python3 blockchain_helper.py --run
