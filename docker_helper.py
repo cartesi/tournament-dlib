@@ -137,5 +137,4 @@ if IS_BUILD:
 
 if IS_RUN:
     run_blockchain()
-    time.sleep(10)
     run_dispatcher()
