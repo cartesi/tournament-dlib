@@ -12,7 +12,7 @@ RUN \
     apt-get update && \
     apt-get install --no-install-recommends -y \
         openssh-client \
-        unzip build-essential autoconf automake libtool git \
+        unzip build-essential autoconf automake libtool git wget \
         make curl g++ gcc libssl-dev pkg-config ca-certificates cmake && \
     mkdir -p $BASE
 
@@ -22,6 +22,12 @@ RUN mkdir -m 700 /root/.ssh
 # with an "unknown host key" error.
 RUN touch -m 600 /root/.ssh/known_hosts; \
   ssh-keyscan github.com > /root/.ssh/known_hosts
+
+# Install dockerize
+ENV DOCKERIZE_VERSION v0.6.1
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 # Install protobuf
 # ----------------------------------------------------
@@ -79,6 +85,7 @@ USER root
 SHELL ["/bin/bash", "-c"]
 
 CMD \
+    dockerize --wait "tcp://tournament-blockchain-base:8545" && \
     export RUST_LOG=dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace && \
     source /opt/cartesi/wallet/cartesi_concern_key && \
     mkdir -p /opt/cartesi/working_path && \
