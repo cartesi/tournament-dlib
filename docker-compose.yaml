@@ -60,10 +60,9 @@ services:
       - node_0
 
   anuto_server_0:
-    depends_on: [dispatcher_0]
-    image: nginx
+    image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:latest
     ports:
-      - "8070:80"
+      - "8070:8000"
     networks:
       - node_0
 
@@ -106,10 +105,9 @@ services:
       - node_1
 
   anuto_server_1:
-    depends_on: [dispatcher_1]
-    image: nginx
+    image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:latest
     ports:
-      - "8071:80"
+      - "8071:8000"
     networks:
       - node_1
 
