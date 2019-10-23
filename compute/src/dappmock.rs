@@ -62,6 +62,19 @@ impl DApp<()> for DAppMock {
                 return Ok(Reaction::Idle);
             }
 
+            "Idle" => {
+                println!("STATE is IDLE");
+                let request = TransactionRequest {
+                    concern: instance.concern.clone(),
+                    value: U256::from(0),
+                    function: "claimDAppRunning".into(),
+                    data: vec![Token::Uint(instance.index)],
+                    strategy: transaction::Strategy::Simplest,
+                };
+
+                return Ok(Reaction::Transaction(request));
+            }
+
             "DAppRunning" => {
                 // we inspect the reveal contract
                 let revealmock_instance = instance.sub_instances.get(0).ok_or(
