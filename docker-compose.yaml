@@ -60,7 +60,7 @@ services:
       - node_0
 
   anuto_server_0:
-    image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:latest
+    image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:develop-5ca28184
     ports:
       - "8070:8000"
     networks:
@@ -68,7 +68,7 @@ services:
 
   anuto_web_0:
     depends_on: [anuto_server_0]
-    image: docker.pkg.github.com/cartesi-corp/anuto/anuto-web:latest
+    image: docker.pkg.github.com/cartesi-corp/anuto/anuto-web:develop-cccc7418
     environment:
       REACT_APP_API_URL: http://127.0.0.1:8070/api
     ports:
@@ -107,7 +107,7 @@ services:
       - node_1
 
   anuto_server_1:
-    image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:latest
+    image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:develop-5ca28184
     ports:
       - "8071:8000"
     networks:
@@ -115,7 +115,7 @@ services:
 
   anuto_web_1:
     depends_on: [anuto_server_1]
-    image: docker.pkg.github.com/cartesi-corp/anuto/anuto-web:latest
+    image: docker.pkg.github.com/cartesi-corp/anuto/anuto-web:develop-cccc7418
     environment:
       REACT_APP_API_URL: http://127.0.0.1:8071/api
     ports:
