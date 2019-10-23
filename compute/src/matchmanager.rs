@@ -318,6 +318,7 @@ impl DApp<()> for MatchManager {
         }
 
         let pretty_instance = state::Instance {
+            name: "MatchManager".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
             json_data: json_data,

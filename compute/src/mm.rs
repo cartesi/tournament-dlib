@@ -238,6 +238,7 @@ impl DApp<U256> for MM {
         let pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
 
         let pretty_instance = state::Instance {
+            name: "MM".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
             json_data: json_data,

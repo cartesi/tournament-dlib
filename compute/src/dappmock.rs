@@ -152,6 +152,7 @@ impl DApp<()> for DAppMock {
         }
 
         let pretty_instance = state::Instance {
+            name: "DAppMock".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
             json_data: json_data,

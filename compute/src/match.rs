@@ -311,6 +311,7 @@ impl DApp<()> for Match {
         }
 
         let pretty_instance = state::Instance {
+            name: "Match".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
             json_data: json_data,

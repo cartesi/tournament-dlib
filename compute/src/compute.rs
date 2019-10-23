@@ -395,6 +395,7 @@ impl DApp<()> for Compute {
         }
 
         let pretty_instance = state::Instance {
+            name: "Compute".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
             json_data: json_data,
