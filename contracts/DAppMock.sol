@@ -119,11 +119,18 @@ contract DAppMock is Decorated, Instantiator{
         public view returns (address[] memory _addresses,
             uint256[] memory _indices)
     {
-        address[] memory a = new address[](1);
-        uint256[] memory i = new uint256[](1);
-        a[0] = address(rm);
-        i[0] = instance[_index].revealIndex;
+        address[] memory a;
+        uint256[] memory i;
 
+        if (instance[_index].currentState == state.DAppRunning) {
+            a = new address[](1);
+            i = new uint256[](1);
+            a[0] = address(rm);
+            i[0] = instance[_index].revealIndex;
+            return (a, i);
+        }
+        a = new address[](0);
+        i = new uint256[](0);
         return (a, i);
     }
 }
