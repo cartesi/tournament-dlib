@@ -11,14 +11,20 @@ contract DAppMock is Decorated, Instantiator{
     RevealInterface private rm;
 
     enum state {
+        Idle,
         DAppRunning,
         DAppFinished
     }
 
     struct DAppMockCtx {
         uint256 revealIndex;
-        state currentState;
         mapping(address => bool) playersConcern; //player address to isConcerned
+
+        address[] playerAddresses;
+        uint256[] scores;
+        bytes32[] finalHashes;
+
+        state currentState;
     }
 
     mapping(uint256 => DAppMockCtx) internal instance;
@@ -30,20 +36,31 @@ contract DAppMock is Decorated, Instantiator{
         bytes32[] memory _finalHashes
     ) public {
         require(_playerAddresses.length == _scores.length && _scores.length == _finalHashes.length, "Arrays should have the same length");
-        rm = RevealInterface(_rmAddress);
 
-        instantiate(_rmAddress, _playerAddresses, _scores, _finalHashes);
+        currentIndex = 0;
+
+        rm = RevealInterface(_rmAddress);
+        // add user to concern
+        for (uint256 i = 0; i < _playerAddresses.length; i++) {
+            instance[currentIndex].playersConcern[_playerAddresses[i]] = true;
+        }
+
+        instance[currentIndex].playerAddresses = _playerAddresses;
+        instance[currentIndex].scores = _scores;
+        instance[currentIndex].finalHashes = _finalHashes;
+        instance[currentIndex].currentState = state.Idle;
+
+        active[currentIndex] = true;
+
+        currentIndex++;
     }
 
-    // TO-DO: remove _rmAddress from param list
-    function instantiate(
-        address _rmAddress,
-        address[] memory _playerAddresses,
-        uint256[] memory _scores,
-        bytes32[] memory _finalHashes
-    ) public returns (uint256) {
+    function claimDAppRunning(uint256 _index) public {
+        require(instance[_index].currentState == state.Idle, "State has to be Idle");
+        instance[_index].currentState = state.DAppRunning;
+
         // this also instantiate match manager
-        instance[currentIndex].revealIndex = rm.instantiate(
+        instance[_index].revealIndex = rm.instantiate(
             200, //commit duration
             200, //reveal duration
             100, //epoch duration
@@ -53,18 +70,9 @@ contract DAppMock is Decorated, Instantiator{
             address(0) //machine address
         );
 
-        // add user to concern
-        for (uint256 i = 0; i < _playerAddresses.length; i++) {
-            instance[currentIndex].playersConcern[_playerAddresses[i]] = true;
-        }
-
         //// also have to add yourself
-        rm.addFakePlayers(instance[currentIndex].revealIndex, _playerAddresses, _scores, _finalHashes);
-
-        instance[currentIndex].currentState = state.DAppRunning;
-        active[currentIndex] = true;
-
-        return currentIndex++;
+        rm.addFakePlayers(instance[_index].revealIndex, instance[_index].playerAddresses, instance[_index].scores, instance[_index].finalHashes);
+        return;
     }
 
     function claimFinished(uint256 _index) public
@@ -93,6 +101,10 @@ contract DAppMock is Decorated, Instantiator{
         onlyInstantiated(_index)
         returns (bytes32)
     {
+        if (instance[_index].currentState == state.Idle) {
+            return "Idle";
+        }
+
         if (instance[_index].currentState == state.DAppRunning) {
             return "DAppRunning";
         }
