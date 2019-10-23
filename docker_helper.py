@@ -153,4 +153,5 @@ if IS_BUILD:
 
 if IS_RUN:
     run_blockchain()
+    run_machine_manager()
     run_dispatcher()
