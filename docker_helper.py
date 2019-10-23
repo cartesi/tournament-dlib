@@ -95,6 +95,22 @@ def run_blockchain():
 
     print("done!")
 
+
+def run_machine_manager():
+    client = docker.from_env()
+    cartesi_network = get_cartesi_network(client)
+
+    print("starting machine manager...")
+    container = client.containers.create("cartesi/image-mock-machine-manager",
+        #detach=True
+        #auto_remove=True,
+        tty=True,
+        name="tournament-mock-machine-manager")
+    cartesi_network.connect(container)
+    container.start()
+
+    print("done!")
+
 def run_dispatcher():
     client = docker.from_env()
     number_of_dispatchers = 0
