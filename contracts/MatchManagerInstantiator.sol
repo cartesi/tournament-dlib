@@ -24,7 +24,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         mapping(uint256 => uint256) numberOfMatchesOnEpoch; // epoch index to number of matches
         address unmatchedPlayer;
         mapping(address => uint256) lastMatchIndex; // player address to index of his last played match
-        mapping(address => bool) registered; // player address to true if he is registered
+        mapping(address => mapping(uint256 => bool)) registered; // player address to true if he is registered
         bytes32 initialHash;
         address machineAddress;
         address revealAddress;
@@ -100,10 +100,10 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         // check if player has already registered
         if (instance[_index].currentEpoch == 0) {
             RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
-            require(!instance[_index].registered[msg.sender], "Player cannot register twice");
+            require(!instance[_index].registered[msg.sender][instance[_index].currentEpoch], "Player cannot register twice");
             require(reveal.playerExist(instance[_index].revealInstance, msg.sender), "Player must have completed reveal phase");
 
-            instance[_index].registered[msg.sender] = true;
+            instance[_index].registered[msg.sender][instance[_index].currentEpoch] = true;
 
         } else {
             uint256 matchIndex = instance[_index].lastMatchIndex[msg.sender];
@@ -235,7 +235,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
                 uintValues,
                 addressValues,
                 i.initialHash,
-                instance[_index].registered[_user],
+                instance[_index].registered[_user][i.currentEpoch],
                 getCurrentState(_index)
             );
         }
@@ -248,7 +248,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             address[] memory a;
             uint256[] memory i;
 
-            if (instance[_index].currentEpoch == 0 && (instance[_index].unmatchedPlayer == _user || !instance[_index].registered[_user])) {
+            if (instance[_index].currentEpoch == 0 && (instance[_index].unmatchedPlayer == _user || !instance[_index].registered[_user][0])) {
                 a = new address[](0);
                 i = new uint256[](0);
                 return (a, i);
