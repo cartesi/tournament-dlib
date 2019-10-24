@@ -189,13 +189,6 @@ impl DApp<()> for MatchManager {
                         })?;
                 let match_ctx: MatchCtx = match_parsed.into();
 
-                //println!("CLAIMER ADDR IS {}", match_ctx.claimer);
-                //println!("CHALLENGER ADDR IS {}", match_ctx.challenger);
-
-                println!("EPOCH IS OVER {:?}", epoch_over);
-                println!("LAST MATCH EPOCH {:?}", ctx.last_match_epoch);
-                println!("CURRENT EPOCH {:?}", ctx.current_epoch);
-
                 let role = match instance.concern.user_address {
                     cl if (cl == match_ctx.claimer) => Role::Claimer,
                     ch if (ch == match_ctx.challenger) => Role::Challenger,
