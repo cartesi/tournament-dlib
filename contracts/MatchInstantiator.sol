@@ -14,6 +14,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         address challenger;
         address claimer;
         uint256 epochNumber;
+        uint256 matchDuration; // time interval to interact with this contract
         uint256 roundDuration; // time interval to interact with this contract
         uint256 timeOfLastMove;
         address machine; // machine which will run the challenge
@@ -31,6 +32,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         address _challenger,
         address _claimer,
         uint256 _epochNumber,
+        uint256 _matchDuration,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
@@ -61,6 +63,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         address _challenger,
         address _claimer,
         uint256 _epochNumber,
+        uint256 _matchDuration,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,
@@ -73,6 +76,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         currentInstance.challenger = _challenger;
         currentInstance.claimer = _claimer;
         currentInstance.epochNumber = _epochNumber;
+        currentInstance.matchDuration = _matchDuration;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.machine = _machineAddress;
         currentInstance.initialHash = _initialHash;
@@ -87,6 +91,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
             _challenger,
             _claimer,
             _epochNumber,
+            _matchDuration,
             _roundDuration,
             _machineAddress,
             _initialHash,
@@ -148,7 +153,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
     /// @param _index Current index.
     function claimVictoryByTime(uint256 _index) public
         onlyInstantiated(_index)
-        onlyAfter(instance[_index].timeOfLastMove + instance[_index].roundDuration)
+        onlyAfter(instance[_index].timeOfLastMove + instance[_index].matchDuration)
         increasesNonce(_index)
     {
         if ((msg.sender == instance[_index].claimer) && (instance[_index].currentState == state.WaitingChallenge)) {
@@ -210,7 +215,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
 
         uint256[4] memory uintValues = [
             i.epochNumber,
-            i.roundDuration,
+            i.matchDuration,
             i.timeOfLastMove,
             i.finalTime
         ];

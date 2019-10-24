@@ -65,6 +65,7 @@ contract DAppMock is Decorated, Instantiator{
             200, //reveal duration
             100, //epoch duration
             50, //match duration
+            25, //round duration
             13000, // final time
             bytes32("0xc7e2"), //inital hash
             address(0) //machine address

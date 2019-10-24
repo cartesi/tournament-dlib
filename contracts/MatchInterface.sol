@@ -17,6 +17,7 @@ contract MatchInterface is Instantiator {
         address _challenger,
         address _claimer,
         uint256 _epochNumber,
+        uint256 _matchDuration,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _initialHash,

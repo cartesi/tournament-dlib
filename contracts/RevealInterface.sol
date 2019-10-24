@@ -18,6 +18,7 @@ contract RevealInterface is Instantiator {
         uint256 _revealDuration,
         uint256 _matchManagerEpochDuration,
         uint256 _matchManagerMatchDuration,
+        uint256 _matchManagerRoundDuration,
         uint256 _finalTime,
         bytes32 _initialHash,
         address _machineAddress) public returns (uint256);

@@ -16,6 +16,7 @@ contract RevealMock is Decorated, RevealInterface {
         uint256 matchManagerIndex;
         uint256 matchManagerEpochDuration;
         uint256 matchManagerMatchDuration;
+        uint256 matchManagerRoundDuration;
         uint256 finalTime;
         bytes32 initialHash;
         address machineAddress;
@@ -67,6 +68,7 @@ contract RevealMock is Decorated, RevealInterface {
         uint256 _revealDuration,
         uint256 _matchManagerEpochDuration,
         uint256 _matchManagerMatchDuration,
+        uint256 _matchManagerRoundDuration,
         uint256 _finalTime,
         bytes32 _initialHash,
         address _machineAddress) public returns (uint256)
@@ -76,6 +78,7 @@ contract RevealMock is Decorated, RevealInterface {
         currentInstance.revealDuration = _revealDuration;
         currentInstance.matchManagerEpochDuration = _matchManagerEpochDuration;
         currentInstance.matchManagerMatchDuration = _matchManagerMatchDuration;
+        currentInstance.matchManagerRoundDuration = _matchManagerRoundDuration;
         currentInstance.finalTime = _finalTime;
         currentInstance.initialHash = _initialHash;
         currentInstance.machineAddress = _machineAddress;
@@ -86,6 +89,7 @@ contract RevealMock is Decorated, RevealInterface {
         instance[currentIndex].matchManagerIndex = mmi.instantiate(
             instance[currentIndex].matchManagerEpochDuration,
             instance[currentIndex].matchManagerMatchDuration,
+            instance[currentIndex].matchManagerRoundDuration,
             instance[currentIndex].finalTime,
             instance[currentIndex].initialHash,
             address(this),
