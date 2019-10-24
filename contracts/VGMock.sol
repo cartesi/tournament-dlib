@@ -110,6 +110,14 @@ contract VGMock is Decorated, VGInterface {
         bytes32 _claimerFinalHash,
         uint _finalTime) public returns (uint256)
     {
+        instance[currentIndex].challenger = _challenger;
+        instance[currentIndex].claimer = _claimer;
+        instance[currentIndex].roundDuration = _roundDuration;
+        instance[currentIndex].machine = MachineInterface(_machineAddress);
+        instance[currentIndex].initialHash = _initialHash;
+        instance[currentIndex].claimerFinalHash = _claimerFinalHash;
+        instance[currentIndex].finalTime = _finalTime;
+        instance[currentIndex].timeOfLastMove = now;
 
         if (_claimerFinalHash == 0x00) {
             instance[currentIndex].currentState = state.FinishedChallengerWon;
@@ -176,7 +184,7 @@ contract VGMock is Decorated, VGInterface {
             currentState = "WaitMemoryProveValues";
         }
         if (i.currentState == state.FinishedClaimerWon) {
-            currentState = "FinishClaimerWon";
+            currentState = "FinishedClaimerWon";
         }
         if (i.currentState == state.FinishedChallengerWon) {
             currentState = "FinishedChallengerWon";
@@ -235,7 +243,7 @@ contract VGMock is Decorated, VGInterface {
             return "WaitMemoryProveValues";
         }
         if (instance[_index].currentState == state.FinishedClaimerWon) {
-            return "FinishClaimerWon";
+            return "FinishedClaimerWon";
         }
         if (instance[_index].currentState == state.FinishedChallengerWon) {
             return "FinishedChallengerWon";
