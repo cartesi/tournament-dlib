@@ -153,7 +153,6 @@ impl DApp<()> for MatchManager {
                     return Ok(Reaction::Transaction(request));
 
                 }
-
                 // if player hasnt registered yet and epoch is zero, register:
                 if ctx.current_epoch.as_u64() == 0 && !ctx.registered {
                     let request = TransactionRequest {
@@ -165,14 +164,11 @@ impl DApp<()> for MatchManager {
                     };
                     return Ok(Reaction::Transaction(request));
                 }
+                // if player is unmatched address, idles
+                if user_is_unmatched {
+                    return Ok(Reaction::Idle);
+                }
 
-                // if player already played epoch, returns idle
-                //let played_current_epoch = ctx.last_match_epoch == ctx.current_epoch;
-                //if (!epoch_over && played_current_epoch) || user_is_unmatched
-                //    || (ctx.registered && ctx.current_epoch.as_u64() == 0)
-                //{
-                //    return Ok(Reaction::Idle);
-                //}
 
                 // if player havent played epoch and its not the first one,
                 // we have to inspect the matches to see if he won the previous one.
@@ -193,11 +189,12 @@ impl DApp<()> for MatchManager {
                         })?;
                 let match_ctx: MatchCtx = match_parsed.into();
 
-                println!("CLAIMER ADDR IS {}", match_ctx.claimer);
-                println!("CHALLENGER ADDR IS {}", match_ctx.challenger);
+                //println!("CLAIMER ADDR IS {}", match_ctx.claimer);
+                //println!("CHALLENGER ADDR IS {}", match_ctx.challenger);
 
-                println!("MatchInstance {:?}", match_instance);
-                println!("Match_CTX {:?}", match_ctx);
+                println!("EPOCH IS OVER {:?}", epoch_over);
+                println!("LAST MATCH EPOCH {:?}", ctx.last_match_epoch);
+                println!("CURRENT EPOCH {:?}", ctx.current_epoch);
 
                 let role = match instance.concern.user_address {
                     cl if (cl == match_ctx.claimer) => Role::Claimer,
@@ -212,18 +209,17 @@ impl DApp<()> for MatchManager {
                 match role {
                     Role::Claimer => match match_ctx.current_state.as_ref() {
                         "ClaimerWon" => {
-                            if !epoch_over {
-                                return Ok(Reaction::Idle);
+                            if epoch_over || (ctx.last_match_epoch != ctx.current_epoch && !ctx.registered){
+                                let request = TransactionRequest {
+                                        concern: instance.concern.clone(),
+                                        value: U256::from(0),
+                                        function: "playNextEpoch".into(),
+                                        data: vec![Token::Uint(instance.index)],
+                                        strategy: transaction::Strategy::Simplest,
+                                 };
+                                 return Ok(Reaction::Transaction(request));
                             }
-                            let request = TransactionRequest {
-                                concern: instance.concern.clone(),
-                                value: U256::from(0),
-                                function: "playNextEpoch".into(),
-                                data: vec![Token::Uint(instance.index)],
-                                strategy: transaction::Strategy::Simplest,
-                            };
-                            return Ok(Reaction::Transaction(request));
-
+                            return Ok(Reaction::Idle);
                         }
 
                         // you lost the previous game, so nothing else to do
@@ -243,18 +239,18 @@ impl DApp<()> for MatchManager {
 
                     Role::Challenger => match match_ctx.current_state.as_ref() {
                         "ChallengerWon" => {
-                            if !epoch_over {
-                                return Ok(Reaction::Idle);
+                            if epoch_over || (ctx.last_match_epoch != ctx.current_epoch && !ctx.registered){
+                                let request = TransactionRequest {
+                                        concern: instance.concern.clone(),
+                                        value: U256::from(0),
+                                        function: "playNextEpoch".into(),
+                                        data: vec![Token::Uint(instance.index)],
+                                        strategy: transaction::Strategy::Simplest,
+                                 };
+                                 return Ok(Reaction::Transaction(request));
                             }
+                            return Ok(Reaction::Idle);
 
-                            let request = TransactionRequest {
-                                concern: instance.concern.clone(),
-                                value: U256::from(0),
-                                function: "playNextEpoch".into(),
-                                data: vec![Token::Uint(instance.index)],
-                                strategy: transaction::Strategy::Simplest,
-                            };
-                            return Ok(Reaction::Transaction(request));
 
                         }
 
