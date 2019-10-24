@@ -9,7 +9,7 @@ services:
       - 8545
     networks:
       - ganache
-  
+
   deployer:
     depends_on: [ganache]
     build:
@@ -19,7 +19,7 @@ services:
       - truffle_data:/usr/src/app/build
     networks:
       - ganache
-  
+
   key_distributor:
     depends_on: [ganache]
     build: ./key-distributor
@@ -29,10 +29,12 @@ services:
       - dispatcher_data_1:/key-1
       - dispatcher_data_2:/key-2
       - dispatcher_data_3:/key-3
-  
+
   dispatcher_0:
     depends_on: [deployer]
-    build: ./test
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dispatcher
     volumes:
       - truffle_data:/truffle-data
       - dispatcher_data_0:/opt/cartesi/dispatcher/config
@@ -76,10 +78,11 @@ services:
     networks:
       - node_0
 
-  
   dispatcher_1:
     depends_on: [deployer]
-    build: ./test
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dispatcher
     volumes:
       - truffle_data:/truffle-data
       - dispatcher_data_1:/opt/cartesi/dispatcher/config
