@@ -12,11 +12,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     MatchInterface private mi;
 
-    // TO-DO: Add match duration + round duration to Instantiator/Match
-    // TO-DO: Split registering state into two: can only register if there is epoch duration - match duration time left
-    // TO-DO: Propagate changes to offchain code
     struct MatchManagerCtx {
         uint256 epochDuration;
+        uint256 matchDuration;
         uint256 roundDuration;
         uint256 currentEpoch;
         uint256 finalTime;
@@ -51,6 +49,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     function instantiate(
         uint256 _epochDuration,
+        uint256 _matchDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
         bytes32 _initialHash,
@@ -60,6 +59,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     {
         MatchManagerCtx storage currentInstance = instance[currentIndex];
         currentInstance.epochDuration = _epochDuration;
+        currentInstance.matchDuration = _matchDuration;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.finalTime = _finalTime;
         currentInstance.initialHash = _initialHash;
@@ -140,38 +140,39 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     function createMatch(uint256 _index) private {
 
         MatchManagerCtx memory i = instance[_index];
-
-        address claimer;
-        address challenger;
-        address unmatchedAddr = i.unmatchedPlayer;
+        address[3] memory addressValues;   //claimer
+                                            // challenger
+                                            // unmatchedAddr
+        addressValues[2] = i.unmatchedPlayer;
 
         RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
 
         // the highest score between both is the claimer, the lowest is the challenger
-        if (reveal.getScore(i.revealInstance, msg.sender) > reveal.getScore(i.revealInstance, unmatchedAddr)) {
-            claimer = msg.sender;
-            challenger = unmatchedAddr;
+        if (reveal.getScore(i.revealInstance, msg.sender) > reveal.getScore(i.revealInstance, addressValues[2])) {
+            addressValues[0] = msg.sender;
+            addressValues[1] = addressValues[2];
         } else {
-            challenger = msg.sender;
-            claimer = unmatchedAddr;
+            addressValues[1] = msg.sender;
+            addressValues[0] = addressValues[2];
         }
 
         // instantiate new match
         uint256 newMatchIndex = mi.instantiate(
-            challenger,
-            claimer,
+            addressValues[1],
+            addressValues[0],
             i.currentEpoch,
+            i.matchDuration,
             i.roundDuration,
             i.machineAddress,
             i.initialHash,
-            reveal.getFinalHash(i.revealInstance, claimer),
+            reveal.getFinalHash(i.revealInstance, addressValues[0]),
             i.finalTime,
             now
         );
 
         // add match to both players mapping
-        instance[_index].lastMatchIndex[challenger] = newMatchIndex;
-        instance[_index].lastMatchIndex[claimer] = newMatchIndex;
+        instance[_index].lastMatchIndex[addressValues[1]] = newMatchIndex;
+        instance[_index].lastMatchIndex[addressValues[0]] = newMatchIndex;
 
         // increase matches on epoch counter
         instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch]++;
