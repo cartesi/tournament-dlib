@@ -257,7 +257,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             a = new address[](1);
             i = new uint256[](1);
             a[0] = address(mi);
-            i[0] = instance[_index].lastMatchIndex[msg.sender];
+            i[0] = instance[_index].lastMatchIndex[_user];
             return (a, i);
 
         }
