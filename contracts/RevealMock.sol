@@ -3,10 +3,10 @@
 pragma solidity ^0.5.0;
 
 import ".//Decorated.sol";
-import "./RevealInterface.sol";
+import "./RevealMockInterface.sol";
 import "./MatchManagerInterface.sol";
 
-contract RevealMock is Decorated, RevealInterface {
+contract RevealMock is Decorated, RevealMockInterface {
 
     MatchManagerInterface private mmi;
 

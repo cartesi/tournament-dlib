@@ -2,13 +2,13 @@
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
-import "./RevealInterface.sol";
+import "./RevealMockInterface.sol";
 import ".//Decorated.sol";
 import ".//Instantiator.sol";
 
 contract DAppMock is Decorated, Instantiator{
 
-    RevealInterface private rm;
+    RevealMockInterface private rm;
 
     enum state {
         Idle,
@@ -39,7 +39,7 @@ contract DAppMock is Decorated, Instantiator{
 
         currentIndex = 0;
 
-        rm = RevealInterface(_rmAddress);
+        rm = RevealMockInterface(_rmAddress);
         // add user to concern
         for (uint256 i = 0; i < _playerAddresses.length; i++) {
             instance[currentIndex].playersConcern[_playerAddresses[i]] = true;
