@@ -9,18 +9,14 @@ contract RevealInterface is Instantiator {
     enum state {
         CommitPhase,
         RevealPhase,
-        MatchManagerPhase,
-        TournamentOver
+        CommitRevealDone
     }
 
     function instantiate(
         uint256 _commitDuration,
         uint256 _revealDuration,
-        uint256 _matchManagerEpochDuration,
-        uint256 _matchManagerMatchDuration,
-        uint256 _matchManagerRoundDuration,
         uint256 _finalTime,
-        bytes32 _initialHash,
+        bytes32 _pristineHash,
         address _machineAddress) public returns (uint256);
 
     function addFakePlayers(uint256 _index, address[] memory _playerAddresses, uint256[] memory _scores, bytes32[] memory _finalHashes) public; 
