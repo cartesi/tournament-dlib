@@ -40,7 +40,7 @@ library Merkle {
         uint64 _logOfSize,
         bytes32 _drive,
         bytes32[] memory siblings
-    ) public pure returns (bytes32) {
+    ) internal pure returns (bytes32) {
         require(_logOfSize >= 3, "Must be at least a word");
         require(_logOfSize <= 64, "Cannot be bigger than the machine itself");
 
