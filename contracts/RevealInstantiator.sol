@@ -184,6 +184,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
             uint256 logDrivePosition,
             uint256 scoreDriveLogSize,
             uint256 logDriveLogSize,
+            bool hasRevealed,
 
             state currentState
         ) {
@@ -198,6 +199,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
             instance[_index].logDrivePosition,
             instance[_index].scoreDriveLogSize,
             instance[_index].logDriveLogSize,
+            instance[_index].players[_user].hasRevealed,
 
              instance[_index].currentState
         );
