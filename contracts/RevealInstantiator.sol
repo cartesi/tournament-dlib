@@ -5,15 +5,20 @@ pragma solidity ^0.5.0;
 import ".//Decorated.sol";
 import ".//VGInterface.sol";
 import "./RevealInterface.sol";
+import "../arbitration-dlib/contracts/Merkle.sol";
 
 contract RevealInstantiator is RevealInterface, Decorated {
-
+    
     struct RevealCtx {
         uint256 instantiatedAt;
         uint256 commitDuration;
         uint256 revealDuration;
         uint256 finalTime;
         bytes32 pristineHash;
+        uint64 scoreDrivePosition;
+        uint64 logDrivePosition;
+        uint64 scoreDriveLogSize;
+        uint64 logDriveLogSize;
         mapping(address => Player) players; //player address to player
 
         state currentState;
@@ -48,7 +53,11 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 _commitDuration,
         uint256 _revealDuration,
         uint256 _finalTime,
-        bytes32 _pristineHash) public returns (uint256)
+        bytes32 _pristineHash,
+        uint64 _scoreDrivePosition,
+        uint64 _logDrivePosition,
+        uint64 _scoreDriveLogSize,
+        uint64 _logDriveLogSize) public returns (uint256)
     {
         RevealCtx storage currentInstance = instance[currentIndex];
         currentInstance.instantiatedAt = now;
@@ -56,6 +65,11 @@ contract RevealInstantiator is RevealInterface, Decorated {
         currentInstance.revealDuration = _revealDuration;
         currentInstance.finalTime = _finalTime;
         currentInstance.pristineHash = _pristineHash;
+
+        currentInstance.scoreDrivePosition = _scoreDrivePosition;
+        currentInstance.logDrivePosition = _logDrivePosition;
+        currentInstance.scoreDrivePosition = _scoreDrivePosition;
+        currentInstance.logDriveLogSize = _logDriveLogSize;
 
         currentInstance.currentState = state.CommitPhase;
 
@@ -84,41 +98,51 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     /// @notice reveals the log and extracts its information.
     /// @param _index index of reveal that is being interacted with.
-    /// @param _commitIndex index of commit to be revealed.
     /// @param _score that should be contained in the log
     /// @param _finalHash final hash of the machine after that log has been proccessed.
-    function reveal(uint256 _index, uint256 _commitIndex, uint256 _score, bytes32 _finalHash) public {
+    function reveal(uint256 _index,
+                    uint256 _score,
+                    bytes32 _finalHash,
+                    bytes32 _logDriveHash,
+                    bytes32 _scoreDriveHash,
+                    bytes32[] memory _logDriveSiblings,
+                    bytes32[] memory _scoreDriveSiblings
+    ) public {
+        require(instance[_index].currentState != state.CommitRevealDone, "Commit and Reveal cannot be over");
         // if commit deadline is over, can reveal
         if (now > instance[_index].instantiatedAt + instance[_index].commitDuration) {
             instance[_index].currentState = state.RevealPhase;
         }
 
         require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
-
-
         require(!instance[_index].players[msg.sender].hasRevealed, "Player can only reveal one commit");
+
+        // TO-DO: Integrate with logger
         // use logger to see if logHash is available
-        //
-        // block number greater than original block?
+        
+        require(Merkle.getRootWithDrive(instance[_index].logDrivePosition, instance[_index].logDriveLogSize, "0x00", _logDriveSiblings) == instance[_index].pristineHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
-        // require logger.dlib instance hash == commit hash
+        // require that score is contained in the final hash 
+        require(Merkle.getRootWithDrive(instance[_index].scoreDrivePosition, instance[_index].scoreDriveLogSize, _scoreDriveHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
 
-        // require that score is contained in the final hash - PROVE DRIVE
+        // Update pristine hash with flash drive containing logs
+        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(instance[_index].logDrivePosition, instance[_index].logDriveLogSize, _logDriveHash, _logDriveSiblings);
+
+        instance[_index].players[msg.sender].score = _score;
+        instance[_index].players[msg.sender].finalHash = _finalHash;
         instance[_index].players[msg.sender].hasRevealed = true;
-//        instance[_index].players[msg.sender].score = _score;
-//        instance[_index].players[msg.sender].finalHash = _finalHash;
-        // set score
-        // set final hash
 
         emit logRevealed(_index, msg.sender, instance[_index].players[msg.sender].logHash);
     }
 
     function endCommitAndReveal(uint256 _index) public {
+        require(instance[_index].currentState != state.CommitRevealDone, "Commit and Reveal is already over");
+
         if (now > instance[_index].instantiatedAt + instance[_index].commitDuration + instance[_index].revealDuration) {
             instance[_index].currentState = state.CommitRevealDone;
         }
-
     }
+
     function getScore(uint256 _index, address _playerAddr) public returns (uint256) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
         return instance[_index].players[msg.sender].score;
@@ -144,18 +168,27 @@ contract RevealInstantiator is RevealInterface, Decorated {
     }
 
     function getState(uint256 _index, address _user) public view returns
-        (   uint256 _commitDuration,
-            uint256 _revealDuration,
-            uint256 _finalTime,
-            bytes32 _pristineHash,
+        (   uint256 commitDuration,
+            uint256 revealDuration,
+            uint256 finalTime,
+            bytes32 pristineHash,
+            uint64 scoreDrivePosition,
+            uint64 logDrivePosition,
+            uint64 scoreDriveLogSize,
+            uint64 logDriveLogSize,
+
             state currentState
         ) {
 
-         return (
-             instance[_index].commitDuration,
-             instance[_index].revealDuration,
-             instance[_index].finalTime,
-             instance[_index].pristineHash,
+        return (
+            instance[_index].commitDuration,
+            instance[_index].revealDuration,
+            instance[_index].finalTime,
+            instance[_index].pristineHash,
+            instance[_index].scoreDrivePosition,
+            instance[_index].logDrivePosition,
+            instance[_index].scoreDriveLogSize,
+            instance[_index].logDriveLogSize,
 
              instance[_index].currentState
         );
