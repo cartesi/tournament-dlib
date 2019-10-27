@@ -21,7 +21,7 @@ pub struct RevealCommitCtxParsed(
     pub U256Field,     // commitDuration
     pub U256Field,     // revealDuration
     pub U256Field,     // finalTime
-    
+
     pub Bytes32Field   // pristineHash;
 
     pub U256Field,     // scoreDrivePosition
@@ -29,9 +29,9 @@ pub struct RevealCommitCtxParsed(
     pub U256Field,     // scoreDriveLogSize
     pub U256Field,     // logDriveLogSize
     pub U256Field,     // logDriveLogSize
-    
+
     pub BoolField,     // hasRevealed
-    
+
     pub String32Field, // currentState
 );
 
@@ -47,7 +47,7 @@ pub struct RevealCommitCtx {
     pub log_drive_position: U256,
     pub score_drive_log_size: U256,
     pub log_drive_log_size: U256,
-    
+
     pub has_revealed: bool,
 
     pub current_state: String,
@@ -87,7 +87,7 @@ impl DApp<()> for RevealCommit {
             })?;
         let ctx: RevealCommitCtx = parsed.into();
         trace!("Context for reveal_commit (index {}) {:?}", instance.index, ctx);
-        
+
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .chain_err(|| "System time before UNIX_EPOCH")?
@@ -146,12 +146,12 @@ impl DApp<()> for RevealCommit {
                     return Ok(Reaction::Transaction(request));
 
                 }
-                
+
                 // if has player has revealed but phase is not over, return idle
                 if ctx.has_revealed {
                     return Ok(Reaction::Idle);
                 }
-                
+
                 // else complete reveal
                 // TO-DO: complete transaction parameters
                 let request = TransactionRequest {
@@ -172,7 +172,7 @@ impl DApp<()> for RevealCommit {
 
                 return Ok(Reaction::Transaction(request));
 
-            
+
             }
 
             _ => {
@@ -180,13 +180,13 @@ impl DApp<()> for RevealCommit {
             }
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
-        
+
         // get context (state) of the match instance
         let parsed: RevealCommitCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
