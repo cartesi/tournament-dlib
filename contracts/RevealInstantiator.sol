@@ -8,17 +8,17 @@ import "./RevealInterface.sol";
 import "../arbitration-dlib/contracts/Merkle.sol";
 
 contract RevealInstantiator is RevealInterface, Decorated {
-    
+
     struct RevealCtx {
         uint256 instantiatedAt;
         uint256 commitDuration;
         uint256 revealDuration;
         uint256 finalTime;
         bytes32 pristineHash;
-        uint64 scoreDrivePosition;
-        uint64 logDrivePosition;
-        uint64 scoreDriveLogSize;
-        uint64 logDriveLogSize;
+        uint256 scoreDrivePosition;
+        uint256 logDrivePosition;
+        uint256 scoreDriveLogSize;
+        uint256 logDriveLogSize;
         mapping(address => Player) players; //player address to player
 
         state currentState;
@@ -54,10 +54,10 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 _revealDuration,
         uint256 _finalTime,
         bytes32 _pristineHash,
-        uint64 _scoreDrivePosition,
-        uint64 _logDrivePosition,
-        uint64 _scoreDriveLogSize,
-        uint64 _logDriveLogSize) public returns (uint256)
+        uint256 _scoreDrivePosition,
+        uint256 _logDrivePosition,
+        uint256 _scoreDriveLogSize,
+        uint256 _logDriveLogSize) public returns (uint256)
     {
         RevealCtx storage currentInstance = instance[currentIndex];
         currentInstance.instantiatedAt = now;
@@ -119,14 +119,21 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         // TO-DO: Integrate with logger
         // use logger to see if logHash is available
-        
-        require(Merkle.getRootWithDrive(instance[_index].logDrivePosition, instance[_index].logDriveLogSize, "0x00", _logDriveSiblings) == instance[_index].pristineHash, "Logs sibling must be compatible with pristine hash for an empty drive");
+
+        // TO-DO: improve this
+        uint64 logDrivePos64 = uint64(instance[_index].logDrivePosition);
+        uint64 logDriveLog64 = uint64(instance[_index].logDriveLogSize);
+
+        uint64 scoreDrivePos64 = uint64(instance[_index].scoreDrivePosition);
+        uint64 scoreDriveLog64 = uint64(instance[_index].scoreDriveLogSize);
+
+        require(Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, "0x00", _logDriveSiblings) == instance[_index].pristineHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
         // require that score is contained in the final hash 
-        require(Merkle.getRootWithDrive(instance[_index].scoreDrivePosition, instance[_index].scoreDriveLogSize, _scoreDriveHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
+        require(Merkle.getRootWithDrive(scoreDrivePos64, scoreDriveLog64, _scoreDriveHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
 
         // Update pristine hash with flash drive containing logs
-        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(instance[_index].logDrivePosition, instance[_index].logDriveLogSize, _logDriveHash, _logDriveSiblings);
+        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, _logDriveHash, _logDriveSiblings);
 
         instance[_index].players[msg.sender].score = _score;
         instance[_index].players[msg.sender].finalHash = _finalHash;
@@ -172,10 +179,10 @@ contract RevealInstantiator is RevealInterface, Decorated {
             uint256 revealDuration,
             uint256 finalTime,
             bytes32 pristineHash,
-            uint64 scoreDrivePosition,
-            uint64 logDrivePosition,
-            uint64 scoreDriveLogSize,
-            uint64 logDriveLogSize,
+            uint256 scoreDrivePosition,
+            uint256 logDrivePosition,
+            uint256 scoreDriveLogSize,
+            uint256 logDriveLogSize,
 
             state currentState
         ) {
