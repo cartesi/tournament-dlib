@@ -1,5 +1,5 @@
 use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array5};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array5, BoolField};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -28,6 +28,9 @@ pub struct RevealCommitCtxParsed(
     pub U256Field,     // logDrivePosition
     pub U256Field,     // scoreDriveLogSize
     pub U256Field,     // logDriveLogSize
+    pub U256Field,     // logDriveLogSize
+    
+    pub BoolField,     // hasRevealed
     
     pub String32Field, // currentState
 );
@@ -44,6 +47,8 @@ pub struct RevealCommitCtx {
     pub log_drive_position: U256,
     pub score_drive_log_size: U256,
     pub log_drive_log_size: U256,
+    
+    pub has_revealed: bool,
 
     pub current_state: String,
 }
@@ -82,18 +87,96 @@ impl DApp<()> for RevealCommit {
             })?;
         let ctx: RevealCommitCtx = parsed.into();
         trace!("Context for reveal_commit (index {}) {:?}", instance.index, ctx);
+        
+        let current_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .chain_err(|| "System time before UNIX_EPOCH")?
+            .as_secs();
 
         match ctx.current_state.as_ref() {
             "CommitRevealDone" => {
+                // if commit and reveal is done, nothing to do here.
                 return Ok(Reaction::Idle);
             }
 
-            "CommitPhase" => {}
+            "CommitPhase" => {
+                let phase_is_over = current_time > ctx.instantiated_at + ctx.commit_duration;
 
-            "RevealPhase" => {}
+                if phase_is_over {
+                    // if commit phase is over, player reveal his log and forces the phase change
+                    // TO-DO: complete transaction parameters
+                    let request = TransactionRequest {
+                        concern: instance.concern.clone(),
+                        value: U256::from(0),
+                        function: "reveal".into(),
+                        data: vec![
+                            Token::Uint(instance.index),
+                            //Token::Uint(score),
+                            //Token::FixedBytes(finalHash),
+                            //Token::FixedBytes(logDriveHash),
+                            //Token::FixedBytes(scoreDriveHash),
+                            //Token::Array(logDriveSiblings),
+                            //Token::Array(scoreDriveSiblings)
+                        ],
+                        strategy: transaction::Strategy::Simplest,
+                    };
+
+                    return Ok(Reaction::Transaction(request));
+
+                }
+                // if current highscore > previous highscore, commit
+                // else:
+                return Ok(Reaction::Idle);
+            }
+
+
+            "RevealPhase" => {
+                let phase_is_over = current_time > ctx.instantiated_at + ctx.commit_duration + ctx.reveal_duration;
+
+                if phase_is_over && ctx.has_revealed {
+                    // TO-DO: Fix race condition / lack of incentive for calling it
+                    let request = TransactionRequest {
+                        concern: instance.concern.clone(),
+                        value: U256::from(0),
+                        function: "endCommitAndReveal".into(),
+                        data: vec![Token::Uint(instance.index)],
+                        strategy: transaction::Strategy::Simplest,
+                    };
+
+                    return Ok(Reaction::Transaction(request));
+
+                }
+                
+                // if has player has revealed but phase is not over, return idle
+                if ctx.has_revealed {
+                    return Ok(Reaction::Idle);
+                }
+                
+                // else complete reveal
+                // TO-DO: complete transaction parameters
+                let request = TransactionRequest {
+                    concern: instance.concern.clone(),
+                    value: U256::from(0),
+                    function: "reveal".into(),
+                    data: vec![
+                        Token::Uint(instance.index),
+                        //Token::Uint(score),
+                        //Token::FixedBytes(finalHash),
+                        //Token::FixedBytes(logDriveHash),
+                        //Token::FixedBytes(scoreDriveHash),
+                        //Token::Array(logDriveSiblings),
+                        //Token::Array(scoreDriveSiblings)
+                    ],
+                    strategy: transaction::Strategy::Simplest,
+                };
+
+                return Ok(Reaction::Transaction(request));
+
+            
+            }
 
             _ => {
-                return Ok(Reaction::Idle);
+                Ok(Reaction::Idle);
             }
         }
     }
