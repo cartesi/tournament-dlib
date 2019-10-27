@@ -161,7 +161,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         return instance[_index].players[_playerAddr].finalHash;
     }
 
-    function getInitalHash(uint256 _index, address _playerAddr) public returns (bytes32) {
+    function getInitialHash(uint256 _index, address _playerAddr) public returns (bytes32) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
         return instance[_index].players[_playerAddr].initialHash;
     }
@@ -175,8 +175,9 @@ contract RevealInstantiator is RevealInterface, Decorated {
         instance[_index].players[_playerAddr].playerAddr = address(0);
     }
 
-    function getState(uint256 _index, address _user) public view returns
-        (   uint256 instantiatedAt,
+    function getState(uint256 _index, address _user)
+    public view returns (
+            uint256 instantiatedAt,
             uint256 commitDuration,
             uint256 revealDuration,
             uint256 finalTime,
@@ -187,7 +188,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
             uint256 logDriveLogSize,
             bool hasRevealed,
 
-            state currentState
+            bytes32 currentState
         ) {
 
         return (
@@ -202,8 +203,25 @@ contract RevealInstantiator is RevealInterface, Decorated {
             instance[_index].logDriveLogSize,
             instance[_index].players[_user].hasRevealed,
 
-             instance[_index].currentState
+            getCurrentState(_index)
         );
+    }
+
+    function getCurrentState(uint256 _index) public view
+        onlyInstantiated(_index)
+        returns (bytes32)
+    {
+        if (instance[_index].currentState == state.CommitPhase) {
+            return "CommitPhase";
+        }
+
+        if (instance[_index].currentState == state.RevealPhase) {
+            return "RevealPhase";
+        }
+
+        if (instance[_index].currentState == state.CommitRevealDone) {
+            return "CommitRevealDone";
+        }
     }
 
     function getSubInstances(uint256 _index, address _user)
