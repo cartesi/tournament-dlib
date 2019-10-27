@@ -175,7 +175,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
     }
 
     function getState(uint256 _index, address _user) public view returns
-        (   uint256 commitDuration,
+        (   uint256 instantiatedAt,
+            uint256 commitDuration,
             uint256 revealDuration,
             uint256 finalTime,
             bytes32 pristineHash,
@@ -188,6 +189,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         ) {
 
         return (
+            instance[_index].instantiatedAt,
             instance[_index].commitDuration,
             instance[_index].revealDuration,
             instance[_index].finalTime,
