@@ -17,11 +17,13 @@ contract RevealInterface is Instantiator {
         uint256 _revealDuration,
         uint256 _finalTime,
         bytes32 _pristineHash,
-        address _machineAddress) public returns (uint256);
-
-    function addFakePlayers(uint256 _index, address[] memory _playerAddresses, uint256[] memory _scores, bytes32[] memory _finalHashes) public; 
+        uint64 _scoreDrivePosition,
+        uint64 _logDrivePosition,
+        uint64 _scoreDriveLogSize,
+        uint64 _logDriveLogSize) public returns (uint256);
 
     function getScore(uint256 _index, address _playerAddr) public returns (uint256);
+    function getInitalHash(uint256 _index, address _playerAddr) public returns (bytes32);
     function getFinalHash(uint256 _index, address _playerAddr) public returns (bytes32);
     function playerExist(uint256 _index, address _playerAddr) public returns (bool);
     function getCurrentState(uint256 _index, address concernedAddress) public view returns (bytes32);
