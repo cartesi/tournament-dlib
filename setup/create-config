@@ -1,0 +1,19 @@
+#!/bin/sh
+
+echo "create-config $1 $2 $3"
+
+if [ $# -ne 3 ] ; then
+    echo "Usage: create-config contracts_dir user_address output_config.yaml" ;
+    exit 1;
+fi
+
+CONTRACTS_DIR=$(readlink -f "$1");
+CURRENT_DIR=$(readlink -f $(dirname "$0"))
+
+if [ ! -d "$CONTRACTS_DIR" ]; then
+    echo "contracts_dir not found" ;
+    exit 1;
+fi
+
+cd $CONTRACTS_DIR;
+jq -n 'inputs | { (input_filename) : . } ' *.json | jq -s -f $CURRENT_DIR/dispatcher-config.jq --arg key $2 | yaml2json > $3

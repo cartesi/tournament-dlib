@@ -6,4 +6,7 @@ RUN apk add --no-cache jq gawk
 # writes to keys-%d/account and keys-%d/private_key
 
 COPY distribute.sh /distribute.sh
-CMD ["dockerize", "-wait", "file:///keys/keys", "/distribute.sh", "/keys/keys"]
+CMD dockerize \
+    -wait file:///keys/keys \
+    /distribute.sh /keys/keys \
+    && find /key-* -type d -exec touch {}/keys_done \;

@@ -25,4 +25,7 @@ COPY ./contracts/ $BASE/contracts
 COPY ./migrations/ $BASE/migrations
 
 USER root
-CMD ["dockerize", "-wait", "tcp://ganache:8545", "truffle", "migrate"]
+CMD dockerize \
+    -wait tcp://ganache:8545 \
+    truffle migrate \
+    && touch $BASE/build/contracts/deploy_done

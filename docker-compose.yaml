@@ -30,13 +30,23 @@ services:
       - dispatcher_data_2:/key-2
       - dispatcher_data_3:/key-3
 
-  dispatcher_0:
+  dispatcher_setup_0:
     depends_on: [deployer]
+    build: ./setup
+    volumes:
+      - truffle_data:/opt/cartesi/blockchain
+      - dispatcher_data_0:/opt/cartesi/dispatcher/config
+
+  dispatcher_0:
+    depends_on: [dispatcher_setup_0]
     build:
       context: .
       dockerfile: ./Dockerfile.dispatcher
+    environment:
+      RUST_LOG: dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace
+      DOCKER: "true"
     volumes:
-      - truffle_data:/truffle-data
+      - truffle_data:/opt/cartesi/blockchain
       - dispatcher_data_0:/opt/cartesi/dispatcher/config
     networks:
       - ganache
@@ -78,13 +88,23 @@ services:
     networks:
       - node_0
 
-  dispatcher_1:
+  dispatcher_setup_1:
     depends_on: [deployer]
+    build: ./setup
+    volumes:
+      - truffle_data:/opt/cartesi/blockchain
+      - dispatcher_data_1:/opt/cartesi/dispatcher/config
+
+  dispatcher_1:
+    depends_on: [dispatcher_setup_1]
     build:
       context: .
       dockerfile: ./Dockerfile.dispatcher
+    environment:
+      RUST_LOG: dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace
+      DOCKER: "true"
     volumes:
-      - truffle_data:/truffle-data
+      - truffle_data:/opt/cartesi/blockchain
       - dispatcher_data_1:/opt/cartesi/dispatcher/config
     networks:
       - ganache

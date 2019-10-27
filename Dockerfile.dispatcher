@@ -25,6 +25,7 @@ COPY ./compute/src ./src
 
 RUN cargo install -j $(nproc) --path .
 
+# Runtime image
 FROM debian:buster-slim
 
 RUN \
@@ -37,7 +38,17 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-# copy the build artifact from the build stage
+WORKDIR /opt/cartesi
+
+# Copy the build artifact from the build stage
 COPY --from=build /usr/local/cargo/bin/test .
 
-CMD ["dockerize", "-wait", "file:///truffle-data/contracts/DAppMock.json", "-timeout", "120s", "find", "/truffle-data"]
+# Copy dispatcher scripts
+COPY ./dispatcher-entrypoint.sh .
+
+CMD dockerize \
+    -wait file:///opt/cartesi/dispatcher/config/keys_done \
+    -wait file:///opt/cartesi/dispatcher/config/config_done \
+    -wait tcp://ganache:8545 \
+    -timeout 120s \
+    ./dispatcher-entrypoint.sh
