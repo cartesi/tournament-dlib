@@ -48,6 +48,10 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _revealDuration reveal phase duration in seconds.
     /// @param _finalTime final time of matches being played.
     /// @param _pristineHash pristine hash of the machine
+    /// @param _scoreDrivePosition position of the drive containing the score
+    /// @param _logDrivePosition position of the drive containing the log
+    /// @param _scoreDriveLogSize log2 of the score drive's size
+    /// @param _logDriveLogSize log2 of the log drive's size
     /// @return Reveal index.
     function instantiate(
         uint256 _commitDuration,
@@ -100,6 +104,10 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _index index of reveal that is being interacted with.
     /// @param _score that should be contained in the log
     /// @param _finalHash final hash of the machine after that log has been proccessed.
+    /// @param _logDriveHash hash of the drive with the log
+    /// @param _scoreDriveHash hash of the drive with the score
+    /// @param _logDriveSiblings siblings for the log drive
+    /// @param _scoreDriveSiblings siblings for the log drive
     function reveal(uint256 _index,
                     uint256 _score,
                     bytes32 _finalHash,
@@ -143,6 +151,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
         emit logRevealed(_index, msg.sender, instance[_index].players[msg.sender].logHash);
     }
 
+    /// @notice Change state for final, if the deadlines were met.
+    /// @param _index index of reveal that is being interacted with.
     function endCommitAndReveal(uint256 _index) public {
         require(instance[_index].currentState != state.CommitRevealDone, "Commit and Reveal is already over");
 
