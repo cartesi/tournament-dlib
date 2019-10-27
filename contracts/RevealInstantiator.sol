@@ -129,7 +129,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         require(Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, "0x00", _logDriveSiblings) == instance[_index].pristineHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
-        // require that score is contained in the final hash 
+        // TO-DO: Require that scoreDriveHash == Keccak(score)? Maybe remove the scoreDriveHash variable completely.
+        // require that score is contained in the final hash
         require(Merkle.getRootWithDrive(scoreDrivePos64, scoreDriveLog64, _scoreDriveHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
 
         // Update pristine hash with flash drive containing logs
