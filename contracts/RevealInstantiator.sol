@@ -19,6 +19,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 logDrivePosition;
         uint256 scoreDriveLogSize;
         uint256 logDriveLogSize;
+        bytes32 emptyLogDriveHash;
         mapping(address => Player) players; //player address to player
 
         state currentState;
@@ -52,6 +53,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _logDrivePosition position of the drive containing the log
     /// @param _scoreDriveLogSize log2 of the score drive's size
     /// @param _logDriveLogSize log2 of the log drive's size
+    /// @param _emptyLogDriveHash hash of empty log drive
     /// @return Reveal index.
     function instantiate(
         uint256 _commitDuration,
@@ -61,7 +63,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 _scoreWordPosition,
         uint256 _logDrivePosition,
         uint256 _scoreDriveLogSize,
-        uint256 _logDriveLogSize) public returns (uint256)
+        uint256 _logDriveLogSize,
+        bytes32 _emptyLogDriveHash) public returns (uint256)
     {
         RevealCtx storage currentInstance = instance[currentIndex];
         currentInstance.instantiatedAt = now;
@@ -74,6 +77,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
         currentInstance.logDrivePosition = _logDrivePosition;
         currentInstance.scoreWordPosition = _scoreWordPosition;
         currentInstance.logDriveLogSize = _logDriveLogSize;
+
+        currentInstance.emptyLogDriveHash = _emptyLogDriveHash;
 
         currentInstance.currentState = state.CommitPhase;
 
@@ -135,8 +140,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint64 scoreDrivePos64 = uint64(instance[_index].scoreWordPosition);
         uint64 scoreDriveLog64 = uint64(instance[_index].scoreDriveLogSize);
 
-        // TO-DO: decide if the hash of the previous drive will be hardcoded
-        require(Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, "0x00", _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
+        // TO-DO: decide if the hash of the previous drive will be hardcoded or a parameter
+        require(Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, instance[_index].emptyLogDriveHash, _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
         // TO-DO: Require that scoreDriveHash == Keccak(score)? Maybe remove the scoreDriveHash variable completely.
         // require that score is contained in the final hash

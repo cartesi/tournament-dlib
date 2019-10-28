@@ -17,10 +17,11 @@ contract RevealInterface is Instantiator {
         uint256 _revealDuration,
         uint256 _finalTime,
         bytes32 _pristineHash,
-        uint256 _scoreDrivePosition,
+        uint256 _scoreWordPosition,
         uint256 _logDrivePosition,
         uint256 _scoreDriveLogSize,
-        uint256 _logDriveLogSize) public returns (uint256);
+        uint256 _logDriveLogSize,
+        bytes32 _emptyLogDriveHash) public returns (uint256);
 
     function getScore(uint256 _index, address _playerAddr) public returns (uint256);
 
