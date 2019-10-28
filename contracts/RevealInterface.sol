@@ -37,18 +37,11 @@ contract RevealInterface is Instantiator {
 
     function getState(uint256 _index, address)
     public view returns (
-         uint256 instantiatedAt,
-         uint256 commitDuration,
-         uint256 revealDuration,
-         uint256 finalTime,
-         bytes32 pristineHash,
-         uint256 scoreDrivePosition,
-         uint256 logDrivePosition,
-         uint256 scoreDriveLogSize,
-         uint256 logDriveLogSize,
-         bool hasRevealed,
+        uint256[8] memory _uintValues,  
+        bytes32 pristineHash,
+        bool hasRevealed,
 
-         bytes32 currentState
+        bytes32 currentState
     );
 
 }

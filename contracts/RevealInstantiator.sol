@@ -194,30 +194,28 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     function getState(uint256 _index, address _user)
     public view returns (
-            uint256 instantiatedAt,
-            uint256 commitDuration,
-            uint256 revealDuration,
-            uint256 finalTime,
+            uint256[8] memory _uintValues,
             bytes32 setupHash,
-            uint256 scoreWordPosition,
-            uint256 logDrivePosition,
-            uint256 scoreDriveLogSize,
-            uint256 logDriveLogSize,
             bool hasRevealed,
 
             bytes32 currentState
         ) {
 
+        RevealCtx memory i = instance[_index];
+        uint256[8] memory uintValues = [
+            i.instantiatedAt,
+            i.commitDuration,
+            i.revealDuration,
+            i.finalTime,
+            i.scoreWordPosition,
+            i.logDrivePosition,
+            i.scoreDriveLogSize,
+            i.logDriveLogSize
+        ];
+
         return (
-            instance[_index].instantiatedAt,
-            instance[_index].commitDuration,
-            instance[_index].revealDuration,
-            instance[_index].finalTime,
-            instance[_index].setupHash,
-            instance[_index].scoreWordPosition,
-            instance[_index].logDrivePosition,
-            instance[_index].scoreDriveLogSize,
-            instance[_index].logDriveLogSize,
+            uintValues,
+            i.setupHash,
             instance[_index].players[_user].hasRevealed,
 
             getCurrentState(_index)
