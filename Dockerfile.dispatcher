@@ -51,5 +51,6 @@ CMD dockerize \
     -wait file:///opt/cartesi/dispatcher/config/config_done \
     -wait tcp://ganache:8545 \
     -wait tcp://machine-manager:50051 \
+    -wait tcp://logger:50051 \
     -timeout 120s \
     ./dispatcher-entrypoint.sh

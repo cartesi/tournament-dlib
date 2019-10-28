@@ -20,6 +20,20 @@ services:
     networks:
       - ganache
 
+  logger_deployer:
+    depends_on: [ganache]
+    image: cartesi/logger-blockchain-deployer
+    volumes:
+      - logger_deploy:/usr/src/app/build
+    networks:
+      - ganache
+
+  logger_configurer:
+     depends_on: [logger_deployer]
+     image: cartesi/logger-configurer
+     volumes:
+       - logger_deploy:/truffle_data
+
   key_distributor:
     depends_on: [ganache]
     build: ./key-distributor
@@ -53,14 +67,16 @@ services:
       - node_0
 
   logger_0:
-    depends_on: [deployer]
-    image: busybox
+    depends_on: [logger_configurer]
+    image: cartesi/logger-server
     volumes:
-      - truffle_data:/truffle-data
+      - logger_deploy:/opt/cartesi/blockchain
       - logger_data_0:/opt/cartesi/logger/data
     networks:
-      - ganache
-      - node_0
+      ganache: {}
+      node_0:
+        aliases: 
+          - logger
 
   machine_manager_0:
     image: cartesi/machine-manager-mock
@@ -110,14 +126,16 @@ services:
       - node_1
 
   logger_1:
-    depends_on: [deployer]
-    image: busybox
+    depends_on: [logger_configurer]
+    image: cartesi/logger-server
     volumes:
-      - truffle_data:/truffle-data
+      - logger_deploy:/opt/cartesi/blockchain
       - logger_data_1:/opt/cartesi/logger/data
     networks:
-      - ganache
-      - node_1
+      ganache: {}
+      node_1:
+        aliases: 
+          - logger
 
   machine_manager_1:
     image: cartesi/machine-manager-mock
@@ -147,6 +165,7 @@ services:
 volumes:
   ganache_data:
   truffle_data:
+  logger_deploy:
   dispatcher_data_0:
   dispatcher_data_1:
   dispatcher_data_2:
