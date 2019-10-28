@@ -14,8 +14,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 commitDuration;
         uint256 revealDuration;
         uint256 finalTime;
-        bytes32 pristineHash;
-        uint256 scoreDrivePosition;
+        bytes32 setupHash;
+        uint256 scoreWordPosition;
         uint256 logDrivePosition;
         uint256 scoreDriveLogSize;
         uint256 logDriveLogSize;
@@ -47,8 +47,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _commitDuration commit phase duration in seconds.
     /// @param _revealDuration reveal phase duration in seconds.
     /// @param _finalTime final time of matches being played.
-    /// @param _pristineHash pristine hash of the machine
-    /// @param _scoreDrivePosition position of the drive containing the score
+    /// @param _setupHash hash of the machine as is
+    /// @param _scoreWordPosition position of the drive containing the score
     /// @param _logDrivePosition position of the drive containing the log
     /// @param _scoreDriveLogSize log2 of the score drive's size
     /// @param _logDriveLogSize log2 of the log drive's size
@@ -57,8 +57,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 _commitDuration,
         uint256 _revealDuration,
         uint256 _finalTime,
-        bytes32 _pristineHash,
-        uint256 _scoreDrivePosition,
+        bytes32 _setupHash,
+        uint256 _scoreWordPosition,
         uint256 _logDrivePosition,
         uint256 _scoreDriveLogSize,
         uint256 _logDriveLogSize) public returns (uint256)
@@ -68,11 +68,11 @@ contract RevealInstantiator is RevealInterface, Decorated {
         currentInstance.commitDuration = _commitDuration;
         currentInstance.revealDuration = _revealDuration;
         currentInstance.finalTime = _finalTime;
-        currentInstance.pristineHash = _pristineHash;
+        currentInstance.setupHash = _setupHash;
 
-        currentInstance.scoreDrivePosition = _scoreDrivePosition;
+        currentInstance.scoreWordPosition = _scoreWordPosition;
         currentInstance.logDrivePosition = _logDrivePosition;
-        currentInstance.scoreDrivePosition = _scoreDrivePosition;
+        currentInstance.scoreWordPosition = _scoreWordPosition;
         currentInstance.logDriveLogSize = _logDriveLogSize;
 
         currentInstance.currentState = state.CommitPhase;
@@ -132,10 +132,11 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint64 logDrivePos64 = uint64(instance[_index].logDrivePosition);
         uint64 logDriveLog64 = uint64(instance[_index].logDriveLogSize);
 
-        uint64 scoreDrivePos64 = uint64(instance[_index].scoreDrivePosition);
+        uint64 scoreDrivePos64 = uint64(instance[_index].scoreWordPosition);
         uint64 scoreDriveLog64 = uint64(instance[_index].scoreDriveLogSize);
 
-        require(Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, "0x00", _logDriveSiblings) == instance[_index].pristineHash, "Logs sibling must be compatible with pristine hash for an empty drive");
+        // TO-DO: decide if the hash of the previous drive will be hardcoded
+        require(Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, "0x00", _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
         // TO-DO: Require that scoreDriveHash == Keccak(score)? Maybe remove the scoreDriveHash variable completely.
         // require that score is contained in the final hash
@@ -191,8 +192,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
             uint256 commitDuration,
             uint256 revealDuration,
             uint256 finalTime,
-            bytes32 pristineHash,
-            uint256 scoreDrivePosition,
+            bytes32 setupHash,
+            uint256 scoreWordPosition,
             uint256 logDrivePosition,
             uint256 scoreDriveLogSize,
             uint256 logDriveLogSize,
@@ -206,8 +207,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
             instance[_index].commitDuration,
             instance[_index].revealDuration,
             instance[_index].finalTime,
-            instance[_index].pristineHash,
-            instance[_index].scoreDrivePosition,
+            instance[_index].setupHash,
+            instance[_index].scoreWordPosition,
             instance[_index].logDrivePosition,
             instance[_index].scoreDriveLogSize,
             instance[_index].logDriveLogSize,
