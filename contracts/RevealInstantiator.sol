@@ -133,6 +133,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         // TO-DO: Integrate with logger
         // use logger to see if logHash is available
 
+
         // TO-DO: improve this
         uint64 logDrivePos64 = uint64(instance[_index].logDrivePosition);
         uint64 logDriveLog64 = uint64(instance[_index].logDriveLogSize);
@@ -184,7 +185,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     function playerExist(uint256 _index, address _playerAddr) public returns (bool) {
         //cheap way to check if player has been registered
-        return !(instance[_index].players[_playerAddr].playerAddr == address(0));
+        return instance[_index].players[_playerAddr].playerAddr != address(0);
     }
 
     function removePlayer(uint256 _index, address _playerAddr) public {
@@ -240,6 +241,9 @@ contract RevealInstantiator is RevealInterface, Decorated {
         }
     }
 
+    function isConcerned(uint256 _index, address _user) public view returns (bool) {
+        return instance[_index].players[_user].playerAddr != address(0);
+    }
     function getSubInstances(uint256 _index, address _user)
         public view returns (address[] memory _addresses,
             uint256[] memory _indices)

@@ -31,8 +31,6 @@ contract RevealInterface is Instantiator {
 
     function playerExist(uint256 _index, address _playerAddr) public returns (bool);
 
-    function isConcerned(uint256 _index, address _user) public view returns (bool);
-
     function getCurrentState(uint256 _index) public view returns (bytes32);
 
     function getState(uint256 _index, address)
