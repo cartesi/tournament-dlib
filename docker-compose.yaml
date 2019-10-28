@@ -63,13 +63,12 @@ services:
       - node_0
 
   machine_manager_0:
-    depends_on: [deployer]
-    image: busybox
-    volumes:
-      - truffle_data:/truffle-data
+    image: cartesi/machine-manager-mock
     networks:
-      - ganache
-      - node_0
+      ganache: {}
+      node_0:
+        aliases:
+          - machine-manager
 
   anuto_server_0:
     image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:develop-5ca28184
@@ -121,13 +120,12 @@ services:
       - node_1
 
   machine_manager_1:
-    depends_on: [deployer]
-    image: busybox
-    volumes:
-      - truffle_data:/truffle-data
+    image: cartesi/machine-manager-mock
     networks:
-      - ganache
-      - node_1
+      ganache: {}
+      node_1:
+        aliases:
+          - machine-manager
 
   anuto_server_1:
     image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:develop-5ca28184

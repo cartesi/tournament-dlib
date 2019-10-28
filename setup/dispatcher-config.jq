@@ -32,14 +32,13 @@ add |
     confirmations: 0,
     max_delay: 500,
     query_port: 3001,
-    services: [],
-#    services: [{
-#        name: "emulator",
-#        transport: {
-#           address: "machine-manager",
-#           port: 50051
-#        }
-#    }],
+    services: [{
+        name: "emulator",
+        transport: {
+           address: "machine-manager",
+           port: 50051
+        }
+    }],
     testing: true,
     url: "http://ganache:8545",
     warn_delay: 30
