@@ -133,23 +133,23 @@ contract RevealInstantiator is RevealInterface, Decorated {
         // TO-DO: Integrate with logger
         // use logger to see if logHash is available
 
+        // TO-DO: improve this - create uint64 type for dispatcher
+        uint64[4] memory uint64_values;
+        uint64_values[0] = uint64(instance[_index].logDrivePosition); // logDrivePos64
+        uint64_values[1] = uint64(instance[_index].logDriveLogSize); // logDriveLog64
 
-        // TO-DO: improve this
-        uint64 logDrivePos64 = uint64(instance[_index].logDrivePosition);
-        uint64 logDriveLog64 = uint64(instance[_index].logDriveLogSize);
-
-        uint64 scoreDrivePos64 = uint64(instance[_index].scoreWordPosition);
-        uint64 scoreDriveLog64 = uint64(instance[_index].scoreDriveLogSize);
+        uint64_values[2] = uint64(instance[_index].scoreWordPosition); // scoreDrivePos64
+        uint64_values[3] = uint64(instance[_index].scoreDriveLogSize); // scoreDriveLog64
 
         // TO-DO: decide if the hash of the previous drive will be hardcoded or a parameter
-        require(Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, instance[_index].emptyLogDriveHash, _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
+        require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], instance[_index].emptyLogDriveHash, _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
         // TO-DO: Require that scoreDriveHash == Keccak(score)? Maybe remove the scoreDriveHash variable completely.
         // require that score is contained in the final hash
-        require(Merkle.getRootWithDrive(scoreDrivePos64, scoreDriveLog64, _scoreDriveHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
+        require(Merkle.getRootWithDrive(uint64_values[2], uint64_values[3], _scoreDriveHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
 
         // Update pristine hash with flash drive containing logs
-        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(logDrivePos64, logDriveLog64, _logDriveHash, _logDriveSiblings);
+        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], _logDriveHash, _logDriveSiblings);
 
         instance[_index].players[msg.sender].score = _score;
         instance[_index].players[msg.sender].finalHash = _finalHash;
