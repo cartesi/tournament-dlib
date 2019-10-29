@@ -53,9 +53,7 @@ services:
 
   dispatcher_{{ i }}:
     depends_on: [dispatcher_setup_{{ i }}]
-    build:
-      context: .
-      dockerfile: ./Dockerfile.dispatcher
+    build: .
     environment:
       RUST_LOG: dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace
       DOCKER: "true"
