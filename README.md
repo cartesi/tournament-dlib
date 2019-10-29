@@ -4,16 +4,23 @@
 
 ### Requirements
 
-Follow this instructions to run the test:
+- docker
+- docker-compose
+- jinja2
 
-    pip3 install requirements.txt
+### Running
 
-    ./build_tournament_blockchain_base_image.sh
+To run execute:
+```
+jinja2 -D num_players=3 docker-compose-template.yml | docker-compose -f - up -d --build
+```
 
-    ./build_tournament_test_image.sh
+To shutdown:
+```
+jinja2 -D num_players=3 docker-compose-template.yml | docker-compose -f - down -v
+```
 
-    python3 docker_helper.py
-
-To follow a docker instance run:
-
-    docker logs -f [name of the instance]
+You can follow the output of a docker instance with:
+```
+docker logs -f [name of the instance]
+```
