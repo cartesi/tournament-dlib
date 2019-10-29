@@ -13,13 +13,12 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 instantiatedAt;
         uint256 commitDuration;
         uint256 revealDuration;
-        uint256 finalTime;
-        bytes32 setupHash;
         uint256 scoreWordPosition;
         uint256 logDrivePosition;
         uint256 scoreDriveLogSize;
         uint256 logDriveLogSize;
-        bytes32 emptyLogDriveHash;
+
+        bytes32 setupHash;
         mapping(address => Player) players; //player address to player
 
         state currentState;
@@ -28,7 +27,6 @@ contract RevealInstantiator is RevealInterface, Decorated {
     struct Player {
         address playerAddr;
         bool hasRevealed;
-        uint256 finalTime;
         uint256 score;
         bytes32 initialHash;
         bytes32 finalHash;
@@ -47,38 +45,31 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @notice Instantiate a commit and reveal instance.
     /// @param _commitDuration commit phase duration in seconds.
     /// @param _revealDuration reveal phase duration in seconds.
-    /// @param _finalTime final time of matches being played.
     /// @param _setupHash hash of the machine as is
     /// @param _scoreWordPosition position of the drive containing the score
     /// @param _logDrivePosition position of the drive containing the log
     /// @param _scoreDriveLogSize log2 of the score drive's size
     /// @param _logDriveLogSize log2 of the log drive's size
-    /// @param _emptyLogDriveHash hash of empty log drive
     /// @return Reveal index.
     function instantiate(
         uint256 _commitDuration,
         uint256 _revealDuration,
-        uint256 _finalTime,
         bytes32 _setupHash,
         uint256 _scoreWordPosition,
         uint256 _logDrivePosition,
         uint256 _scoreDriveLogSize,
-        uint256 _logDriveLogSize,
-        bytes32 _emptyLogDriveHash) public returns (uint256)
+        uint256 _logDriveLogSize) public returns (uint256)
     {
         RevealCtx storage currentInstance = instance[currentIndex];
         currentInstance.instantiatedAt = now;
         currentInstance.commitDuration = _commitDuration;
         currentInstance.revealDuration = _revealDuration;
-        currentInstance.finalTime = _finalTime;
         currentInstance.setupHash = _setupHash;
 
         currentInstance.scoreWordPosition = _scoreWordPosition;
         currentInstance.logDrivePosition = _logDrivePosition;
         currentInstance.scoreWordPosition = _scoreWordPosition;
         currentInstance.logDriveLogSize = _logDriveLogSize;
-
-        currentInstance.emptyLogDriveHash = _emptyLogDriveHash;
 
         currentInstance.currentState = state.CommitPhase;
 
@@ -142,7 +133,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint64_values[3] = uint64(instance[_index].scoreDriveLogSize); // scoreDriveLog64
 
         // TO-DO: decide if the hash of the previous drive will be hardcoded or a parameter
-        require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], instance[_index].emptyLogDriveHash, _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
+        //require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], instance[_index].emptyLogDriveHash, _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
         // TO-DO: Require that scoreDriveHash == Keccak(score)? Maybe remove the scoreDriveHash variable completely.
         // require that score is contained in the final hash
@@ -194,7 +185,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     function getState(uint256 _index, address _user)
     public view returns (
-            uint256[8] memory _uintValues,
+            uint256[6] memory _uintValues,
             bytes32 setupHash,
             bool hasRevealed,
 
@@ -202,14 +193,12 @@ contract RevealInstantiator is RevealInterface, Decorated {
         ) {
 
         RevealCtx memory i = instance[_index];
-        uint256[8] memory uintValues = [
+        uint256[6] memory uintValues = [
             i.instantiatedAt,
             i.commitDuration,
             i.revealDuration,
-            i.finalTime,
             i.scoreWordPosition,
             i.logDrivePosition,
-            i.scoreDriveLogSize,
             i.logDriveLogSize
         ];
 
