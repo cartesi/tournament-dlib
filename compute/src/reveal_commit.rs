@@ -1,5 +1,5 @@
 use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array5, BoolField};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array6, BoolField};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -8,6 +8,7 @@ use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
 
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct RevealCommit();
 
@@ -17,19 +18,14 @@ pub struct RevealCommit();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
 pub struct RevealCommitCtxParsed(
-    pub U256Field,     // instantiatedAt
-    pub U256Field,     // commitDuration
-    pub U256Field,     // revealDuration
-    pub U256Field,     // finalTime
+    pub U256Array6,     // instantiatedAt
+                        // commitDuration
+                        // revealDuration
+                        // scoreWordPosition
+                        // logDrivePosition
+                        // logDriveLogSize
 
-    pub Bytes32Field   // pristineHash;
-
-    pub U256Field,     // scoreDrivePosition
-    pub U256Field,     // logDrivePosition
-    pub U256Field,     // scoreDriveLogSize
-    pub U256Field,     // logDriveLogSize
-    pub U256Field,     // logDriveLogSize
-
+    pub Bytes32Field,  // pristineHash;
     pub BoolField,     // hasRevealed
 
     pub String32Field, // currentState
@@ -40,14 +36,11 @@ pub struct RevealCommitCtx {
     pub instantiated_at: U256,
     pub commit_duration: U256,
     pub reveal_duration: U256,
-    pub final_time: U256,
-    pub pristine_hash: H256,
-
-    pub score_drive_position: U256,
+    pub score_word_position: U256,
     pub log_drive_position: U256,
-    pub score_drive_log_size: U256,
     pub log_drive_log_size: U256,
 
+    pub pristine_hash: H256,
     pub has_revealed: bool,
 
     pub current_state: String,
@@ -56,16 +49,18 @@ pub struct RevealCommitCtx {
 impl From<RevealCommitCtxParsed> for RevealCommitCtx {
     fn from(parsed: RevealCommitCtxParsed) -> RevealCommitCtx {
         RevealCommitCtx {
-            instantiated_at: parsed.0.value
-            commit_duration: parsed.1.value
-            reveal_duration: parsed.2.value
-            final_time: parsed.3.value
-            pristine_hash: parsed.4.value
-            score_drive_position: parsed.5.value
-            log_drive_position: parsed.6.value
-            score_drive_log_size: parsed.7.value
-            log_drive_log_size: parsed.8.value
-            current_state: parsed.9.value
+            instantiated_at: parsed.0.value[0],
+            commit_duration: parsed.0.value[1],
+            reveal_duration: parsed.0.value[2],
+            score_word_position: parsed.0.value[3],
+            log_drive_position: parsed.0.value[4],
+            log_drive_log_size: parsed.0.value[5],
+                                       
+            pristine_hash: parsed.1.value,
+            has_revealed: parsed.2.value,
+                          
+            current_state: parsed.3.value,
+
         }
     }
 }
@@ -100,7 +95,7 @@ impl DApp<()> for RevealCommit {
             }
 
             "CommitPhase" => {
-                let phase_is_over = current_time > ctx.instantiated_at + ctx.commit_duration;
+                let phase_is_over = current_time > ctx.instantiated_at.as_u64() + ctx.commit_duration.as_u64();
 
                 if phase_is_over {
                     // if commit phase is over, player reveal his log and forces the phase change
@@ -131,7 +126,7 @@ impl DApp<()> for RevealCommit {
 
 
             "RevealPhase" => {
-                let phase_is_over = current_time > ctx.instantiated_at + ctx.commit_duration + ctx.reveal_duration;
+                let phase_is_over = current_time > ctx.instantiated_at.as_u64() + ctx.commit_duration.as_u64() + ctx.reveal_duration.as_u64();
 
                 if phase_is_over && ctx.has_revealed {
                     // TO-DO: Fix race condition / lack of incentive for calling it
@@ -176,7 +171,7 @@ impl DApp<()> for RevealCommit {
             }
 
             _ => {
-                Ok(Reaction::Idle);
+                return Ok(Reaction::Idle);
             }
         }
     }
@@ -197,6 +192,8 @@ impl DApp<()> for RevealCommit {
             })?;
         let ctx: RevealCommitCtx = parsed.into();
         let json_data = serde_json::to_string(&ctx).unwrap();
+
+        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
 
         let pretty_instance = state::Instance {
             name: "RevealCommit".to_string(),

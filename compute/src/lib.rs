@@ -34,6 +34,7 @@ pub mod matchmanager;
 pub mod revealmock;
 pub mod dappmock;
 pub mod emulator_service;
+pub mod reveal_commit;
 
 extern crate configuration;
 extern crate error;
@@ -67,6 +68,7 @@ pub use emulator_service::{
 pub use r#match::Match;
 pub use revealmock::RevealMock;
 pub use dappmock::DAppMock;
+pub use reveal_commit::RevealCommit;
 
 #[derive(Debug)]
 enum Role {
