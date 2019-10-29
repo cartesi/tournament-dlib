@@ -73,7 +73,7 @@ services:
     networks:
       ganache: {}
       node_{{ i }}:
-        aliases: 
+        aliases:
           - logger
 
   machine_manager_{{ i }}:
@@ -85,7 +85,7 @@ services:
           - machine-manager
 
   anuto_server_{{ i }}:
-    image: docker.pkg.github.com/cartesi-corp/anuto-server/anuto-server:develop-5ca28184
+    image: cartesi/anuto-server:develop-f4103222
     networks:
       node_{{ i }}:
         aliases:
