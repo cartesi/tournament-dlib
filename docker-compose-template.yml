@@ -37,7 +37,7 @@ services:
 
   key_distributor:
     depends_on: [ganache]
-    build: ./key-distributor
+    image: cartesi/key-distributor
     volumes:
       - ganache_data:/keys
       {% for i in range(players) %}- dispatcher_data_{{ i }}:/key-{{ i }}
