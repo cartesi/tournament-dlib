@@ -54,11 +54,11 @@ contract RevealInstantiator is RevealInterface, Decorated {
     function instantiate(
         uint256 _commitDuration,
         uint256 _revealDuration,
-        bytes32 _setupHash,
         uint256 _scoreWordPosition,
         uint256 _logDrivePosition,
         uint256 _scoreDriveLogSize,
-        uint256 _logDriveLogSize) public returns (uint256)
+        uint256 _logDriveLogSize,
+        bytes32 _setupHash) public returns (uint256)
     {
         RevealCtx storage currentInstance = instance[currentIndex];
         currentInstance.instantiatedAt = now;
