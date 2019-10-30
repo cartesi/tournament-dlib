@@ -6,8 +6,11 @@ import ".//Decorated.sol";
 import ".//VGInterface.sol";
 import "./RevealInterface.sol";
 import "../arbitration-dlib/contracts/Merkle.sol";
+import "../logger-dlib/contracts/LoggerInterface.sol";
 
 contract RevealInstantiator is RevealInterface, Decorated {
+
+    LoggerInterface private li;
 
     struct RevealCtx {
         uint256 instantiatedAt;
@@ -39,7 +42,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     mapping(uint256 => RevealCtx) internal instance;
 
-    constructor() public {
+    constructor(address _liAddress) public {
+        li = LoggerInterface(_liAddress);
     }
 
     /// @notice Instantiate a commit and reveal instance.
@@ -120,9 +124,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
         require(!instance[_index].players[msg.sender].hasRevealed, "Player can only reveal one commit");
-
-        // TO-DO: Integrate with logger
-        // use logger to see if logHash is available
+        require(li.isLogAvailable(instance[_index].players[msg.sender].logHash), "Commit must match that which was logged by Logger-dlib");
 
         // TO-DO: improve this - create uint64 type for dispatcher
         uint64[4] memory uint64_values;
