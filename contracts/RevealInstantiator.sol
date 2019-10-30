@@ -134,8 +134,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint64_values[2] = uint64(instance[_index].scoreWordPosition); // scoreDrivePos64
         uint64_values[3] = uint64(instance[_index].scoreDriveLogSize); // scoreDriveLog64
 
-        // TO-DO: decide if the hash of the previous drive will be hardcoded or a parameter
-        //require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], instance[_index].emptyLogDriveHash, _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
+        require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], Merkle.getPristineHash(uint8(instance[_index].logDriveLogSize)), _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
         // TO-DO: Require that scoreDriveHash == Keccak(score)? Maybe remove the scoreDriveHash variable completely.
         // require that score is contained in the final hash
