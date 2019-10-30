@@ -5,6 +5,7 @@ pragma solidity ^0.5.0;
 import ".//Decorated.sol";
 import ".//VGInterface.sol";
 import "./RevealInterface.sol";
+import "./BitsManipulationLibrary.sol";
 import "../arbitration-dlib/contracts/Merkle.sol";
 import "../logger-dlib/contracts/LoggerInterface.sol";
 
@@ -105,14 +106,12 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _score that should be contained in the log
     /// @param _finalHash final hash of the machine after that log has been proccessed.
     /// @param _logDriveHash hash of the drive with the log
-    /// @param _scoreDriveHash hash of the drive with the score
     /// @param _logDriveSiblings siblings for the log drive
     /// @param _scoreDriveSiblings siblings for the log drive
     function reveal(uint256 _index,
-                    uint256 _score,
+                    uint64 _score,
                     bytes32 _finalHash,
                     bytes32 _logDriveHash,
-                    bytes32 _scoreDriveHash,
                     bytes32[] memory _logDriveSiblings,
                     bytes32[] memory _scoreDriveSiblings
     ) public {
@@ -136,9 +135,11 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], Merkle.getPristineHash(uint8(instance[_index].logDriveLogSize)), _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
-        // TO-DO: Require that scoreDriveHash == Keccak(score)? Maybe remove the scoreDriveHash variable completely.
+        // Swap order of bytes cause RiscV is little endian but EVM is big endian
+        bytes32 scoreWordHash = keccak256(abi.encodePacked(BitsManipulationLibrary.uint64SwapEndian(_score)));
+
         // require that score is contained in the final hash
-        require(Merkle.getRootWithDrive(uint64_values[2], uint64_values[3], _scoreDriveHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
+        require(Merkle.getRootWithDrive(uint64_values[2], uint64_values[3], scoreWordHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
 
         // Update pristine hash with flash drive containing logs
         instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], _logDriveHash, _logDriveSiblings);
