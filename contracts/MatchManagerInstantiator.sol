@@ -23,7 +23,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         address unmatchedPlayer;
         mapping(address => uint256) lastMatchIndex; // player address to index of his last played match
         mapping(address => mapping(uint256 => bool)) registered; // player address to true if he is registered
-        bytes32 initialHash;
         address machineAddress;
         address revealAddress;
         uint256 revealInstance;
@@ -41,7 +40,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     /// @param _epochDuration epoch duration in seconds.
     /// @param _roundDuration duration of a round in seconds.
     /// @param _finalTime final time of matches being played.
-    /// @param _initialHash initial hash of matches being played
     /// @param _revealAddress address of parent reveal contract
     /// @param _revealInstance reveal instance that this contract is interacting with
     /// @param _machineAddress Machine that will run the challenge.
@@ -52,7 +50,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         uint256 _matchDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
-        bytes32 _initialHash,
         address _revealAddress,
         uint256 _revealInstance,
         address _machineAddress) public returns (uint256)
@@ -62,7 +59,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         currentInstance.matchDuration = _matchDuration;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.finalTime = _finalTime;
-        currentInstance.initialHash = _initialHash;
         currentInstance.machineAddress = _machineAddress;
         currentInstance.revealAddress = _revealAddress;
         currentInstance.revealInstance = _revealInstance;
@@ -164,7 +160,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             i.matchDuration,
             i.roundDuration,
             i.machineAddress,
-            i.initialHash,
+            reveal.getInitialHash(i.revealInstance, addressValues[0]),
             reveal.getFinalHash(i.revealInstance, addressValues[0]),
             i.finalTime,
             now
@@ -207,7 +203,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     function getState(uint256 _index, address _user) public view returns
         ( uint256[9] memory _uintValues,
           address[3] memory _addressValues,
-          bytes32 initialHash,
           bool registered,
           bytes32 currentState
         ) {
@@ -235,7 +230,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             return (
                 uintValues,
                 addressValues,
-                i.initialHash,
                 instance[_index].registered[_user][i.currentEpoch],
                 getCurrentState(_index)
             );

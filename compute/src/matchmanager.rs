@@ -49,7 +49,6 @@ pub struct MatchManagerCtx {
    pub number_of_matches_on_last_epoch: U256,
    pub unmatched_player: Address,
    pub last_match_index: U256,
-   pub initial_hash: H256,
    pub machine: Address,
    pub reveal_address: Address,
    pub reveal_instance: U256,
@@ -76,9 +75,8 @@ impl From<MatchManagerCtxParsed> for MatchManagerCtx {
             machine: parsed.1.value[1],
             reveal_address: parsed.1.value[2],
 
-            initial_hash: parsed.2.value,
-            registered: parsed.3.value,
-            current_state: parsed.4.value,
+            registered: parsed.2.value,
+            current_state: parsed.3.value,
         }
     }
 }

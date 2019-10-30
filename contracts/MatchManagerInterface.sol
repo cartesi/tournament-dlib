@@ -17,7 +17,6 @@ contract MatchManagerInterface is Instantiator {
         uint256 _matchDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
-        bytes32 _initialHash,
         address _revealAddress,
         uint256 _revealInstance,
         address _machineAddress) public returns (uint256);
@@ -35,7 +34,6 @@ contract MatchManagerInterface is Instantiator {
     function getState(uint256 _index, address) public view returns
         ( uint256[9] memory _uintValues,
           address[3] memory _addressValues,
-          bytes32 initialHash,
           bool registered,
           bytes32 currentState
         ); 
