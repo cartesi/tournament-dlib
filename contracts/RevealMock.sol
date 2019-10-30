@@ -91,7 +91,6 @@ contract RevealMock is Decorated, RevealMockInterface {
             instance[currentIndex].matchManagerMatchDuration,
             instance[currentIndex].matchManagerRoundDuration,
             instance[currentIndex].finalTime,
-            instance[currentIndex].initialHash,
             address(this),
             currentIndex,
             instance[currentIndex].machineAddress);
