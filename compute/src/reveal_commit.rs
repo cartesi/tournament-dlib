@@ -55,10 +55,10 @@ impl From<RevealCommitCtxParsed> for RevealCommitCtx {
             score_word_position: parsed.0.value[3],
             log_drive_position: parsed.0.value[4],
             log_drive_log_size: parsed.0.value[5],
-                                       
+
             pristine_hash: parsed.1.value,
             has_revealed: parsed.2.value,
-                          
+
             current_state: parsed.3.value,
 
         }
