@@ -39,7 +39,7 @@ contract RevealInterface is Instantiator {
     public view returns (
         uint256[6] memory _uintValues,  
         bytes32 pristineHash,
-        bool hasRevealed,
+        bool revealed,
 
         bytes32 currentState
     );
