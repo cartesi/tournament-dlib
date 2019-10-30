@@ -181,6 +181,10 @@ contract RevealInstantiator is RevealInterface, Decorated {
         return instance[_index].players[_playerAddr].playerAddr != address(0);
     }
 
+    function hasRevealed(uint256 _index, address _playerAddr) public returns (bool) {
+        return instance[_index].players[_playerAddr].hasRevealed;
+    }
+
     function removePlayer(uint256 _index, address _playerAddr) public {
         instance[_index].players[_playerAddr].playerAddr = address(0);
     }
@@ -189,7 +193,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
     public view returns (
             uint256[6] memory _uintValues,
             bytes32 setupHash,
-            bool hasRevealed,
+            bool revealed,
 
             bytes32 currentState
         ) {
