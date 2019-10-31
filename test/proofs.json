@@ -259,7 +259,7 @@
     "score_at_completion" : {
       "score": 14411518807585587200,
       "proof": {
-        "address": 16140901064495857664,
+        "address": 224,
         "log2_size": 3,
         "target_hash": "a0d3deec6dbb3f3116ad214f085210b51283c9c950eb5eb1e4cb33be8baf06fd",
         "sibling_hashes": [
