@@ -28,13 +28,13 @@
 #![recursion_limit = "1024"]
 #![warn(unused_extern_crates)]
 
-extern crate compute;
+extern crate tournament;
 extern crate dispatcher;
 extern crate env_logger;
 extern crate utils;
 
-use compute::revealmock::RevealMock;
-use compute::dappmock::DAppMock;
+use tournament::revealmock::RevealMock;
+use tournament::dappmock::DAppMock;
 use dispatcher::Dispatcher;
 use utils::print_error;
 
