@@ -8,6 +8,8 @@ var MatchManagerInstantiator = artifacts.require("./MatchManagerInstantiator.sol
 var MatchInstantiator = artifacts.require("./MatchInstantiator.sol");
 var Logger = artifacts.require("../logger-dlib/contracts/Logger.sol");
 
+var LoggerMock = artifacts.require("./LoggerMock.sol");
+
 var VGMock = artifacts.require("./VGMock.sol");
 var RevealMock = artifacts.require("./RevealMock.sol");
 var DAppMock = artifacts.require("./DAppMock.sol");
@@ -20,10 +22,16 @@ module.exports = function(deployer, network, accounts) {
 
         await deployer.deploy(Logger);
         await deployer.deploy(VGMock);
+        await deployer.deploy(LoggerMock);
 
         await deployer.deploy(MatchInstantiator, VGMock.address);
         await deployer.deploy(MatchManagerInstantiator, MatchInstantiator.address);
-        await deployer.deploy(RevealInstantiator, Logger.address);
+
+        // TO-DO: Should deploy with real Logger, not LoggerMock
+        //await deployer.deploy(RevealInstantiator, Logger.address);
+
+        // THIS IS JUST FOR TESTING PURPOSES
+        await deployer.deploy(RevealInstantiator, LoggerMock.address);
 
         // add main "player" values here before adding other accounts
         var playerAddresses = [accounts[0]];
@@ -39,8 +47,9 @@ module.exports = function(deployer, network, accounts) {
         await deployer.deploy(RevealMock, MatchManagerInstantiator.address);
         await deployer.deploy(DAppMock, RevealMock.address, playerAddresses, scores, finalHashes);
 
+        // TO-DO: Shouldnt be logger_mock, should be actual logger
         // Write address to file
-        let addr_json = "{\"ri_address\":\"" + RevealInstantiator.address + "\", \"looger_address\":\"" + Logger.address + "\"}";
+        let addr_json = "{\"ri_address\":\"" + RevealInstantiator.address + "\", \"logger_mock_address\":\"" + LoggerMock.address + "\"}";
 
         fs.writeFile('../test/deployedAddresses.json', addr_json, (err) => {
           if (err) console.log("couldnt write to file");
