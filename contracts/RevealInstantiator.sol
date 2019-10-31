@@ -136,8 +136,10 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], Merkle.getPristineHash(uint8(instance[_index].logDriveLogSize)), _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
+        // TO-DO: decide if the endianess swap is gonna be done on chain or off chain
         // Swap order of bytes cause RiscV is little endian but EVM is big endian
-        bytes32 scoreWordHash = keccak256(abi.encodePacked(BitsManipulationLibrary.uint64SwapEndian(_score)));
+        //bytes32 scoreWordHash = keccak256(abi.encodePacked(BitsManipulationLibrary.uint64SwapEndian(_score)));
+        bytes32 scoreWordHash = keccak256(abi.encodePacked(_score));
 
         // require that score is contained in the final hash
         require(Merkle.getRootWithDrive(uint64_values[2], uint64_values[3], scoreWordHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
