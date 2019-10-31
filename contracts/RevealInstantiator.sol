@@ -7,7 +7,7 @@ import ".//VGInterface.sol";
 import "./RevealInterface.sol";
 import "./BitsManipulationLibrary.sol";
 import "./Merkle.sol";
-import "./LoggerInterface.sol";
+import "../logger-dlib/contracts/LoggerInterface.sol";
 
 contract RevealInstantiator is RevealInterface, Decorated {
 
@@ -73,7 +73,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         currentInstance.scoreWordPosition = _scoreWordPosition;
         currentInstance.logDrivePosition = _logDrivePosition;
-        currentInstance.scoreWordPosition = _scoreWordPosition;
+
+        currentInstance.scoreDriveLogSize = _scoreDriveLogSize;
         currentInstance.logDriveLogSize = _logDriveLogSize;
 
         currentInstance.currentState = state.CommitPhase;
