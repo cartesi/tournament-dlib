@@ -75,6 +75,7 @@ impl DApp<()> for RevealCommit {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
+        post_action: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the reveal instance

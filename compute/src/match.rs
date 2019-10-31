@@ -71,6 +71,7 @@ impl DApp<()> for Match {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
+        post_action: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the match instance
@@ -154,7 +155,7 @@ impl DApp<()> for Match {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            return VG::react(vg_instance, archive, &());
+                            return VG::react(vg_instance, archive, &None, &());
                         }
                     }
                 }
@@ -263,7 +264,7 @@ impl DApp<()> for Match {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            return VG::react(vg_instance, archive, &());
+                            return VG::react(vg_instance, archive, &None, &());
                         }
                     }
                 }

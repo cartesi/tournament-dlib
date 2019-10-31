@@ -62,6 +62,7 @@ impl DApp<()> for RevealMock {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
+        post_action: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the match instance
@@ -94,6 +95,7 @@ impl DApp<()> for RevealMock {
                 return MatchManager::react(
                     match_manager_instance,
                     archive,
+                    &None,
                     &(),
                 );
             }
