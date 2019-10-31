@@ -1,9 +1,7 @@
-[submodule "dispatcher"]
-	path = dispatcher
-	url = ../dispatcher
-[submodule "lib/grpc-interfaces"]
-	path = lib/grpc-interfaces
-	url = ../grpc-interfaces
+
 [submodule "logger-dlib"]
 	path = logger-dlib
 	url = ../logger-dlib
+[submodule "arbitration-dlib"]
+	path = arbitration-dlib
+	url = ../arbitration-dlib.git

@@ -1,7 +1,7 @@
 contracts.json
 coverage*
 node_modules
-compute/target
+tournament/target
 test/*/
 .venv
 .vscode
