@@ -199,7 +199,7 @@ impl DApp<()> for RevealCommit {
         let ctx: RevealCommitCtx = parsed.into();
         let json_data = serde_json::to_string(&ctx).unwrap();
 
-        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
 
         let pretty_instance = state::Instance {
             name: "RevealCommit".to_string(),

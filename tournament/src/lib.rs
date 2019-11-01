@@ -30,6 +30,7 @@ pub mod matchmanager;
 pub mod revealmock;
 pub mod dappmock;
 pub mod reveal_commit;
+pub mod logger_service;
 
 extern crate configuration;
 extern crate error;
@@ -45,6 +46,8 @@ extern crate ethereum_types;
 extern crate transaction;
 extern crate emulator_interface;
 extern crate compute;
+extern crate logger_interface;
+extern crate grpc;
 
 use ethereum_types::{Address, U256};
 
@@ -58,6 +61,13 @@ pub use compute::{
     SessionRunResult, SessionStepResult,
     EMULATOR_SERVICE_NAME, EMULATOR_METHOD_NEW,
     EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP};
+    
+pub use logger_interface::{logger_high};
+pub use logger_service::{
+    Hash, FilePath,
+    LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
+    LOGGER_METHOD_DOWNLOAD};
+
 pub use r#match::Match;
 pub use revealmock::RevealMock;
 pub use dappmock::DAppMock;
