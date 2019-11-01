@@ -71,7 +71,7 @@ impl DApp<()> for Match {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_action: &Option<String>,
+        post_payload: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the match instance

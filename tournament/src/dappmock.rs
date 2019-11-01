@@ -42,7 +42,7 @@ impl DApp<()> for DAppMock {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_action: &Option<String>,
+        post_payload: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the compute instance
@@ -110,7 +110,7 @@ impl DApp<()> for DAppMock {
                     _ => {
                         // revealMock is still active,
                         // pass control to the appropriate dapp
-                        return RevealMock::react(revealmock_instance, archive, post_action, &());
+                        return RevealMock::react(revealmock_instance, archive, post_payload, &());
                     }
                 }
             }

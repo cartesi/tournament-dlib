@@ -7,6 +7,9 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
+use super::{
+    LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
+    LOGGER_METHOD_DOWNLOAD, FilePath, Hash};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -49,6 +52,18 @@ pub struct RevealCommitCtx {
     pub current_state: String,
 }
 
+#[derive(Deserialize, Debug)]
+struct Payload {
+    action: String,
+    params: Params
+}
+
+#[derive(Deserialize, Debug)]
+struct Params {
+    hash: String,
+    path: String
+}
+
 impl From<RevealCommitCtxParsed> for RevealCommitCtx {
     fn from(parsed: RevealCommitCtxParsed) -> RevealCommitCtx {
         RevealCommitCtx {
@@ -75,7 +90,7 @@ impl DApp<()> for RevealCommit {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_action: &Option<String>,
+        post_payload: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the reveal instance
@@ -151,6 +166,44 @@ impl DApp<()> for RevealCommit {
                 // if has player has revealed but phase is not over, return idle
                 if ctx.has_revealed {
                     return Ok(Reaction::Idle);
+                }
+                
+                match post_payload {
+                    Some(s) => {
+                        let payload: Payload = serde_json::from_str(&s).chain_err(|| {
+                            format!("Could not parse post_payload: {}", &s)
+                        })?;
+                        match payload.action.as_ref() {
+                            "logger.upload" => {
+                                // submit file to logger
+                                let path = payload.params.path.clone();
+                                trace!("Submitting file: {}...", path);
+                                let request = FilePath {
+                                    path: path.clone()
+                                };
+
+                                let processed_response: Hash = archive.get_response(
+                                    LOGGER_SERVICE_NAME.to_string(),
+                                    path.clone(),
+                                    LOGGER_METHOD_SUBMIT.to_string(),
+                                    request.into())?
+                                    .map_err(move |_e| {
+                                        Error::from(ErrorKind::ArchiveInvalidError(
+                                            LOGGER_SERVICE_NAME.to_string(),
+                                            path,
+                                            LOGGER_METHOD_SUBMIT.to_string()))
+                                    })?
+                                    .into();
+                                trace!("Submitted! Result: {:?}...", processed_response.hash);
+                            },
+                            _ => {
+                                return Ok(Reaction::Idle);
+                            }
+                        }
+                    },
+                    None => {
+                        return Ok(Reaction::Idle);
+                    }
                 }
 
                 // else complete reveal
