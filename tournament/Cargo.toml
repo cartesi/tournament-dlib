@@ -24,7 +24,7 @@ serde_derive = "1.0.0"
 emulator_interface = { path = "../arbitration-dlib/lib/grpc-interfaces/emulator_interface" }
 state = { path = "../arbitration-dlib/dispatcher/state" }
 dispatcher = { path = "../arbitration-dlib/dispatcher/dispatcher" }
-grpc = { git = "https://github.com/cartesi/grpc-rust", branch = "make_marshall_public" }
+compute = { path = "../arbitration-dlib/compute" }
 protobuf = "=2.7.0"
 bytes = "0.4.12"
 

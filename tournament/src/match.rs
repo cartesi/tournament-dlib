@@ -10,7 +10,7 @@ use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{Role, VG, SessionRunRequest, SessionRunResult, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
-use vg::{VGCtx, VGCtxParsed};
+use super::{VGCtx, VGCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
