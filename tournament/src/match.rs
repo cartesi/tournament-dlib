@@ -167,13 +167,19 @@ impl DApp<()> for Match {
             },
             Role::Challenger => match ctx.current_state.as_ref() {
                 "WaitingChallenge" => {
-                    // here goes the calculation of the final hash
-                    // to check the claim and potentialy raise challenge
+                    // download the log of the opponent with given hash
+
                     // machine id
                     let id = build_machine_id(
                         instance.index,
                         &instance.concern.contract_address,
                     );
+                    // send newSession request to the emulator service
+
+
+
+                    // here goes the calculation of the final hash
+                    // to check the claim and potentialy raise challenge
 
                     // TO-DO: instead of building sessionRUn youre gonna run a newSession queryy with ?
                     // if the code continues after ? it means that machine is initialized
