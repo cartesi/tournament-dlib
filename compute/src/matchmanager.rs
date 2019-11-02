@@ -34,7 +34,6 @@ pub struct MatchManagerCtxParsed(
                     // machine
                     // revealaddress
 
-    Bytes32Field,   // initialhash
     BoolField,      // registered
     String32Field,  // currentstate
 );
