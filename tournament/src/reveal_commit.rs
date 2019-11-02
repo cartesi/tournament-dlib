@@ -168,6 +168,7 @@ impl DApp<()> for RevealCommit {
                     return Ok(Reaction::Idle);
                 }
                 
+                // trigger manually from user/browser, submitting log to the logger
                 match post_payload {
                     Some(s) => {
                         let payload: Payload = serde_json::from_str(&s).chain_err(|| {
@@ -201,9 +202,7 @@ impl DApp<()> for RevealCommit {
                             }
                         }
                     },
-                    None => {
-                        return Ok(Reaction::Idle);
-                    }
+                    None => {}
                 }
 
                 // else complete reveal
