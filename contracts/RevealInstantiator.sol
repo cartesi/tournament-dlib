@@ -106,13 +106,11 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _index index of reveal that is being interacted with.
     /// @param _score that should be contained in the log
     /// @param _finalHash final hash of the machine after that log has been proccessed.
-    /// @param _logDriveHash hash of the drive with the log
     /// @param _logDriveSiblings siblings for the log drive
     /// @param _scoreDriveSiblings siblings for the log drive
     function reveal(uint256 _index,
                     uint64 _score,
                     bytes32 _finalHash,
-                    bytes32 _logDriveHash,
                     bytes32[] memory _logDriveSiblings,
                     bytes32[] memory _scoreDriveSiblings
     ) public {
@@ -145,7 +143,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         require(Merkle.getRootWithDrive(uint64_values[2], uint64_values[3], scoreWordHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
 
         // Update pristine hash with flash drive containing logs
-        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], _logDriveHash, _logDriveSiblings);
+        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], instance[_index].players[msg.sender].logHash, _logDriveSiblings);
 
         instance[_index].players[msg.sender].score = _score;
         instance[_index].players[msg.sender].finalHash = _finalHash;
@@ -191,7 +189,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
     function removePlayer(uint256 _index, address _playerAddr) public {
         instance[_index].players[_playerAddr].playerAddr = address(0);
     }
-
+    // TO-DO: add committed hash to state
     function getState(uint256 _index, address _user)
     public view returns (
             uint256[6] memory _uintValues,

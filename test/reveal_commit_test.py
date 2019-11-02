@@ -116,13 +116,8 @@ print("LOGGER MOCK RECEIPT")
 print(logger_mock_tx_receipt)
 
 # REVEAL LOG
-reveal_tx_hash = ri.functions.reveal(0, score, finalHash, logHash, logDriveSiblings, scoreDriveSiblings).transact({'from': w3.eth.coinbase, 'gas': 6283185})
-
+reveal_tx_hash = ri.functions.reveal(0, score, finalHash, logDriveSiblings, scoreDriveSiblings).transact({'from': w3.eth.coinbase, 'gas': 6283185})
 
 reveal_tx_receipt = w3.eth.waitForTransactionReceipt(reveal_tx_hash )
 print("REVEAL RECEIPT")
 print(reveal_tx_receipt)
-
-
-
-
