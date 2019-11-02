@@ -25,8 +25,9 @@ pub struct RevealCommitCtxParsed(
                         // logDrivePosition
                         // logDriveLogSize
 
-    pub Bytes32Field,  // pristineHash;
+    pub Bytes32Field,  // logHash;
     pub BoolField,     // hasRevealed
+    pub BoolField,     // logAvailable
 
     pub String32Field, // currentState
 );
@@ -40,8 +41,10 @@ pub struct RevealCommitCtx {
     pub log_drive_position: U256,
     pub log_drive_log_size: U256,
 
-    pub pristine_hash: H256,
+    pub log_hash: H256,
+
     pub has_revealed: bool,
+    pub log_available: bool,
 
     pub current_state: String,
 }
@@ -56,10 +59,12 @@ impl From<RevealCommitCtxParsed> for RevealCommitCtx {
             log_drive_position: parsed.0.value[4],
             log_drive_log_size: parsed.0.value[5],
 
-            pristine_hash: parsed.1.value,
-            has_revealed: parsed.2.value,
+            log_hash: parsed.1.value,
 
-            current_state: parsed.3.value,
+            has_revealed: parsed.2.value,
+            log_available: parsed.3.value,
+
+            current_state: parsed.4.value,
 
         }
     }

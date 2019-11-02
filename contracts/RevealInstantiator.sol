@@ -195,8 +195,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
             uint256[6] memory _uintValues,
             bytes32 logHash,
 
-            bool loggerAvailable,
             bool revealed,
+            bool logAvailable,
 
             bytes32 currentState
         ) {
