@@ -22,7 +22,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 scoreDriveLogSize;
         uint256 logDriveLogSize;
 
-        bytes32 setupHash;
+        bytes32 templateHash;
         mapping(address => Player) players; //player address to player
 
         state currentState;
@@ -50,7 +50,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @notice Instantiate a commit and reveal instance.
     /// @param _commitDuration commit phase duration in seconds.
     /// @param _revealDuration reveal phase duration in seconds.
-    /// @param _setupHash hash of the machine as is
+    /// @param _templateHash hash of the machine as is
     /// @param _scoreWordPosition position of the drive containing the score
     /// @param _logDrivePosition position of the drive containing the log
     /// @param _scoreDriveLogSize log2 of the score drive's size
@@ -63,13 +63,13 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 _logDrivePosition,
         uint256 _scoreDriveLogSize,
         uint256 _logDriveLogSize,
-        bytes32 _setupHash) public returns (uint256)
+        bytes32 _templateHash) public returns (uint256)
     {
         RevealCtx storage currentInstance = instance[currentIndex];
         currentInstance.instantiatedAt = now;
         currentInstance.commitDuration = _commitDuration;
         currentInstance.revealDuration = _revealDuration;
-        currentInstance.setupHash = _setupHash;
+        currentInstance.templateHash = _templateHash;
 
         currentInstance.scoreWordPosition = _scoreWordPosition;
         currentInstance.logDrivePosition = _logDrivePosition;
@@ -132,7 +132,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint64_values[2] = uint64(instance[_index].scoreWordPosition); // scoreDrivePos64
         uint64_values[3] = uint64(instance[_index].scoreDriveLogSize); // scoreDriveLog64
 
-        require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], Merkle.getPristineHash(uint8(instance[_index].logDriveLogSize)), _logDriveSiblings) == instance[_index].setupHash, "Logs sibling must be compatible with pristine hash for an empty drive");
+        require(Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], Merkle.getPristineHash(uint8(instance[_index].logDriveLogSize)), _logDriveSiblings) == instance[_index].templateHash, "Logs sibling must be compatible with pristine hash for an empty drive");
 
         // TO-DO: decide if the endianess swap is gonna be done on chain or off chain
         // Swap order of bytes cause RiscV is little endian but EVM is big endian
@@ -189,11 +189,13 @@ contract RevealInstantiator is RevealInterface, Decorated {
     function removePlayer(uint256 _index, address _playerAddr) public {
         instance[_index].players[_playerAddr].playerAddr = address(0);
     }
-    // TO-DO: add committed hash to state
+
     function getState(uint256 _index, address _user)
     public view returns (
             uint256[6] memory _uintValues,
-            bytes32 setupHash,
+            bytes32 logHash,
+
+            bool loggerAvailable,
             bool revealed,
 
             bytes32 currentState
@@ -211,8 +213,9 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         return (
             uintValues,
-            i.setupHash,
+            instance[_index].players[_user].logHash,
             instance[_index].players[_user].hasRevealed,
+            li.isLogAvailable(instance[_index].players[_user].logHash),
 
             getCurrentState(_index)
         );
