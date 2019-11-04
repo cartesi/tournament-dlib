@@ -1,7 +1,7 @@
 
 use super::{build_machine_id, build_session_run_key};
 use super::configuration::Concern;
-use super::dispatcher::{AddressField, AddressArray3, U256Array4, Bytes32Field, String32Field, U256Field};
+use super::dispatcher::{AddressField, AddressArray3, U256Array4, Bytes32Field, Bytes32Array3, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
