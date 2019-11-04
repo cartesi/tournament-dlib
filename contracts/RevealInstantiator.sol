@@ -172,6 +172,11 @@ contract RevealInstantiator is RevealInterface, Decorated {
         return instance[_index].players[_playerAddr].finalHash;
     }
 
+    function getLogHash(uint256 _index, address _playerAddr) public returns (bytes32) {
+        require(playerExist(_index, _playerAddr), "Player has to exist");
+        return instance[_index].players[_playerAddr].logHash;
+    }
+
     function getInitialHash(uint256 _index, address _playerAddr) public returns (bytes32) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
         return instance[_index].players[_playerAddr].initialHash;

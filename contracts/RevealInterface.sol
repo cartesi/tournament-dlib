@@ -23,6 +23,9 @@ contract RevealInterface is Instantiator {
 
     function getScore(uint256 _index, address _playerAddr) public returns (uint256);
 
+    function getLogHash(uint256 _index, address _playerAddr) public returns (bytes32);
+
+
     function getInitialHash(uint256 _index, address _playerAddr) public returns (bytes32);
 
     function getFinalHash(uint256 _index, address _playerAddr) public returns (bytes32);
