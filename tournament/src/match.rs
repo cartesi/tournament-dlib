@@ -9,7 +9,9 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{Role, VG, SessionRunRequest, SessionRunResult, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN};
+use super::{Role, VG, SessionRunRequest, SessionRunResult, 
+    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN,
+    Hash, FilePath, LOGGER_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD};
 use super::{VGCtx, VGCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -171,6 +173,25 @@ impl DApp<()> for Match {
             Role::Challenger => match ctx.current_state.as_ref() {
                 "WaitingChallenge" => {
                     // download the log of the opponent with given hash
+                    trace!("Download file for hash: {:?}...", ctx.log_hash);
+
+                    let request = Hash {
+                        hash: ctx.log_hash.clone()
+                    };
+
+                    let processed_response: FilePath = archive.get_response(
+                        LOGGER_SERVICE_NAME.to_string(),
+                        format!("{:x}", ctx.log_hash.clone()),
+                        LOGGER_METHOD_DOWNLOAD.to_string(),
+                        request.into())?
+                        .map_err(|_| {
+                            Error::from(ErrorKind::ArchiveInvalidError(
+                                LOGGER_SERVICE_NAME.to_string(),
+                                format!("{:x}", ctx.log_hash.clone()),
+                                LOGGER_METHOD_DOWNLOAD.to_string()))
+                        })?
+                        .into();
+                    trace!("Downloaded! File stored at: {}...", processed_response.path);
 
                     // machine id
                     let id = build_machine_id(
@@ -183,10 +204,6 @@ impl DApp<()> for Match {
 
                     // here goes the calculation of the final hash
                     // to check the claim and potentialy raise challenge
-
-                    // TO-DO: instead of building sessionRUn youre gonna run a newSession queryy with ?
-                    // if the code continues after ? it means that machine is initialized
-                    // then we can run build session run request and so on.
                     let sample_points: Vec<u64> =
                         vec![0, ctx.final_time.as_u64()];
                     let request = SessionRunRequest {
