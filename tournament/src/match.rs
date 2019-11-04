@@ -9,8 +9,9 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{cartesi_base, Role, VG, SessionRunRequest, SessionRunResult, 
-    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN,
+use super::{cartesi_base, Role, VG, SessionRunRequest, SessionRunResult,
+    NewSessionRequest, NewSessionResult, 
+    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN, EMULATOR_METHOD_NEW,
     Hash, FilePath, LOGGER_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD};
 use super::{VGCtx, VGCtxParsed};
 
@@ -204,9 +205,36 @@ impl DApp<MachineTemplate> for Match {
                         instance.index,
                         &instance.concern.contract_address,
                     );
+
+                    // TODO: replace one drive in the machine struct
+
+                    let request = NewSessionRequest {
+                        session_id: id.clone(),
+                        machine: machine_template.machine.clone()
+                    };
                     // send newSession request to the emulator service
 
-
+                    let id_clone = id.clone();
+                    let duplicate_session_msg = format!("Trying to register a session with a session_id that already exists: {}", id);
+                    let _processed_response: NewSessionResult = archive.get_response(
+                        EMULATOR_SERVICE_NAME.to_string(),
+                        id.clone(),
+                        EMULATOR_METHOD_NEW.to_string(),
+                        request.into())?
+                        .map_err(move |e| {
+                            if e == duplicate_session_msg {
+                                Error::from(ErrorKind::ArchiveNeedsDummy(
+                                    EMULATOR_SERVICE_NAME.to_string(),
+                                    id_clone,
+                                    EMULATOR_METHOD_NEW.to_string()))
+                            } else {
+                                Error::from(ErrorKind::ArchiveInvalidError(
+                                    EMULATOR_SERVICE_NAME.to_string(),
+                                    id_clone,
+                                    EMULATOR_METHOD_NEW.to_string()))
+                            }
+                        })?
+                        .into();
 
                     // here goes the calculation of the final hash
                     // to check the claim and potentialy raise challenge
