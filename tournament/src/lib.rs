@@ -68,7 +68,7 @@ pub use logger_service::{
     LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
     LOGGER_METHOD_DOWNLOAD};
 
-pub use r#match::Match;
+pub use r#match::{Match, MachineTemplate};
 pub use revealmock::RevealMock;
 pub use dappmock::DAppMock;
 pub use reveal_commit::RevealCommit;

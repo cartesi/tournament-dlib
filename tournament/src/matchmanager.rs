@@ -8,7 +8,7 @@ use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{Match, Role};
-use r#match::{MatchCtx, MatchCtxParsed};
+use r#match::{MatchCtx, MatchCtxParsed, MachineTemplate};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -84,14 +84,14 @@ impl From<MatchManagerCtxParsed> for MatchManagerCtx {
 // state check for time of last epoch
 // state check if youre unmatched player
 // state check if number of matches played on last epoch was 0
-impl DApp<()> for MatchManager {
+impl DApp<MachineTemplate> for MatchManager {
     /// React to the Match contract, submitting solutions, confirming
     /// or challenging them when appropriate
     fn react(
         instance: &state::Instance,
         archive: &Archive,
         post_payload: &Option<String>,
-        _: &(),
+        machine_template: &MachineTemplate,
     ) -> Result<Reaction> {
         // get context (state) of the match instance
         let parsed: MatchManagerCtxParsed =
@@ -224,7 +224,7 @@ impl DApp<()> for MatchManager {
                                 match_instance,
                                 archive,
                                 &None,
-                                &(),
+                                machine_template,
                             );
                         }
                     }
@@ -258,7 +258,7 @@ impl DApp<()> for MatchManager {
                                 match_instance,
                                 archive,
                                 &None,
-                                &(),
+                                machine_template,
                             );
                         }
                     }
@@ -275,7 +275,7 @@ impl DApp<()> for MatchManager {
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
-        _: &(),
+        _: &MachineTemplate,
     ) -> Result<state::Instance> {
 
         // get context (state) of the match instance
@@ -299,7 +299,7 @@ impl DApp<()> for MatchManager {
                     Match::get_pretty_instance(
                         sub,
                         archive,
-                        &(),
+                        &Default::default(),
                     )
                     .unwrap()
                 )

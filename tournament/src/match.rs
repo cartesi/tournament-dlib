@@ -9,7 +9,7 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{Role, VG, SessionRunRequest, SessionRunResult, 
+use super::{cartesi_base, Role, VG, SessionRunRequest, SessionRunResult, 
     EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN,
     Hash, FilePath, LOGGER_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD};
 use super::{VGCtx, VGCtxParsed};
@@ -52,6 +52,12 @@ pub struct MatchCtx {
     pub current_state: String,
 }
 
+#[derive(Default)]
+pub struct MachineTemplate {
+    pub machine: cartesi_base::MachineRequest,
+    pub drive_index: usize
+}
+
 impl From<MatchCtxParsed> for MatchCtx {
     fn from(parsed: MatchCtxParsed) -> MatchCtx {
         MatchCtx {
@@ -70,14 +76,14 @@ impl From<MatchCtxParsed> for MatchCtx {
     }
 }
 
-impl DApp<()> for Match {
+impl DApp<MachineTemplate> for Match {
     /// React to the Match contract, submitting solutions, confirming
     /// or challenging them when appropriate
     fn react(
         instance: &state::Instance,
         archive: &Archive,
         post_payload: &Option<String>,
-        _: &(),
+        machine_template: &MachineTemplate,
     ) -> Result<Reaction> {
         // get context (state) of the match instance
         let parsed: MatchCtxParsed =
@@ -306,7 +312,7 @@ impl DApp<()> for Match {
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
-        _: &(),
+        _: &MachineTemplate,
     ) -> Result<state::Instance> {
 
         // get context (state) of the match instance

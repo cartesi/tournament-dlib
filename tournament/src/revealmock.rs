@@ -96,7 +96,7 @@ impl DApp<()> for RevealMock {
                     match_manager_instance,
                     archive,
                     &None,
-                    &(),
+                    &Default::default(),
                 );
             }
 
@@ -144,7 +144,7 @@ impl DApp<()> for RevealMock {
                     MatchManager::get_pretty_instance(
                         sub,
                         archive,
-                        &(),
+                        &Default::default(),
                     )
                     .unwrap()
                 )
