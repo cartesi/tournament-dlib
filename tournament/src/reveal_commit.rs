@@ -168,42 +168,26 @@ impl DApp<()> for RevealCommit {
                     return Ok(Reaction::Idle);
                 }
                 
-                // trigger manually from user/browser, submitting log to the logger
-                match post_payload {
-                    Some(s) => {
-                        let payload: Payload = serde_json::from_str(&s).chain_err(|| {
-                            format!("Could not parse post_payload: {}", &s)
-                        })?;
-                        match payload.action.as_ref() {
-                            "logger.upload" => {
-                                // submit file to logger
-                                let path = payload.params.path.clone();
-                                trace!("Submitting file: {}...", path);
-                                let request = FilePath {
-                                    path: path.clone()
-                                };
+                // automatically submitting the log to the logger
+                let path = format!("{:x}{}", ctx.log_hash, ".log".to_string());
+                trace!("Submitting file: {}...", path);
+                let request = FilePath {
+                    path: path.clone()
+                };
 
-                                let processed_response: Hash = archive.get_response(
-                                    LOGGER_SERVICE_NAME.to_string(),
-                                    path.clone(),
-                                    LOGGER_METHOD_SUBMIT.to_string(),
-                                    request.into())?
-                                    .map_err(move |_e| {
-                                        Error::from(ErrorKind::ArchiveInvalidError(
-                                            LOGGER_SERVICE_NAME.to_string(),
-                                            path,
-                                            LOGGER_METHOD_SUBMIT.to_string()))
-                                    })?
-                                    .into();
-                                trace!("Submitted! Result: {:?}...", processed_response.hash);
-                            },
-                            _ => {
-                                return Ok(Reaction::Idle);
-                            }
-                        }
-                    },
-                    None => {}
-                }
+                let processed_response: Hash = archive.get_response(
+                    LOGGER_SERVICE_NAME.to_string(),
+                    path.clone(),
+                    LOGGER_METHOD_SUBMIT.to_string(),
+                    request.into())?
+                    .map_err(move |_e| {
+                        Error::from(ErrorKind::ArchiveInvalidError(
+                            LOGGER_SERVICE_NAME.to_string(),
+                            path,
+                            LOGGER_METHOD_SUBMIT.to_string()))
+                    })?
+                    .into();
+                trace!("Submitted! Result: {:?}...", processed_response.hash);
 
                 // else complete reveal
                 // TO-DO: complete transaction parameters
