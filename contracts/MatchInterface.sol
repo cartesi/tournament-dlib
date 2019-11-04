@@ -38,7 +38,8 @@ contract MatchInterface is Instantiator {
     function getState(uint256 _index, address) public view returns
     (   address[3] memory _addressValues,
         uint256[4] memory _uintValues,
-        bytes32[4] memory _bytesValues
+        bytes32[3] memory _bytesValues,
+        bytes32 _currentState
    );
 
 }

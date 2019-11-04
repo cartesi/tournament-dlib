@@ -210,7 +210,8 @@ contract MatchInstantiator is MatchInterface, Decorated {
     function getState(uint256 _index, address) public view returns
     (   address[3] memory _addressValues,
         uint256[4] memory _uintValues,
-        bytes32[4] memory _bytesValues
+        bytes32[3] memory _bytesValues,
+        bytes32 _currentState
     )
     {
 
@@ -229,17 +230,17 @@ contract MatchInstantiator is MatchInterface, Decorated {
             i.machine
         ];
 
-        bytes32[4] memory bytesValues = [
+        bytes32[3] memory bytesValues = [
             i.logHash,
             i.initialHash,
-            i.finalHash,
-            getCurrentState(_index)
+            i.finalHash
         ];
 
         return (
             addressValues,
             uintValues,
-            bytesValues
+            bytesValues,
+            getCurrentState(_index)
         );
    }
 
