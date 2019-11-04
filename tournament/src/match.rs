@@ -29,8 +29,9 @@ pub struct MatchCtxParsed(
                    // roundDuration
                    // timeOfLastMove
                    // finalTime
-    Bytes32Field,  // initialHash
-    Bytes32Field,  // claimedFinalHash
+    Bytes32Array3, // logHash
+                   // initialHash
+                   // finalHash
     String32Field, // currentState
 );
 
@@ -42,6 +43,7 @@ pub struct MatchCtx {
     pub epoch_number: U256,
     pub round_duration: U256,
     pub time_of_last_move: U256,
+    pub log_hash: H256,
     pub initial_hash: H256,
     pub claimed_final_hash: H256,
     pub final_time: U256,
@@ -58,9 +60,10 @@ impl From<MatchCtxParsed> for MatchCtx {
             round_duration: parsed.1.value[1],
             time_of_last_move: parsed.1.value[2],
             final_time: parsed.1.value[3],
-            initial_hash: parsed.2.value,
-            claimed_final_hash: parsed.3.value,
-            current_state: parsed.4.value,
+            log_hash: parsed.2.value[0],
+            initial_hash: parsed.2.value[1],
+            claimed_final_hash: parsed.2.value[2],
+            current_state: parsed.3.value,
         }
     }
 }
