@@ -160,6 +160,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             i.matchDuration,
             i.roundDuration,
             i.machineAddress,
+            reveal.getLogHash(i.revealInstance, addressValues[0]),
             reveal.getInitialHash(i.revealInstance, addressValues[0]),
             reveal.getFinalHash(i.revealInstance, addressValues[0]),
             i.finalTime,
