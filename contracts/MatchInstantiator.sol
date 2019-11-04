@@ -15,9 +15,10 @@ contract MatchInstantiator is MatchInterface, Decorated {
         address claimer;
         uint256 epochNumber;
         uint256 matchDuration; // time interval to interact with this contract
-        uint256 roundDuration; // time interval to interact with this contract
+        uint256 roundDuration; // time interval to interact with an eventual vg
         uint256 timeOfLastMove;
         address machine; // machine which will run the challenge
+        bytes32 logHash; // hash of the log of claimer's move
         bytes32 initialHash;
         bytes32 finalHash;
         uint256 finalTime;
@@ -35,6 +36,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         uint256 _matchDuration,
         uint256 _roundDuration,
         address _machineAddress,
+        bytes32 _logHash,
         bytes32 _initialHash,
         bytes32 _finalHash,
         uint256 _finalTime,
@@ -66,6 +68,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         uint256 _matchDuration,
         uint256 _roundDuration,
         address _machineAddress,
+        bytes32 _logHash,
         bytes32 _initialHash,
         bytes32 _finalHash,
         uint256 _finalTime,
@@ -79,6 +82,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         currentInstance.matchDuration = _matchDuration;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.machine = _machineAddress;
+        currentInstance.logHash = _logHash;
         currentInstance.initialHash = _initialHash;
         currentInstance.finalHash = _finalHash;
         currentInstance.finalTime = _finalTime;
@@ -94,6 +98,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
             _matchDuration,
             _roundDuration,
             _machineAddress,
+            _logHash,
             _initialHash,
             _finalHash,
             _finalTime,
@@ -205,9 +210,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
     function getState(uint256 _index, address) public view returns
     (   address[3] memory _addressValues,
         uint256[4] memory _uintValues,
-        bytes32 _initialHash,
-        bytes32 _finalHash,
-        bytes32 _currentState
+        bytes32[4] memory _bytesValues
     )
     {
 
@@ -226,12 +229,17 @@ contract MatchInstantiator is MatchInterface, Decorated {
             i.machine
         ];
 
-        return (
-            addressValues,
-            uintValues,
+        bytes32[4] memory bytesValues = [
+            i.logHash,
             i.initialHash,
             i.finalHash,
             getCurrentState(_index)
+        ];
+
+        return (
+            addressValues,
+            uintValues,
+            bytesValues
         );
    }
 
