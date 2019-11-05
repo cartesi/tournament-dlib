@@ -27,12 +27,12 @@ pub struct MatchManagerCtxParsed(
                     // lastEpochStartTime
                     // numberOfMatchesOnEpoch
                     // lastMatchIndex
-                    // revealInstance
+                    // parentInstance
                     // lastMatchEpoch
 
     AddressArray3,  // unmatchedplayer
                     // machine
-                    // revealaddress
+                    // parentaddress
 
     BoolField,      // registered
     String32Field,  // currentstate
@@ -49,8 +49,8 @@ pub struct MatchManagerCtx {
    pub unmatched_player: Address,
    pub last_match_index: U256,
    pub machine: Address,
-   pub reveal_address: Address,
-   pub reveal_instance: U256,
+   pub parent_address: Address,
+   pub parent_instance: U256,
    pub last_match_epoch: U256,
    pub registered: bool,
    pub current_state: String,
@@ -67,12 +67,12 @@ impl From<MatchManagerCtxParsed> for MatchManagerCtx {
             last_epoch_start_time: parsed.0.value[4],
             number_of_matches_on_last_epoch: parsed.0.value[5],
             last_match_index: parsed.0.value[6],
-            reveal_instance: parsed.0.value[7],
+            parent_instance: parsed.0.value[7],
             last_match_epoch: parsed.0.value[8],
 
             unmatched_player: parsed.1.value[0],
             machine: parsed.1.value[1],
-            reveal_address: parsed.1.value[2],
+            parent_address: parsed.1.value[2],
 
             registered: parsed.2.value,
             current_state: parsed.3.value,

@@ -17,8 +17,8 @@ contract MatchManagerInterface is Instantiator {
         uint256 _matchDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
-        address _revealAddress,
-        uint256 _revealInstance,
+        address _parentAddress,
+        uint256 _parentInstance,
         address _machineAddress) public returns (uint256);
 
     function advanceEpoch(uint256 _index) public;

@@ -4,10 +4,11 @@ pragma solidity ^0.5.0;
 
 import ".//Decorated.sol";
 import "./MatchManagerInterface.sol";
-import "./RevealInterface.sol";
 import "./MatchInterface.sol";
 
-// TO-DO: how should the parent(reveal) be called?
+// TO-DO: This should be DAppInterface
+import "./RevealInterface.sol";
+
 contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     MatchInterface private mi;
@@ -24,8 +25,8 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         mapping(address => uint256) lastMatchIndex; // player address to index of his last played match
         mapping(address => mapping(uint256 => bool)) registered; // player address to true if he is registered
         address machineAddress;
-        address revealAddress;
-        uint256 revealInstance;
+        address parentAddress;
+        uint256 parentInstance;
 
         state currentState;
     }
@@ -40,8 +41,8 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     /// @param _epochDuration epoch duration in seconds.
     /// @param _roundDuration duration of a round in seconds.
     /// @param _finalTime final time of matches being played.
-    /// @param _revealAddress address of parent reveal contract
-    /// @param _revealInstance reveal instance that this contract is interacting with
+    /// @param _parentAddress address of parent parent contract
+    /// @param _parentInstance parent instance that this contract is interacting with
     /// @param _machineAddress Machine that will run the challenge.
     /// @return Match Manager index.
 
@@ -50,8 +51,8 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         uint256 _matchDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
-        address _revealAddress,
-        uint256 _revealInstance,
+        address _parentAddress,
+        uint256 _parentInstance,
         address _machineAddress) public returns (uint256)
     {
         MatchManagerCtx storage currentInstance = instance[currentIndex];
@@ -60,8 +61,8 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         currentInstance.roundDuration = _roundDuration;
         currentInstance.finalTime = _finalTime;
         currentInstance.machineAddress = _machineAddress;
-        currentInstance.revealAddress = _revealAddress;
-        currentInstance.revealInstance = _revealInstance;
+        currentInstance.parentAddress = _parentAddress;
+        currentInstance.parentInstance = _parentInstance;
         currentInstance.unmatchedPlayer = address(0);
         currentInstance.currentEpoch = 0;
         currentInstance.lastEpochStartTime = now;
@@ -95,9 +96,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         // check if player completed the Reveal phase
         // check if player has already registered
         if (instance[_index].currentEpoch == 0) {
-            RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
+            RevealInterface parent = RevealInterface(instance[_index].parentAddress);
             require(!instance[_index].registered[msg.sender][instance[_index].currentEpoch], "Player cannot register twice");
-            require(reveal.playerExist(instance[_index].revealInstance, msg.sender), "Player must have completed reveal phase");
+            require(parent.playerExist(instance[_index].parentInstance, msg.sender), "Player must have completed parent phase");
 
             instance[_index].registered[msg.sender][instance[_index].currentEpoch] = true;
 
@@ -141,10 +142,10 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
                                             // unmatchedAddr
         addressValues[2] = i.unmatchedPlayer;
 
-        RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
+        RevealInterface parent = RevealInterface(instance[_index].parentAddress);
 
         // the highest score between both is the claimer, the lowest is the challenger
-        if (reveal.getScore(i.revealInstance, msg.sender) > reveal.getScore(i.revealInstance, addressValues[2])) {
+        if (parent.getScore(i.parentInstance, msg.sender) > parent.getScore(i.parentInstance, addressValues[2])) {
             addressValues[0] = msg.sender;
             addressValues[1] = addressValues[2];
         } else {
@@ -160,9 +161,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             i.matchDuration,
             i.roundDuration,
             i.machineAddress,
-            reveal.getLogHash(i.revealInstance, addressValues[0]),
-            reveal.getInitialHash(i.revealInstance, addressValues[0]),
-            reveal.getFinalHash(i.revealInstance, addressValues[0]),
+            parent.getLogHash(i.parentInstance, addressValues[0]),
+            parent.getInitialHash(i.parentInstance, addressValues[0]),
+            parent.getFinalHash(i.parentInstance, addressValues[0]),
             i.finalTime,
             now
         );
@@ -192,9 +193,9 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     // doing this will make this func stopping being view
     // TO-DO: this function will probably not exist
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
-        // RevealInterface reveal = RevealInterface(instance[_index].revealAddress);
+        // RevealInterface parent = RevealInterface(instance[_index].parentAddress);
 
-        //bool concerned = reveal.playerExist(instance[_index].revealInstance, _user);
+        //bool concerned = parent.playerExist(instance[_index].parentInstance, _user);
 
         //return concerned;
         return true;
@@ -217,7 +218,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
                 i.lastEpochStartTime,
                 instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch - 1],
                 instance[_index].lastMatchIndex[_user],
-                i.revealInstance,
+                i.parentInstance,
                 mi.getEpochNumber(instance[_index].lastMatchIndex[_user])
 
             ];
@@ -225,7 +226,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             address[3] memory addressValues = [
                 i.unmatchedPlayer,
                 i.machineAddress,
-                i.revealAddress
+                i.parentAddress
             ];
 
             return (
