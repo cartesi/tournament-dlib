@@ -14,6 +14,7 @@ use super::{cartesi_base, Role, VG, SessionRunRequest, SessionRunResult,
     EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN, EMULATOR_METHOD_NEW,
     Hash, FilePath, LOGGER_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD};
 use super::{VGCtx, VGCtxParsed};
+use std::fs;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -56,7 +57,7 @@ pub struct MatchCtx {
 #[derive(Default)]
 pub struct MachineTemplate {
     pub machine: cartesi_base::MachineRequest,
-    pub drive_index: usize
+    pub drive_path: String
 }
 
 impl From<MatchCtxParsed> for MatchCtx {
@@ -206,14 +207,15 @@ impl DApp<MachineTemplate> for Match {
                         &instance.concern.contract_address,
                     );
 
-                    // TODO: replace one drive in the machine struct
+                    // copy the downloaded log to the drive_path in the machine_template
+                    fs::copy(processed_response.path.clone(), machine_template.drive_path.clone())?;
 
                     let request = NewSessionRequest {
                         session_id: id.clone(),
                         machine: machine_template.machine.clone()
                     };
-                    // send newSession request to the emulator service
 
+                    // send newSession request to the emulator service
                     let id_clone = id.clone();
                     let duplicate_session_msg = format!("Trying to register a session with a session_id that already exists: {}", id);
                     let _processed_response: NewSessionResult = archive.get_response(

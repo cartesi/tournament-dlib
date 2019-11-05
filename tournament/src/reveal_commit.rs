@@ -169,7 +169,7 @@ impl DApp<()> for RevealCommit {
                 }
                 
                 // automatically submitting the log to the logger
-                let path = format!("{:x}{}", ctx.log_hash, ".log".to_string());
+                let path = format!("{:x}.log", ctx.log_hash);
                 trace!("Submitting file: {}...", path);
                 let request = FilePath {
                     path: path.clone()
