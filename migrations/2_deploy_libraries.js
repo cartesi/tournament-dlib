@@ -8,11 +8,11 @@ var MatchManagerInstantiator = artifacts.require("./MatchManagerInstantiator.sol
 var MatchInstantiator = artifacts.require("./MatchInstantiator.sol");
 var Logger = artifacts.require("../logger-dlib/contracts/Logger.sol");
 
-var LoggerMock = artifacts.require("./LoggerMock.sol");
+var LoggerMock = artifacts.require("../test/LoggerMock.sol");
 
-var VGMock = artifacts.require("./VGMock.sol");
-var RevealMock = artifacts.require("./RevealMock.sol");
-var DAppMock = artifacts.require("./DAppMock.sol");
+var VGMock = artifacts.require("../test/VGMock.sol");
+var RevealMock = artifacts.require("../test/RevealMock.sol");
+var DAppMock = artifacts.require("../test/DAppMock.sol");
 
 module.exports = function(deployer, network, accounts) {
 
