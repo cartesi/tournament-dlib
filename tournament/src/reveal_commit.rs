@@ -116,6 +116,29 @@ impl DApp<()> for RevealCommit {
             }
 
             "CommitPhase" => {
+                // if the post parameter exists, commit that
+                if post_payload.is_some() {
+                    let post_string = post_payload.as_ref().unwrap();
+                    let request = TransactionRequest {
+                        concern: instance.concern.clone(),
+                        value: U256::from(0),
+                        function: "commit".into(),
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        // improve these types by letting the
+                        // dapp submit ethereum_types and convert
+                        // them inside the transaction manager
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        data: vec![
+                            Token::Uint(instance.index),
+                            Token::FixedBytes(
+                                post_string.as_bytes().to_vec(),
+                            ),
+                        ],
+                        strategy: transaction::Strategy::Simplest,
+                    };
+                    return Ok(Reaction::Transaction(request));
+                }
+
                 let phase_is_over = current_time > ctx.instantiated_at.as_u64() + ctx.commit_duration.as_u64();
 
                 if phase_is_over {
@@ -140,8 +163,7 @@ impl DApp<()> for RevealCommit {
                     return Ok(Reaction::Transaction(request));
 
                 }
-                // if current highscore > previous highscore, commit
-                // else:
+                // If there is no post and the phase is not over, idles
                 return Ok(Reaction::Idle);
             }
 
@@ -167,7 +189,7 @@ impl DApp<()> for RevealCommit {
                 if ctx.has_revealed {
                     return Ok(Reaction::Idle);
                 }
-                
+
                 // automatically submitting the log to the logger
                 let path = format!("{:x}.log", ctx.log_hash);
                 trace!("Submitting file: {}...", path);
