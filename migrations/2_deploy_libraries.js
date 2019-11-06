@@ -2,16 +2,16 @@ const fs = require('fs');
 
 
 var RevealInstantiator = artifacts.require("RevealInstantiator");
-var BitsManipulationLibrary = artifacts.require("BitsManipulationLibrary");
+var BitsManipulationLibrary = artifacts.require("@cartesi/util/BitsManipulationLibrary");
 var MatchManagerInstantiator = artifacts.require("MatchManagerInstantiator");
 var MatchInstantiator = artifacts.require("MatchInstantiator");
-var Logger = artifacts.require("logger-dlib/Logger");
+var Logger = artifacts.require("@cartesi/logger/Logger");
 
-var LoggerMock = artifacts.require("test/LoggerMock");
+var LoggerMock = artifacts.require("LoggerMock");
 
-var VGMock = artifacts.require("test/VGMock");
-var RevealMock = artifacts.require("test/RevealMock");
-var DAppMock = artifacts.require("test/DAppMock");
+var VGMock = artifacts.require("VGMock");
+var RevealMock = artifacts.require("RevealMock");
+var DAppMock = artifacts.require("DAppMock");
 
 module.exports = function(deployer, network, accounts) {
 

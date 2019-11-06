@@ -16,6 +16,8 @@ services:
     build:
       context: .
       dockerfile: ./deployer/Dockerfile
+      args: 
+        NPM_TOKEN: ${NPM_TOKEN}
     volumes:
       - truffle_data:/usr/src/app/build
     networks:

@@ -27,12 +27,12 @@
 // @title Verification game instantiator
 pragma solidity ^0.5.0;
 
-import "../Decorated.sol";
-import "../VGInterface.sol";
-import "../Instantiator.sol";
-import "../PartitionInterface.sol";
-import "../MMInterface.sol";
-import "../MachineInterface.sol";
+import "@cartesi/util/contracts/Decorated.sol";
+import "@cartesi/arbitration/contracts/VGInterface.sol";
+import "@cartesi/util/contracts/Instantiator.sol";
+import "@cartesi/arbitration/contracts/PartitionInterface.sol";
+import "@cartesi/arbitration/contracts/MMInterface.sol";
+import "@cartesi/arbitration/contracts/MachineInterface.sol";
 
 contract VGMock is Decorated, VGInterface {
     //  using SafeMath for uint;

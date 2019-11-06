@@ -2,8 +2,8 @@
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
-import ".//Decorated.sol";
-import ".//VGInterface.sol";
+import "@cartesi/util/contracts/Decorated.sol";
+import "@cartesi/arbitration/contracts/VGInterface.sol";
 import "./MatchInterface.sol";
 
 contract MatchInstantiator is MatchInterface, Decorated {

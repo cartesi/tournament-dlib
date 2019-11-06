@@ -2,7 +2,7 @@
 /// @author Felipe Argento
 pragma solidity ^0.5.0;
 
-import "../Decorated.sol";
+import "@cartesi/util/contracts/Decorated.sol";
 import "./RevealMockInterface.sol";
 import "../MatchManagerInterface.sol";
 

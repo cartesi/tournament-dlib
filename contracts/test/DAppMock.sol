@@ -3,8 +3,8 @@
 pragma solidity ^0.5.0;
 
 import "./RevealMockInterface.sol";
-import "../Decorated.sol";
-import "../Instantiator.sol";
+import "@cartesi/util/contracts/Decorated.sol";
+import "@cartesi/util/contracts/Instantiator.sol";
 
 contract DAppMock is Decorated, Instantiator{
 

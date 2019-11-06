@@ -1,0 +1,40 @@
+{
+  "name": "@cartesi/tournament",
+  "version": "0.1.0-alpha.0",
+  "description": "Tournament DLib",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "prepare": "truffle compile",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "truffle": "^5.0.44"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cartesi-corp/tournament-dlib.git"
+  },
+  "keywords": [
+    "cartesi"
+  ],
+  "author": "Danilo Tuler <danilo@cartesi.io>",
+  "license": "Apache-2.0",
+  "files": [
+    "contracts",
+    "migrations",
+    "build"
+  ],
+  "bugs": {
+    "url": "https://github.com/cartesi-corp/tournament-dlib/issues"
+  },
+  "homepage": "https://github.com/cartesi-corp/tournament-dlib#readme",
+  "dependencies": {
+    "@cartesi/arbitration": "^0.1.0-alpha.0",
+    "@cartesi/util": "^0.1.0-alpha.6",
+    "@cartesi/logger": "^0.1.0-alpha.0"
+  }
+}

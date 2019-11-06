@@ -11,9 +11,9 @@
 
 pragma solidity ^0.5.0;
 
-import "../Decorated.sol";
-import "../logger-dlib/LoggerInterface.sol";
-import "../Merkle.sol";
+import "@cartesi/util/contracts/Decorated.sol";
+import "@cartesi/logger/contracts/LoggerInterface.sol";
+import "@cartesi/util/contracts/Merkle.sol";
 
 //////////////////////////////////////////////////////////////
 //
