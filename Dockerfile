@@ -9,19 +9,18 @@ RUN \
 
 WORKDIR $BASE
 
-COPY ./lib/ $BASE/lib
-COPY ./dispatcher/ $BASE/dispatcher
+COPY ./arbitration-dlib/ $BASE/arbitration-dlib
 
-WORKDIR $BASE/compute
+WORKDIR $BASE/tournament
 
 # Compile dependencies
-COPY ./compute/Cargo.toml ./
-COPY ./compute/Cargo.lock ./
+COPY ./tournament/Cargo.toml ./
+COPY ./tournament/Cargo.lock ./
 RUN mkdir -p ./src && echo "fn main() { }" > ./src/main.rs
 RUN cargo build -j $(nproc) --release
 
 # Compile tournament test
-COPY ./compute/src ./src
+COPY ./tournament/src ./src
 
 RUN cargo install -j $(nproc) --path .
 
