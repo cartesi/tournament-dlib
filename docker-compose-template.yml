@@ -21,35 +21,22 @@ services:
     networks:
       - ganache
 
-  logger_deployer:
-    depends_on: [ganache]
-    image: cartesi/logger-blockchain-deployer
-    volumes:
-      - logger_deploy:/usr/src/app/build
-    networks:
-      - ganache
-
-  logger_configurer:
-     depends_on: [logger_deployer]
-     image: cartesi/logger-configurer
-     volumes:
-       - logger_deploy:/truffle_data
-
   key_distributor:
     depends_on: [ganache]
     image: cartesi/key-distributor
     volumes:
       - ganache_data:/keys
-      {% for i in range(players) %}- dispatcher_data_{{ i }}:/key-{{ i }}
+      {% for i in range(players) %}- key_data_{{ i }}:/key-{{ i }}
       {% endfor %}
 
 {% for i in range(players) %}
   dispatcher_setup_{{ i }}:
-    depends_on: [deployer]
+    depends_on: [deployer, key_distributor]
     build: ./setup
     volumes:
       - truffle_data:/opt/cartesi/blockchain
       - dispatcher_data_{{ i }}:/opt/cartesi/dispatcher/config
+      - key_data_{{ i }}:/opt/cartesi/keys
 
   dispatcher_{{ i }}:
     depends_on: [dispatcher_setup_{{ i }}]
@@ -59,17 +46,26 @@ services:
       DOCKER: "true"
     volumes:
       - truffle_data:/opt/cartesi/blockchain
-      - dispatcher_data_0:/opt/cartesi/dispatcher/config
+      - dispatcher_data_{{ i }}:/opt/cartesi/dispatcher/config
+      - key_data_{{ i }}:/opt/cartesi/keys
     networks:
       - ganache
       - node_{{ i }}
 
+  logger_setup_{{ i }}:
+    depends_on: [deployer, key_distributor]
+    image: cartesi/logger-configurer
+    volumes:
+      - truffle_data:/opt/cartesi/blockchain
+      - logger_data_{{ i }}:/opt/cartesi/logger/config
+
   logger_{{ i }}:
-    depends_on: [logger_configurer]
+    depends_on: [logger_setup_{{ i }}]
     image: cartesi/logger-server
     volumes:
-      - logger_deploy:/opt/cartesi/blockchain
-      - logger_data_{{ i }}:/opt/cartesi/logger/data
+      - truffle_data:/opt/cartesi/blockchain
+      - logger_data_{{ i }}:/opt/cartesi/logger/config
+      - key_data_{{ i }}:/opt/cartesi/keys
     networks:
       ganache: {}
       node_{{ i }}:
@@ -105,9 +101,9 @@ services:
 volumes:
   ganache_data:
   truffle_data:
-  logger_deploy:
   {% for i in range(players) %}dispatcher_data_{{ i }}:
   logger_data_{{ i }}:
+  key_data_{{ i }}:
   {% endfor %}
 
 networks:

@@ -1,18 +1,17 @@
-require('dotenv').config();
 const fs = require('fs');
 
 
-var RevealInstantiator = artifacts.require("./RevealInstantiator.sol");
-var BitsManipulationLibrary = artifacts.require("./BitsManipulationLibrary.sol");
-var MatchManagerInstantiator = artifacts.require("./MatchManagerInstantiator.sol");
-var MatchInstantiator = artifacts.require("./MatchInstantiator.sol");
-var Logger = artifacts.require("../logger-dlib/contracts/Logger.sol");
+var RevealInstantiator = artifacts.require("RevealInstantiator");
+var BitsManipulationLibrary = artifacts.require("BitsManipulationLibrary");
+var MatchManagerInstantiator = artifacts.require("MatchManagerInstantiator");
+var MatchInstantiator = artifacts.require("MatchInstantiator");
+var Logger = artifacts.require("logger-dlib/Logger");
 
-var LoggerMock = artifacts.require("../test/LoggerMock.sol");
+var LoggerMock = artifacts.require("test/LoggerMock");
 
-var VGMock = artifacts.require("../test/VGMock.sol");
-var RevealMock = artifacts.require("../test/RevealMock.sol");
-var DAppMock = artifacts.require("../test/DAppMock.sol");
+var VGMock = artifacts.require("test/VGMock");
+var RevealMock = artifacts.require("test/RevealMock");
+var DAppMock = artifacts.require("test/DAppMock");
 
 module.exports = function(deployer, network, accounts) {
 

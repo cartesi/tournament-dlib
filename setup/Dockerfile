@@ -20,10 +20,10 @@ WORKDIR $BASE
 # Copy scripts to create the dispatcher config
 COPY create-config dispatcher-config.jq ./
 
-CMD $BASE/create-config $BASE/blockchain/contracts `cat $BASE/dispatcher/config/account` $BASE/dispatcher/config/config.yaml \
+CMD $BASE/create-config $BASE/blockchain/contracts `cat $BASE/keys/account` $BASE/dispatcher/config/config.yaml \
     && touch $BASE/dispatcher/config/config_done
 
 ENTRYPOINT [ "dockerize", \
     "-wait", "file:///opt/cartesi/blockchain/contracts/deploy_done", \
-    "-wait", "file:///opt/cartesi/dispatcher/config/keys_done", \
+    "-wait", "file:///opt/cartesi/keys/keys_done", \
     "-timeout", "120s" ]

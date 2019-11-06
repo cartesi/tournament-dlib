@@ -7,7 +7,7 @@ import ".//VGInterface.sol";
 import "./RevealInterface.sol";
 import "./BitsManipulationLibrary.sol";
 import "./Merkle.sol";
-import "../logger-dlib/contracts/LoggerInterface.sol";
+import "./logger-dlib/LoggerInterface.sol";
 
 contract RevealInstantiator is RevealInterface, Decorated {
 

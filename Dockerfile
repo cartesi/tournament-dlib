@@ -46,7 +46,7 @@ COPY --from=build /usr/local/cargo/bin/test .
 COPY ./dispatcher-entrypoint.sh .
 
 CMD dockerize \
-    -wait file:///opt/cartesi/dispatcher/config/keys_done \
+    -wait file:///opt/cartesi/keys/keys_done \
     -wait file:///opt/cartesi/dispatcher/config/config_done \
     -wait tcp://ganache:8545 \
     -wait tcp://machine-manager:50051 \

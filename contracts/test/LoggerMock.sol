@@ -12,7 +12,7 @@
 pragma solidity ^0.5.0;
 
 import "../Decorated.sol";
-import "../LoggerInterface.sol";
+import "../logger-dlib/LoggerInterface.sol";
 import "../Merkle.sol";
 
 //////////////////////////////////////////////////////////////
