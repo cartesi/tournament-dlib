@@ -37,15 +37,19 @@ module.exports = function(deployer, network, accounts) {
         var playerAddresses = [accounts[0]];
         var scores = [100];
         var finalHashes = ["0x01"];
+        var logHashes = ["0x00"];
+        var initialHashes = ["0x00"];
 
         for (var i = 1; i < accounts.length; i++) {
             playerAddresses.push(accounts[i]);
             scores.push(i * 20);
+            logHashes.push("0x00");
+            initialHashes.push("0x00");
             finalHashes.push("0x00");
         }
 
         await deployer.deploy(RevealMock, MatchManagerInstantiator.address);
-        await deployer.deploy(DAppMock, RevealMock.address, playerAddresses, scores, finalHashes);
+        await deployer.deploy(DAppMock, RevealMock.address, playerAddresses, scores, logHashes, initialHashes, finalHashes);
 
         // TO-DO: Shouldnt be logger_mock, should be actual logger
         // Write address to file

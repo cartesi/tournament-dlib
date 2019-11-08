@@ -23,6 +23,8 @@ contract DAppMock is Decorated, Instantiator{
         address[] playerAddresses;
         uint256[] scores;
         bytes32[] finalHashes;
+        bytes32[] logHashes;
+        bytes32[] initialHashes;
 
         state currentState;
     }
@@ -33,7 +35,9 @@ contract DAppMock is Decorated, Instantiator{
         address _rmAddress,
         address[] memory _playerAddresses,
         uint256[] memory _scores,
-        bytes32[] memory _finalHashes
+        bytes32[] memory _finalHashes,
+        bytes32[] memory _logHashes,
+        bytes32[] memory _initialHashes
     ) public {
         require(_playerAddresses.length == _scores.length && _scores.length == _finalHashes.length, "Arrays should have the same length");
 
@@ -47,6 +51,8 @@ contract DAppMock is Decorated, Instantiator{
 
         instance[currentIndex].playerAddresses = _playerAddresses;
         instance[currentIndex].scores = _scores;
+        instance[currentIndex].logHashes = _logHashes;
+        instance[currentIndex].initialHashes = _initialHashes;
         instance[currentIndex].finalHashes = _finalHashes;
         instance[currentIndex].currentState = state.Idle;
 
@@ -72,7 +78,7 @@ contract DAppMock is Decorated, Instantiator{
         );
 
         //// also have to add yourself
-        rm.addFakePlayers(instance[_index].revealIndex, instance[_index].playerAddresses, instance[_index].scores, instance[_index].finalHashes);
+        rm.addFakePlayers(instance[_index].revealIndex, instance[_index].playerAddresses, instance[_index].scores, instance[_index].logHashes, instance[_index].initialHashes, instance[_index].finalHashes);
         return;
     }
 

@@ -23,7 +23,10 @@ contract RevealMockInterface is Instantiator {
         bytes32 _initialHash,
         address _machineAddress) public returns (uint256);
 
-    function addFakePlayers(uint256 _index, address[] memory _playerAddresses, uint256[] memory _scores, bytes32[] memory _finalHashes) public; 
+    function addFakePlayers(uint256 _index, address[] memory _playerAddresses, uint256[] memory _scores, bytes32[] memory _logHashes, bytes32[] memory _initialHash, bytes32[] memory _finalHashes) public; 
+
+    function getLogHash(uint256 _index, address _playerAddr) public returns (bytes32);
+    function getInitialHash(uint256 _index, address _playerAddr) public returns (bytes32);
 
     function getScore(uint256 _index, address _playerAddr) public returns (uint256);
     function getFinalHash(uint256 _index, address _playerAddr) public returns (bytes32);

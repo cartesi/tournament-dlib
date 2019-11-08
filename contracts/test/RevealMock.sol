@@ -28,9 +28,10 @@ contract RevealMock is Decorated, RevealMockInterface {
     struct Player {
         address playerAddr;
         bool hasRevealed;
-        bytes32 commit; //list of hashes commited by player
         uint256 score;
+        bytes32 initialHash;
         bytes32 finalHash;
+        bytes32 logHash;
     }
 
     event logCommited(uint256 index, address player, bytes32 logHash, uint256 block);
@@ -42,12 +43,14 @@ contract RevealMock is Decorated, RevealMockInterface {
         mmi = MatchManagerInterface(_mmiAddress);
     }
 
-    function addFakePlayers(uint256 _index, address[] memory _playerAddresses, uint256[] memory _scores, bytes32[] memory _finalHashes) public {
+    function addFakePlayers(uint256 _index, address[] memory _playerAddresses, uint256[] memory _scores, bytes32[] memory _logHashes, bytes32[] memory _initialHashes, bytes32[] memory _finalHashes) public {
         for (uint256 i = 0; i < _playerAddresses.length; i++) {
             Player memory newPlayer;
             newPlayer.playerAddr = _playerAddresses[i];
             newPlayer.score = _scores[i];
             newPlayer.finalHash = _finalHashes[i];
+            newPlayer.initialHash = _initialHashes[i];
+            newPlayer.logHash = _logHashes[i];
             newPlayer.hasRevealed = true;
 
             instance[_index].players[_playerAddresses[i]] = newPlayer;
@@ -114,7 +117,6 @@ contract RevealMock is Decorated, RevealMockInterface {
     /// @param _finalHash final hash of the machine after that log has been proccessed.
     function reveal(uint256 _index, uint256 _score, bytes32 _finalHash) public {
         require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
-        emit logRevealed(_index, msg.sender, instance[_index].players[msg.sender].commit, block.number);
     }
 
     function claimFinished(uint256 _index) public
@@ -128,6 +130,17 @@ contract RevealMock is Decorated, RevealMockInterface {
     function getScore(uint256 _index, address _playerAddr) public returns (uint256) {
         return instance[_index].players[_playerAddr].score;
     }
+
+    function getLogHash(uint256 _index, address _playerAddr) public returns (bytes32) {
+        require(playerExist(_index, _playerAddr), "Player has to exist");
+        return instance[_index].players[_playerAddr].logHash;
+    }
+
+    function getInitialHash(uint256 _index, address _playerAddr) public returns (bytes32) {
+        require(playerExist(_index, _playerAddr), "Player has to exist");
+        return instance[_index].players[_playerAddr].initialHash;
+    }
+
 
     function getFinalHash(uint256 _index, address _playerAddr) public returns (bytes32) {
         return instance[_index].players[_playerAddr].finalHash;
