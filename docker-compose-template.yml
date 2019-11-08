@@ -2,7 +2,7 @@
 version: '3'
 services:
   ganache:
-    image: trufflesuite/ganache-cli
+    image: trufflesuite/ganache-cli:v6.7.0
     command: ["ganache-cli", "--accounts", "{{ players }}", "--account_keys_path", "/ganache-data/keys"]
     volumes:
       - ganache_data:/ganache-data
