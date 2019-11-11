@@ -1,3 +1,4 @@
+use super::{build_machine_id, build_session_read_key, build_session_proof_key};
 use super::configuration::Concern;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array6, BoolField};
 use super::dispatcher::{Archive, DApp, Reaction};
@@ -8,8 +9,11 @@ use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{
+    SessionReadMemoryRequest, SessionReadMemoryResult,
+    SessionGetProofRequest, SessionGetProofResult,
+    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF,
     LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
-    LOGGER_METHOD_DOWNLOAD, FilePath, Hash};
+    LOGGER_METHOD_DOWNLOAD, FilePath, Hash, cartesi_base};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -219,6 +223,76 @@ impl DApp<()> for RevealCommit {
                     })?
                     .into();
                 trace!("Submitted! Result: {:?}...", processed_response.hash);
+
+                // get score from emulator
+                // TODO: fill in the time, address and length parameters
+                let id = build_machine_id(
+                    instance.index,
+                    &instance.concern.contract_address,
+                );
+                let id_clone = id.clone();
+                let time = 0;
+                let address = 0;
+                let length = 0;
+
+                let archive_key = build_session_read_key(id.clone(), time, address, length);
+                let mut position = cartesi_base::ReadMemoryRequest::new();
+                position.set_address(address);
+                position.set_length(length);
+
+                let request = SessionReadMemoryRequest {
+                    session_id: id.clone(),
+                    time: time,
+                    position: position
+                };
+
+                let processed_response: SessionReadMemoryResult = archive.get_response(
+                    EMULATOR_SERVICE_NAME.to_string(),
+                    archive_key.clone(),
+                    EMULATOR_METHOD_READ.to_string(),
+                    request.into())?
+                    .map_err(move |_e| {
+                        Error::from(ErrorKind::ArchiveInvalidError(
+                            EMULATOR_SERVICE_NAME.to_string(),
+                            id_clone,
+                            EMULATOR_METHOD_READ.to_string()))
+                    })?
+                    .into();
+
+                trace!("Read memory result: {:?}...", processed_response.read_content.data);
+
+                // get hash of log drive from emulator
+                // TODO: fill in the time, address and log2_size parameters
+                let id_clone = id.clone();
+                let time = 0;
+                let address = 0;
+                let log2_size = 0;
+
+                let archive_key = build_session_proof_key(id.clone(), time, address, log2_size);
+                let mut target = cartesi_base::GetProofRequest::new();
+                target.set_address(address);
+                target.set_log2_size(log2_size);
+
+                let request = SessionGetProofRequest {
+                    session_id: id.clone(),
+                    time: time,
+                    target: target
+                };
+
+                let processed_response: SessionGetProofResult = archive.get_response(
+                    EMULATOR_SERVICE_NAME.to_string(),
+                    archive_key.clone(),
+                    EMULATOR_METHOD_PROOF.to_string(),
+                    request.into())?
+                    .map_err(move |_e| {
+                        Error::from(ErrorKind::ArchiveInvalidError(
+                            EMULATOR_SERVICE_NAME.to_string(),
+                            id_clone,
+                            EMULATOR_METHOD_PROOF.to_string()))
+                    })?
+                    .into();
+
+                trace!("Get proof result: {:?}...", processed_response.proof);
 
                 // else complete reveal
                 // TO-DO: complete transaction parameters

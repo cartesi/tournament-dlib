@@ -57,10 +57,12 @@ pub use compute::{VG, VGCtx, VGCtxParsed};
 pub use compute::{
     cartesi_base,
     AccessOperation, NewSessionRequest, NewSessionResult,
-    SessionRunRequest, SessionStepRequest,
-    SessionRunResult, SessionStepResult,
+    SessionRunRequest, SessionRunResult, SessionStepRequest,
+    SessionReadMemoryRequest, SessionReadMemoryResult,
+    SessionGetProofRequest, SessionGetProofResult,
     EMULATOR_SERVICE_NAME, EMULATOR_METHOD_NEW,
-    EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP};
+    EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
+    EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF};
     
 pub use logger_interface::{logger_high};
 pub use logger_service::{
@@ -100,4 +102,12 @@ pub fn build_session_run_key(id: String, times: Vec<u64>) -> String {
 
 pub fn build_session_step_key(id: String, divergence_time: String) -> String {
     return format!("{}_step_{}", id, divergence_time);
+}
+
+pub fn build_session_read_key(id: String, time: u64, address: u64, length: u64) -> String {
+    return format!("{}_read_{}_{}_{}", id, time, address, length);
+}
+
+pub fn build_session_proof_key(id: String, time: u64, address: u64, log2_size: u64) -> String {
+    return format!("{}_proof_{}_{}_{}", id, time, address, log2_size);
 }
