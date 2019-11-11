@@ -145,6 +145,7 @@ impl DApp<()> for RevealCommit {
                             ],
                             strategy: transaction::Strategy::Simplest,
                         };
+                        return Ok(Reaction::Transaction(request));
 
                     }
                     None => {
