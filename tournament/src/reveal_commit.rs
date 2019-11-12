@@ -283,11 +283,6 @@ pub fn prepare_reveal_transaction(
     // TO-DO: Define final_time!
     let final_time = 500;
 
-    let path = format!("{:x}.log", log_hash);
-    let log_file = FilePath {
-        path: path.clone()
-    };
-
     // get score from emulator
     let id = build_machine_id(
         index,
@@ -406,6 +401,12 @@ pub fn prepare_reveal_transaction(
         &concern.contract_address,
     );
 
+    // get log path/file
+    let path = format!("{:x}.log", log_hash);
+    let log_file = FilePath {
+        path: path.clone()
+    };
+
     // add log drive to template machine
     fs::copy(log_file.clone(), machine_template.drive_path.clone())?;
 
@@ -474,7 +475,7 @@ pub fn prepare_reveal_transaction(
             data: vec![
                 Token::Uint(index),
                 Token::Uint(score),
-                Token::FixedBytes(final_hash),
+                Token::FixedBytes(final_hash.0.to_vec()),
                 Token::Array(log_siblings),
                 Token::Array(score_siblings)
             ],
