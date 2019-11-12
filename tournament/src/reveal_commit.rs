@@ -1,4 +1,4 @@
-use super::{build_machine_id, build_session_read_key, build_session_proof_key};
+use super::{build_machine_id, build_session_read_key, build_session_proof_key, build_session_run_key};
 use super::configuration::Concern;
 use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array6, BoolField};
 use super::dispatcher::{Archive, DApp, Reaction};
@@ -9,13 +9,16 @@ use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{
+    SessionRunRequest, SessionRunResult,
+    NewSessionRequest, NewSessionResult,
     SessionReadMemoryRequest, SessionReadMemoryResult,
     SessionGetProofRequest, SessionGetProofResult,
-    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF,
+    EMULATOR_METHOD_NEW, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_RUN,
     LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
     LOGGER_METHOD_DOWNLOAD, FilePath, Hash, cartesi_base};
 
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::fs;
 
 pub struct RevealCommit();
 
@@ -281,7 +284,7 @@ pub fn prepare_reveal_transaction(
     let final_time = 500;
 
     let path = format!("{:x}.log", log_hash);
-    let file_path = FilePath {
+    let log_file = FilePath {
         path: path.clone()
     };
 
