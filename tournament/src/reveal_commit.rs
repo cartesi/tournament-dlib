@@ -162,7 +162,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
 
                         if phase_is_over {
                             // if commit phase is over, player reveal his log and forces the phase change
-                            return prepare_reveal_transaction(
+                            return complete_reveal_phase(
                                 &instance.concern,
                                 instance.index,
                                 archive,
@@ -203,30 +203,9 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                     return Ok(Reaction::Idle);
                 }
 
-                // automatically submitting the log to the logger
-                let path = format!("{:x}.log", ctx.log_hash);
-                trace!("Submitting file: {}...", path);
-                let request = FilePath {
-                    path: path.clone()
-                };
-
-                let processed_response: Hash = archive.get_response(
-                    LOGGER_SERVICE_NAME.to_string(),
-                    path.clone(),
-                    LOGGER_METHOD_SUBMIT.to_string(),
-                    request.into())?
-                    .map_err(move |_e| {
-                        Error::from(ErrorKind::ArchiveInvalidError(
-                            LOGGER_SERVICE_NAME.to_string(),
-                            path,
-                            LOGGER_METHOD_SUBMIT.to_string()))
-                    })?
-                    .into();
-                trace!("Submitted! Result: {:?}...", processed_response.hash);
-
 
                 // else complete reveal
-                return prepare_reveal_transaction(
+                return complete_reveal_phase(
                     &instance.concern,
                     instance.index,
                     archive,
@@ -272,7 +251,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
     }
 }
 
-pub fn prepare_reveal_transaction(
+pub fn complete_reveal_phase(
     concern: &Concern,
     index: U256,
     archive: &Archive,
@@ -283,11 +262,62 @@ pub fn prepare_reveal_transaction(
     // TO-DO: Define final_time!
     let final_time = 500;
 
-    // get score from emulator
+    // automatically submitting the log to the logger
+    let path = format!("{:x}.log", log_hash);
+    trace!("Submitting file: {}...", path);
+    let log_file = FilePath {
+        path: path.clone()
+    };
+
+    let processed_response: Hash = archive.get_response(
+        LOGGER_SERVICE_NAME.to_string(),
+        path.clone(),
+        LOGGER_METHOD_SUBMIT.to_string(),
+        log_file.into())?
+        .map_err(move |_e| {
+            Error::from(ErrorKind::ArchiveInvalidError(
+                LOGGER_SERVICE_NAME.to_string(),
+                path,
+                LOGGER_METHOD_SUBMIT.to_string()))
+        })?
+        .into();
+    trace!("Submitted! Result: {:?}...", processed_response.hash);
+
+
+    // build machine
     let id = build_machine_id(
         index,
         &concern.contract_address,
     );
+    // add log drive to template machine
+    fs::copy(log_file.path.clone(), machine_template.drive_path.clone())?;
+
+    // send newSession request to the emulator service
+    let request = NewSessionRequest {
+        session_id: id.clone(),
+        machine: machine_template.machine.clone()
+    };
+    let id_clone = id.clone();
+    let duplicate_session_msg = format!("Trying to register a session with a session_id that already exists: {}", id);
+    let _processed_response: NewSessionResult = archive.get_response(
+        EMULATOR_SERVICE_NAME.to_string(),
+        id.clone(),
+        EMULATOR_METHOD_NEW.to_string(),
+        request.into())?
+        .map_err(move |e| {
+            if e == duplicate_session_msg {
+                Error::from(ErrorKind::ArchiveNeedsDummy(
+                    EMULATOR_SERVICE_NAME.to_string(),
+                    id_clone,
+                    EMULATOR_METHOD_NEW.to_string()))
+            } else {
+                Error::from(ErrorKind::ArchiveInvalidError(
+                    EMULATOR_SERVICE_NAME.to_string(),
+                    id_clone,
+                    EMULATOR_METHOD_NEW.to_string()))
+            }
+        })?
+        .into();
 
     // Score is the first word (logsize = 3) of the output drive
     // The output drive starts at address: (1<<63)+(3<<61)
@@ -296,8 +326,8 @@ pub fn prepare_reveal_transaction(
     let time = final_time;
     let address = (1<<63)+(3<<61);
 
-    // TO-DO: is log2size and length the same thing?
-    let length = 3;
+    // TO-DO: Verify if length is in bytes!
+    let length = 8;
 
     let archive_key = build_session_read_key(id.clone(), time, address, length);
     let mut position = cartesi_base::ReadMemoryRequest::new();
@@ -356,6 +386,7 @@ pub fn prepare_reveal_transaction(
 
     trace!("Get proof result: {:?}...", processed_response.proof);
 
+    // TO-DO: transform V<u8> to uint
     let score_siblings = processed_response.proof;
 
     // get hash of log drive from emulator
@@ -395,48 +426,6 @@ pub fn prepare_reveal_transaction(
 
     let log_siblings = processed_response.proof;
 
-    // build machine
-    let id = build_machine_id(
-        index,
-        &concern.contract_address,
-    );
-
-    // get log path/file
-    let path = format!("{:x}.log", log_hash);
-    let log_file = FilePath {
-        path: path.clone()
-    };
-
-    // add log drive to template machine
-    fs::copy(log_file.clone(), machine_template.drive_path.clone())?;
-
-    let request = NewSessionRequest {
-        session_id: id.clone(),
-        machine: machine_template.machine.clone()
-    };
-
-    // send newSession request to the emulator service
-    let id_clone = id.clone();
-    let duplicate_session_msg = format!("Trying to register a session with a session_id that already exists: {}", id);
-    let _processed_response: NewSessionResult = archive.get_response(
-        EMULATOR_SERVICE_NAME.to_string(),
-        id.clone(),
-        EMULATOR_METHOD_NEW.to_string(),
-        request.into())?
-        .map_err(move |e| {
-            if e == duplicate_session_msg {
-                Error::from(ErrorKind::ArchiveNeedsDummy(
-                    EMULATOR_SERVICE_NAME.to_string(),
-                    id_clone,
-                    EMULATOR_METHOD_NEW.to_string()))
-            } else {
-                Error::from(ErrorKind::ArchiveInvalidError(
-                    EMULATOR_SERVICE_NAME.to_string(),
-                    id_clone,
-                    EMULATOR_METHOD_NEW.to_string()))
-            }
-        })?
-        .into();
 
     // TO-DO: what is final time?
     let sample_points: Vec<u64> =
@@ -468,13 +457,35 @@ pub fn prepare_reveal_transaction(
 
         let final_hash = processed_response.hashes[1];
 
+        // get actual siblings
+        let mut log_siblings: Vec<_> = log_siblings
+            .sibling_hashes
+            .into_iter()
+            .map(|hash| Token::FixedBytes(hash.0.to_vec()))
+            .collect();
+        trace!("Size of siblings: {}", log_siblings.len());
+        // !!!!! This should not be necessary, !!!!!!!
+        // !!!!! the emulator should do it     !!!!!!!
+        log_siblings.reverse();
+
+        // get actual siblings
+        let mut score_siblings: Vec<_> = score_siblings
+            .sibling_hashes
+            .into_iter()
+            .map(|hash| Token::FixedBytes(hash.0.to_vec()))
+            .collect();
+        trace!("Size of siblings: {}", score_siblings.len());
+        // !!!!! This should not be necessary, !!!!!!!
+        // !!!!! the emulator should do it     !!!!!!!
+        score_siblings.reverse();
+
         let request = TransactionRequest {
             concern: concern.clone(),
             value: U256::from(0),
             function: "reveal".into(),
             data: vec![
                 Token::Uint(index),
-                Token::Uint(score),
+                Token::u64::from(score),
                 Token::FixedBytes(final_hash.0.to_vec()),
                 Token::Array(log_siblings),
                 Token::Array(score_siblings)
