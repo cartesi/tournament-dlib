@@ -95,7 +95,7 @@ impl DApp<()> for RevealCommit {
         instance: &state::Instance,
         archive: &Archive,
         post_payload: &Option<String>,
-        _: &(),
+        machine_template: &MachineTemplate,
     ) -> Result<Reaction> {
         // get context (state) of the reveal instance
         let parsed: RevealCommitCtxParsed =
