@@ -77,6 +77,16 @@ struct Params {
     path: String
 }
 
+fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
+    if input.len() != 8 {
+        None
+    } else {
+        Some([
+            input[0], input[1], input[2], input[3], input[4], input[5],
+            input[6], input[7],
+        ])
+    }
+}
 impl From<RevealCommitCtxParsed> for RevealCommitCtx {
     fn from(parsed: RevealCommitCtxParsed) -> RevealCommitCtx {
         RevealCommitCtx {
@@ -265,15 +275,14 @@ pub fn complete_reveal_phase(
     // automatically submitting the log to the logger
     let path = format!("{:x}.log", log_hash);
     trace!("Submitting file: {}...", path);
-    let log_file = FilePath {
-        path: path.clone()
-    };
+
+    let path_clone = path.clone();
 
     let processed_response: Hash = archive.get_response(
         LOGGER_SERVICE_NAME.to_string(),
         path.clone(),
         LOGGER_METHOD_SUBMIT.to_string(),
-        log_file.into())?
+        path.clone().into())?
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 LOGGER_SERVICE_NAME.to_string(),
@@ -283,14 +292,13 @@ pub fn complete_reveal_phase(
         .into();
     trace!("Submitted! Result: {:?}...", processed_response.hash);
 
-
     // build machine
     let id = build_machine_id(
         index,
         &concern.contract_address,
     );
     // add log drive to template machine
-    fs::copy(log_file.path.clone(), machine_template.drive_path.clone())?;
+    fs::copy(path_clone, machine_template.drive_path.clone())?;
 
     // send newSession request to the emulator service
     let request = NewSessionRequest {
@@ -485,7 +493,7 @@ pub fn complete_reveal_phase(
             function: "reveal".into(),
             data: vec![
                 Token::Uint(index),
-                Token::u64::from(score),
+                Token::Uint(U256::from(u64::from_le_bytes(to_bytes(score).expect("read value has the wrong size")))),
                 Token::FixedBytes(final_hash.0.to_vec()),
                 Token::Array(log_siblings),
                 Token::Array(score_siblings)
