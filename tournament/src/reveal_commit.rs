@@ -334,6 +334,7 @@ pub fn complete_reveal_phase(
 
     // TO-DO: Verify if length is in bytes!
     let length = 8;
+    let score_logsize_2 = 3;
 
     let archive_key = build_session_read_key(id.clone(), time, address, length);
     let mut position = cartesi_base::ReadMemoryRequest::new();
@@ -366,10 +367,10 @@ pub fn complete_reveal_phase(
     // get score proof (siblings)
     let id_clone = id.clone();
 
-    let archive_key = build_session_proof_key(id.clone(), time, address, length);
+    let archive_key = build_session_proof_key(id.clone(), time, address, score_logsize_2);
     let mut target = cartesi_base::GetProofRequest::new();
     target.set_address(address);
-    target.set_log2_size(length);
+    target.set_log2_size(score_logsize_2);
 
     let request = SessionGetProofRequest {
         session_id: id.clone(),
