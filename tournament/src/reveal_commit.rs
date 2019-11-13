@@ -62,7 +62,8 @@ pub struct RevealCommitCtx {
 #[derive(Default)]
 pub struct MachineTemplate {
     pub machine: cartesi_base::MachineRequest,
-    pub drive_path: String
+    pub drive_path: String,
+    pub final_time: u64
 }
 
 #[derive(Deserialize, Debug)]
@@ -269,9 +270,6 @@ pub fn complete_reveal_phase(
     machine_template: &MachineTemplate,
 
 ) -> Result<Reaction> {
-    // TO-DO: Define final_time!
-    let final_time = 500;
-
     // automatically submitting the log to the logger
     let path = format!("{:x}.log", log_hash);
     trace!("Submitting file: {}...", path);
@@ -331,7 +329,7 @@ pub fn complete_reveal_phase(
     // The output drive starts at address: (1<<63)+(3<<61)
     // The score is there when the machine halts (final_time)
     let id_clone = id.clone();
-    let time = final_time;
+    let time = machine_template.final_time;
     let address = (1<<63)+(3<<61);
 
     // TO-DO: Verify if length is in bytes!
@@ -437,7 +435,7 @@ pub fn complete_reveal_phase(
 
     // TO-DO: what is final time?
     let sample_points: Vec<u64> =
-        vec![0, final_time];
+        vec![0, machine_template.final_time];
 
     let request = SessionRunRequest {
         session_id: id.clone(),

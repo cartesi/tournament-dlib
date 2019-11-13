@@ -57,7 +57,8 @@ pub struct MatchCtx {
 #[derive(Default)]
 pub struct MachineTemplate {
     pub machine: cartesi_base::MachineRequest,
-    pub drive_path: String
+    pub drive_path: String,
+    pub final_time: u64
 }
 
 impl From<MatchCtxParsed> for MatchCtx {
