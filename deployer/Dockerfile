@@ -1,4 +1,16 @@
-FROM node:13-alpine
+FROM node:12-alpine as builder
+
+## Install build toolchain, install node deps and compile native add-ons
+RUN apk add --no-cache python make g++ git
+
+COPY ./package.json .
+COPY ./npm-shrinkwrap.json .
+
+ARG NPM_TOKEN
+RUN echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+RUN npm install
+
+FROM node:12-alpine
 
 # install dockerize, as we need to wait on ganache to be responding
 RUN apk add --no-cache openssl
@@ -16,9 +28,7 @@ COPY ./truffle-config.js .
 COPY ./package.json .
 COPY ./npm-shrinkwrap.json .
 
-ARG NPM_TOKEN
-RUN echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-RUN npm install
+COPY --from=builder node_modules ./node_modules
 
 ENV ETHEREUM_HOST "ganache"
 ENV ETHEREUM_PORT "8545"
