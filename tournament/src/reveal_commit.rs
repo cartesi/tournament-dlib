@@ -19,6 +19,7 @@ use super::{
 
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::fs;
+use r#match::{MachineTemplate};
 
 pub struct RevealCommit();
 
@@ -57,13 +58,6 @@ pub struct RevealCommitCtx {
     pub log_available: bool,
 
     pub current_state: String,
-}
-
-#[derive(Default)]
-pub struct MachineTemplate {
-    pub machine: cartesi_base::MachineRequest,
-    pub drive_path: String,
-    pub final_time: u64
 }
 
 #[derive(Deserialize, Debug)]
