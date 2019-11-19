@@ -14,11 +14,10 @@ use super::{
     SessionReadMemoryRequest, SessionReadMemoryResult,
     SessionGetProofRequest, SessionGetProofResult,
     EMULATOR_METHOD_NEW, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_RUN,
-    LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
-    LOGGER_METHOD_DOWNLOAD, FilePath, Hash, cartesi_base};
+    LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT, Hash, FilePath,
+    LOGGER_METHOD_DOWNLOAD, DownloadFileRequest, SubmitFileRequest, cartesi_base};
 
 use std::time::{SystemTime, UNIX_EPOCH};
-use std::fs;
 use r#match::{MachineTemplate};
 
 pub struct RevealCommit();
@@ -68,8 +67,7 @@ struct Payload {
 
 #[derive(Deserialize, Debug)]
 struct Params {
-    hash: H256,
-    path: String
+    hash: H256
 }
 
 fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
@@ -268,13 +266,17 @@ pub fn complete_reveal_phase(
     let path = format!("{:x}.log", log_hash);
     trace!("Submitting file: {}...", path);
 
-    let path_clone = path.clone();
+    let request = SubmitFileRequest {
+        path: path.clone(),
+        page_log2_size: 7,
+        tree_log2_size: 17
+    };
 
     let processed_response: Hash = archive.get_response(
         LOGGER_SERVICE_NAME.to_string(),
         path.clone(),
         LOGGER_METHOD_SUBMIT.to_string(),
-        path.clone().into())?
+        request.into())?
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 LOGGER_SERVICE_NAME.to_string(),
@@ -289,8 +291,6 @@ pub fn complete_reveal_phase(
         index,
         &concern.contract_address,
     );
-    // add log drive to template machine
-    fs::copy(path_clone, machine_template.drive_path.clone())?;
 
     // send newSession request to the emulator service
     let request = NewSessionRequest {

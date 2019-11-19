@@ -10,11 +10,10 @@ use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{cartesi_base, Role, VG, SessionRunRequest, SessionRunResult,
-    NewSessionRequest, NewSessionResult, 
+    NewSessionRequest, NewSessionResult, Hash, FilePath,
     EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN, EMULATOR_METHOD_NEW,
-    Hash, FilePath, LOGGER_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD};
+    DownloadFileRequest, SubmitFileRequest, LOGGER_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD};
 use super::{VGCtx, VGCtxParsed};
-use std::fs;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -184,8 +183,11 @@ impl DApp<MachineTemplate> for Match {
                     // download the log of the opponent with given hash
                     trace!("Download file for hash: {:?}...", ctx.log_hash);
 
-                    let request = Hash {
-                        hash: ctx.log_hash.clone()
+                    let request = DownloadFileRequest {
+                        root: ctx.log_hash.clone(),
+                        path: machine_template.drive_path.clone(),
+                        page_log2_size: 7,
+                        tree_log2_size: 17
                     };
 
                     let processed_response: FilePath = archive.get_response(
@@ -207,9 +209,6 @@ impl DApp<MachineTemplate> for Match {
                         instance.index,
                         &instance.concern.contract_address,
                     );
-
-                    // copy the downloaded log to the drive_path in the machine_template
-                    fs::copy(processed_response.path.clone(), machine_template.drive_path.clone())?;
 
                     let request = NewSessionRequest {
                         session_id: id.clone(),

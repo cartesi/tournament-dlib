@@ -66,9 +66,9 @@ pub use compute::{
     
 pub use logger_interface::{logger_high};
 pub use logger_service::{
-    Hash, FilePath,
+    DownloadFileRequest, SubmitFileRequest,
     LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
-    LOGGER_METHOD_DOWNLOAD};
+    LOGGER_METHOD_DOWNLOAD, Hash, FilePath};
 
 pub use r#match::{Match, MachineTemplate};
 pub use revealmock::RevealMock;
