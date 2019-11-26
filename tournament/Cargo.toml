@@ -22,12 +22,10 @@ serde_json = "1.0"
 serde = "1.0.0"
 serde_derive = "1.0.0"
 emulator_interface = { path = "../arbitration-dlib/lib/grpc-interfaces/emulator_interface" }
-grpc = { git = "https://github.com/cartesi/grpc-rust", branch = "make_marshall_public" }
 state = { path = "../arbitration-dlib/dispatcher/state" }
 dispatcher = { path = "../arbitration-dlib/dispatcher/dispatcher" }
 compute = { path = "../arbitration-dlib/compute" }
-logger_interface = { path = "../arbitration-dlib/lib/grpc-interfaces/logger_interface" }
+logger_service = { path = "../logger-dlib/logger_service" }
 protobuf = "=2.7.0"
-bytes = "0.4.12"
 
 
