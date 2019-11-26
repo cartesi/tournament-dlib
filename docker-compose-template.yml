@@ -16,7 +16,7 @@ services:
     build:
       context: .
       dockerfile: ./deployer/Dockerfile
-      args: 
+      args:
         NPM_TOKEN: ${NPM_TOKEN}
     volumes:
       - truffle_data:/usr/src/app/build
@@ -36,9 +36,9 @@ services:
     depends_on: [deployer, key_distributor]
     build: ./setup
     volumes:
-      - truffle_data:/opt/cartesi/blockchain
-      - dispatcher_data_{{ i }}:/opt/cartesi/dispatcher/config
-      - key_data_{{ i }}:/opt/cartesi/keys
+      - truffle_data:/opt/cartesi/share/blockchain
+      - dispatcher_data_{{ i }}:/opt/cartesi/etc/dispatcher
+      - key_data_{{ i }}:/opt/cartesi/etc/keys
 
   dispatcher_{{ i }}:
     depends_on: [dispatcher_setup_{{ i }}]
@@ -47,27 +47,19 @@ services:
       RUST_LOG: dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace
       DOCKER: "true"
     volumes:
-      - truffle_data:/opt/cartesi/blockchain
-      - dispatcher_data_{{ i }}:/opt/cartesi/dispatcher/config
-      - key_data_{{ i }}:/opt/cartesi/keys
+      - truffle_data:/opt/cartesi/share/blockchain
+      - dispatcher_data_{{ i }}:/opt/cartesi/etc/dispatcher
+      - key_data_{{ i }}:/opt/cartesi/etc/keys
     networks:
       - ganache
       - node_{{ i }}
 
-  logger_setup_{{ i }}:
-    depends_on: [deployer, key_distributor]
-    image: cartesi/logger-configurer
-    volumes:
-      - truffle_data:/opt/cartesi/blockchain
-      - logger_data_{{ i }}:/opt/cartesi/logger/config
-
   logger_{{ i }}:
-    depends_on: [logger_setup_{{ i }}]
     image: cartesi/logger-server
     volumes:
-      - truffle_data:/opt/cartesi/blockchain
-      - logger_data_{{ i }}:/opt/cartesi/logger/config
-      - key_data_{{ i }}:/opt/cartesi/keys
+      - truffle_data:/opt/cartesi/share/blockchain
+      - logger_data_{{ i }}:/opt/cartesi/srv/logger-server
+      - key_data_{{ i }}:/opt/cartesi/etc/keys
     networks:
       ganache: {}
       node_{{ i }}:

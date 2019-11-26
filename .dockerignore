@@ -1,8 +1,9 @@
 node_modules
 tournament/target
-test/*/
-.vscode
+logger-dlib/logger_test
+test
 build
-.git
+.vscode
+.git*
 .venv
 .cargo
