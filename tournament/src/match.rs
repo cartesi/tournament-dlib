@@ -56,7 +56,10 @@ pub struct MatchCtx {
 #[derive(Default)]
 pub struct MachineTemplate {
     pub machine: cartesi_base::MachineRequest,
-    pub drive_path: String,
+    pub opponent_machine: cartesi_base::MachineRequest,
+    pub tournament_index: U256,
+    pub page_log2_size: u64,
+    pub tree_log2_size: u64,
     pub final_time: u64
 }
 
@@ -185,9 +188,9 @@ impl DApp<MachineTemplate> for Match {
 
                     let request = DownloadFileRequest {
                         root: ctx.log_hash.clone(),
-                        path: machine_template.drive_path.clone(),
-                        page_log2_size: 7,
-                        tree_log2_size: 17
+                        path: format!("{}_opponent.br.tar", machine_template.tournament_index),
+                        page_log2_size: machine_template.page_log2_size,
+                        tree_log2_size: machine_template.tree_log2_size
                     };
 
                     let processed_response: FilePath = archive.get_response(
@@ -206,13 +209,13 @@ impl DApp<MachineTemplate> for Match {
 
                     // machine id
                     let id = build_machine_id(
-                        instance.index,
-                        &instance.concern.contract_address,
+                        machine_template.tournament_index,
+                        &ctx.claimer
                     );
 
                     let request = NewSessionRequest {
                         session_id: id.clone(),
-                        machine: machine_template.machine.clone()
+                        machine: machine_template.opponent_machine.clone()
                     };
 
                     // send newSession request to the emulator service

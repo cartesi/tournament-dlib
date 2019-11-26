@@ -263,13 +263,13 @@ pub fn complete_reveal_phase(
 
 ) -> Result<Reaction> {
     // automatically submitting the log to the logger
-    let path = format!("{:x}.log", log_hash);
+    let path = format!("{}.br.tar", machine_template.tournament_index);
     trace!("Submitting file: {}...", path);
 
     let request = SubmitFileRequest {
         path: path.clone(),
-        page_log2_size: 7,
-        tree_log2_size: 17
+        page_log2_size: machine_template.page_log2_size,
+        tree_log2_size: machine_template.tree_log2_size
     };
 
     let processed_response: Hash = archive.get_response(
@@ -288,8 +288,8 @@ pub fn complete_reveal_phase(
 
     // build machine
     let id = build_machine_id(
-        index,
-        &concern.contract_address,
+        machine_template.tournament_index,
+        &concern.user_address
     );
 
     // send newSession request to the emulator service

@@ -85,11 +85,10 @@ enum Role {
 // blockchain.
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-pub fn build_machine_id(_index: U256, _address: &Address) -> String {
-    //return format!("{:x}:{}", address, index);
+pub fn build_machine_id(tournament_index: U256, player_address: &Address) -> String {
+    return format!("{:x}:{}", player_address, tournament_index);
     //return "0000000000000000000000000000000000000000000000008888888888888888"
     //    .to_string();
-    return "test_new_session_id".to_string();
 }
 
 pub fn build_session_run_key(id: String, times: Vec<u64>) -> String {
