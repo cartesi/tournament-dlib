@@ -52,7 +52,8 @@ pub use compute::MM;
 pub use compute::Partition;
 pub use compute::{VG, VGCtx, VGCtxParsed};
 pub use compute::{
-    cartesi_base,
+    cartesi_base, build_session_run_key, build_session_step_key, 
+    build_session_read_key, build_session_proof_key,
     AccessOperation, NewSessionRequest, NewSessionResult,
     SessionRunRequest, SessionRunResult, SessionStepRequest,
     SessionReadMemoryRequest, SessionReadMemoryResult,
@@ -89,20 +90,4 @@ pub fn build_machine_id(tournament_index: U256, player_address: &Address) -> Str
     return format!("{:x}:{}", player_address, tournament_index);
     //return "0000000000000000000000000000000000000000000000008888888888888888"
     //    .to_string();
-}
-
-pub fn build_session_run_key(id: String, times: Vec<u64>) -> String {
-    return format!("{}_run_{:?}", id, times);
-}
-
-pub fn build_session_step_key(id: String, divergence_time: String) -> String {
-    return format!("{}_step_{}", id, divergence_time);
-}
-
-pub fn build_session_read_key(id: String, time: u64, address: u64, length: u64) -> String {
-    return format!("{}_read_{}_{}_{}", id, time, address, length);
-}
-
-pub fn build_session_proof_key(id: String, time: u64, address: u64, log2_size: u64) -> String {
-    return format!("{}_proof_{}_{}_{}", id, time, address, log2_size);
 }

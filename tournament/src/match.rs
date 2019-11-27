@@ -171,7 +171,11 @@ impl DApp<MachineTemplate> for Match {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            return VG::react(vg_instance, archive, &None, &());
+                            let id = build_machine_id(
+                                machine_template.tournament_index,
+                                &ctx.claimer
+                            );
+                            return VG::react(vg_instance, archive, &None, &id);
                         }
                     }
                 }
@@ -329,7 +333,11 @@ impl DApp<MachineTemplate> for Match {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            return VG::react(vg_instance, archive, &None, &());
+                            let id = build_machine_id(
+                                machine_template.tournament_index,
+                                &ctx.challenger
+                            );
+                            return VG::react(vg_instance, archive, &None, &id);
                         }
                     }
                 }
@@ -369,7 +377,7 @@ impl DApp<MachineTemplate> for Match {
                     VG::get_pretty_instance(
                         sub,
                         archive,
-                        &(),
+                        &"".to_string(),
                     )
                     .unwrap()
                 )
