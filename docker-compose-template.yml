@@ -49,6 +49,8 @@ services:
   logger_{{ i }}:
     depends_on: [deployer, key_distributor]
     image: cartesi/logger-server
+    environment:
+      WEB3_PROVIDER_URI: http://ganache:8545
     volumes:
       - truffle_data:/opt/cartesi/share/blockchain
       - key_data_{{ i }}:/opt/cartesi/etc/keys
