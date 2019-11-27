@@ -32,34 +32,27 @@ services:
       {% endfor %}
 
 {% for i in range(players) %}
-  dispatcher_setup_{{ i }}:
-    depends_on: [deployer, key_distributor]
-    build: ./setup
-    volumes:
-      - truffle_data:/opt/cartesi/share/blockchain
-      - dispatcher_data_{{ i }}:/opt/cartesi/etc/dispatcher
-      - key_data_{{ i }}:/opt/cartesi/etc/keys
-
   dispatcher_{{ i }}:
-    depends_on: [dispatcher_setup_{{ i }}]
+    depends_on: [deployer, key_distributor]
     build: .
     environment:
       RUST_LOG: dispatcher=trace,transaction=trace,configuration=trace,utils=trace,state=trace,compute=trace,hasher=trace,dappmock=trace,match=trace,matchmanager=trace,revealmock=trace
       DOCKER: "true"
     volumes:
       - truffle_data:/opt/cartesi/share/blockchain
-      - dispatcher_data_{{ i }}:/opt/cartesi/etc/dispatcher
       - key_data_{{ i }}:/opt/cartesi/etc/keys
+      - dispatcher_data_{{ i }}:/opt/cartesi/srv/dispatcher
     networks:
       - ganache
       - node_{{ i }}
 
   logger_{{ i }}:
+    depends_on: [deployer, key_distributor]
     image: cartesi/logger-server
     volumes:
       - truffle_data:/opt/cartesi/share/blockchain
-      - logger_data_{{ i }}:/opt/cartesi/srv/logger-server
       - key_data_{{ i }}:/opt/cartesi/etc/keys
+      - dispatcher_data_{{ i }}:/opt/cartesi/srv/logger-server
     networks:
       ganache: {}
       node_{{ i }}:
@@ -68,6 +61,8 @@ services:
 
   machine_manager_{{ i }}:
     image: cartesi/machine-manager-mock
+    volumes:
+      - dispatcher_data_{{ i }}:/opt/cartesi/srv/dispatcher
     networks:
       ganache: {}
       node_{{ i }}:
@@ -76,6 +71,8 @@ services:
 
   anuto_server_{{ i }}:
     image: cartesi/anuto-server:develop-f4103222
+    volumes:
+      - dispatcher_data_{{ i }}:/opt/cartesi/srv/dispatcher
     networks:
       node_{{ i }}:
         aliases:
@@ -96,7 +93,6 @@ volumes:
   ganache_data:
   truffle_data:
   {% for i in range(players) %}dispatcher_data_{{ i }}:
-  logger_data_{{ i }}:
   key_data_{{ i }}:
   {% endfor %}
 

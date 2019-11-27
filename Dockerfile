@@ -32,7 +32,7 @@ ENV BASE /opt/cartesi
 
 RUN \
     apt-get update && \
-    apt-get install --no-install-recommends -y ca-certificates wget jq gawk && \
+    apt-get install --no-install-recommends -y ca-certificates wget gettext && \
     rm -rf /var/lib/apt/lists/*
 
 ENV DOCKERIZE_VERSION v0.6.1
@@ -42,17 +42,17 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 
 WORKDIR $BASE
 
-RUN mkdir -p $BASE/bin $BASE/srv/dispatcher
+RUN mkdir -p $BASE/bin $BASE/etc/dispatcher $BASE/srv/dispatcher
 
 # Copy the build artifact from the build stage
 COPY --from=build /usr/local/cargo/bin/test $BASE/bin/dispatcher
 
 # Copy dispatcher scripts
 COPY ./dispatcher-entrypoint.sh $BASE/bin/
+COPY ./config-template.yaml $BASE/etc/dispatcher/
 
 CMD dockerize \
     -wait file://$BASE/etc/keys/keys_done \
-    -wait file://$BASE/etc/dispatcher/config_done \
     -wait tcp://ganache:8545 \
     -wait tcp://machine-manager:50051 \
     -wait tcp://logger:50051 \
