@@ -36,6 +36,7 @@ extern crate error;
 
 #[macro_use]
 extern crate serde_derive;
+extern crate crypto;
 #[macro_use]
 extern crate log;
 extern crate dispatcher;
