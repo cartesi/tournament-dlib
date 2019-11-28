@@ -90,6 +90,10 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _logHash hash of log to be revealed later.
     function commit(uint256 _index, bytes32 _logHash) public {
         require(instance[_index].currentState == state.CommitPhase, "State has to be commit phase");
+        // if commit deadline is over, change the state to reveal
+        if (now > instance[_index].instantiatedAt + instance[_index].commitDuration) {
+            instance[_index].currentState = state.RevealPhase;
+        }
 
         // if its first commit, creates player
         if (instance[_index].players[msg.sender].playerAddr == address(0)) {
