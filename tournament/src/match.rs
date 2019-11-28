@@ -335,7 +335,7 @@ impl DApp<MachineTemplate> for Match {
                             // pass control to the appropriate dapp
                             let id = build_machine_id(
                                 machine_template.tournament_index,
-                                &ctx.challenger
+                                &ctx.claimer
                             );
                             return VG::react(vg_instance, archive, &None, &id);
                         }
