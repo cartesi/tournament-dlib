@@ -59,15 +59,15 @@ pub struct RevealCommitCtx {
     pub current_state: String,
 }
 
-#[derive(Deserialize, Debug)]
-struct Payload {
-    action: String,
-    params: Params
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Payload {
+    pub action: String,
+    pub params: Params
 }
 
-#[derive(Deserialize, Debug)]
-struct Params {
-    hash: H256
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Params {
+    pub hash: H256
 }
 
 fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {

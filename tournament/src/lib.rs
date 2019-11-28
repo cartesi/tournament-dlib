@@ -70,7 +70,7 @@ pub use logger_service::{
 pub use r#match::{Match, MachineTemplate};
 pub use revealmock::RevealMock;
 pub use dappmock::DAppMock;
-pub use reveal_commit::RevealCommit;
+pub use reveal_commit::{RevealCommit, Payload, Params};
 pub use matchmanager::MatchManager;
 
 #[derive(Debug)]
