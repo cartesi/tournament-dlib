@@ -35,12 +35,12 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 score;
         bytes32 initialHash;
         bytes32 finalHash;
-        bytes32 logHash;
+        bytes32 commitHash;
     }
 
 
-    event logCommited(uint256 index, address player, bytes32 logHash);
-    event logRevealed(uint256 index, address player, bytes32 logHash);
+    event logCommited(uint256 index, address player, bytes32 commitHash);
+    event logRevealed(uint256 index, address player, bytes32 commitHash);
 
     mapping(uint256 => RevealCtx) internal instance;
 
@@ -87,8 +87,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     /// @notice Submits a commit.
     /// @param _index index of reveal that is being interacted with.
-    /// @param _logHash hash of log to be revealed later.
-    function commit(uint256 _index, bytes32 _logHash) public {
+    /// @param _commitHash hash of log + the users address to be revealed later.
+    function commit(uint256 _index, bytes32 _commitHash) public {
         require(instance[_index].currentState == state.CommitPhase, "State has to be commit phase");
         // if commit deadline is over, change the state to reveal
         if (now > instance[_index].instantiatedAt + instance[_index].commitDuration) {
@@ -102,9 +102,9 @@ contract RevealInstantiator is RevealInterface, Decorated {
             instance[_index].players[msg.sender] = player;
         }
 
-        instance[_index].players[msg.sender].logHash = _logHash;
+        instance[_index].players[msg.sender].commitHash = _commitHash;
 
-        emit logCommited(_index, msg.sender, _logHash);
+        emit logCommited(_index, msg.sender, _commitHash);
     }
 
     /// @notice reveals the log and extracts its information.
@@ -115,6 +115,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _scoreDriveSiblings siblings for the log drive
     function reveal(uint256 _index,
                     uint64 _score,
+                    bytes32 _logHash,
                     bytes32 _finalHash,
                     bytes32[] memory _logDriveSiblings,
                     bytes32[] memory _scoreDriveSiblings
@@ -127,7 +128,14 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
         require(!instance[_index].players[msg.sender].hasRevealed, "Player can only reveal one commit");
-        require(li.isLogAvailable(instance[_index].players[msg.sender].logHash), "Commit must match that which was logged by Logger-dlib");
+
+        require(
+            keccak256(abi.encodePacked(_logHash, msg.sender)) ==
+            instance[_index].players[msg.sender].commitHash,
+            "The hash commited must be equal to the logHash provided hashed with the users address"
+        );
+
+        require(li.isLogAvailable(_logHash), "Hash of the log must be available at Logger-dlib");
 
         // TO-DO: improve this - create uint64 type for dispatcher
         uint64[4] memory uint64_values;
@@ -148,13 +156,13 @@ contract RevealInstantiator is RevealInterface, Decorated {
         require(Merkle.getRootWithDrive(uint64_values[2], uint64_values[3], scoreWordHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
 
         // Update pristine hash with flash drive containing logs
-        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], instance[_index].players[msg.sender].logHash, _logDriveSiblings);
+        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], _logHash, _logDriveSiblings);
 
         instance[_index].players[msg.sender].score = _score;
         instance[_index].players[msg.sender].finalHash = _finalHash;
         instance[_index].players[msg.sender].hasRevealed = true;
 
-        emit logRevealed(_index, msg.sender, instance[_index].players[msg.sender].logHash);
+        emit logRevealed(_index, msg.sender, instance[_index].players[msg.sender].commitHash);
     }
 
     /// @notice Change state for final, if the deadlines were met.
@@ -179,7 +187,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     function getLogHash(uint256 _index, address _playerAddr) public returns (bytes32) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
-        return instance[_index].players[_playerAddr].logHash;
+        return instance[_index].players[_playerAddr].commitHash;
     }
 
     function getInitialHash(uint256 _index, address _playerAddr) public returns (bytes32) {
@@ -203,7 +211,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
     function getState(uint256 _index, address _user)
     public view returns (
             uint256[6] memory _uintValues,
-            bytes32 logHash,
+            bytes32 commitHash,
 
             bool revealed,
             bool logAvailable,
@@ -223,9 +231,9 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         return (
             uintValues,
-            instance[_index].players[_user].logHash,
+            instance[_index].players[_user].commitHash,
             instance[_index].players[_user].hasRevealed,
-            li.isLogAvailable(instance[_index].players[_user].logHash),
+            li.isLogAvailable(instance[_index].players[_user].commitHash),
 
             getCurrentState(_index)
         );
