@@ -1,13 +1,12 @@
-use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field};
 use super::dispatcher::{Archive, DApp, Reaction};
+use super::dispatcher::{String32Field, U256Field};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
-use super::ethereum_types::{Address, H256, U256};
+use super::ethereum_types::U256;
+use super::revealmock::{RevealMock, RevealMockCtx, RevealMockCtxParsed};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::revealmock::{RevealMock, RevealMockCtx, RevealMockCtxParsed};
 
 pub struct DAppMock();
 
@@ -17,7 +16,7 @@ pub struct DAppMock();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
 struct DAppMockCtxParsed(
-    U256Field,  // revealIndex
+    U256Field,     // revealIndex
     String32Field, // currentState
 );
 
@@ -78,21 +77,20 @@ impl DApp<()> for DAppMock {
 
             "DAppRunning" => {
                 // we inspect the reveal contract
-                let revealmock_instance = instance.sub_instances.get(0).ok_or(
-                    Error::from(ErrorKind::InvalidContractState(format!(
+                let revealmock_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                    ErrorKind::InvalidContractState(format!(
                         "There is no reveal instance {}",
                         ctx.current_state
-                    ))),
-                )?;
+                    )),
+                ))?;
 
                 let revealmock_parsed: RevealMockCtxParsed =
-                    serde_json::from_str(&revealmock_instance.json_data)
-                        .chain_err(|| {
-                            format!(
-                                "Could not parse revealmock instance json_data: {}",
-                                &revealmock_instance.json_data
-                            )
-                        })?;
+                    serde_json::from_str(&revealmock_instance.json_data).chain_err(|| {
+                        format!(
+                            "Could not parse revealmock instance json_data: {}",
+                            &revealmock_instance.json_data
+                        )
+                    })?;
                 let revealmock_ctx: RevealMockCtx = revealmock_parsed.into();
 
                 match revealmock_ctx.current_state.as_ref() {
@@ -114,16 +112,17 @@ impl DApp<()> for DAppMock {
                     }
                 }
             }
-            _ => {return Ok(Reaction::Idle);}
+            _ => {
+                return Ok(Reaction::Idle);
+            }
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
-        
         // get context (state) of the match instance
         let parsed: DAppMockCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
@@ -137,19 +136,12 @@ impl DApp<()> for DAppMock {
 
         // get context (state) of the sub instances
 
-        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let mut pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         for sub in &instance.sub_instances {
-            pretty_sub_instances.push(
-                Box::new(
-                    RevealMock::get_pretty_instance(
-                        sub,
-                        archive,
-                        &(),
-                    )
-                    .unwrap()
-                )
-            )
+            pretty_sub_instances.push(Box::new(
+                RevealMock::get_pretty_instance(sub, archive, &()).unwrap(),
+            ))
         }
 
         let pretty_instance = state::Instance {
@@ -160,6 +152,6 @@ impl DApp<()> for DAppMock {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }

@@ -1,15 +1,12 @@
-use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array5};
+use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Array5};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
-use matchmanager::MatchManager;
 use super::transaction;
 use super::transaction::TransactionRequest;
-
-use matchmanager::{MatchManagerCtx, MatchManagerCtxParsed};
+use matchmanager::MatchManager;
 
 pub struct RevealMock();
 
@@ -19,11 +16,11 @@ pub struct RevealMock();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
 pub struct RevealMockCtxParsed(
-    pub U256Array5,     // commitDuration;
-                       // revealDuration;
-                       // matchManagerEpochDuration;
-                       // matchManagerMatchDuration;
-                       // finalTime;
+    pub U256Array5, // commitDuration;
+    // revealDuration;
+    // matchManagerEpochDuration;
+    // matchManagerMatchDuration;
+    // finalTime;
     pub Bytes32Field,  // initialHash;
     pub AddressField,  // machineAddress;
     pub String32Field, // currentState
@@ -62,7 +59,7 @@ impl DApp<()> for RevealMock {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_payload: &Option<String>,
+        _post_payload: &Option<String>,
         _: &(),
     ) -> Result<Reaction> {
         // get context (state) of the match instance
@@ -74,24 +71,27 @@ impl DApp<()> for RevealMock {
                 )
             })?;
         let ctx: RevealMockCtx = parsed.into();
-        trace!("Context for revealmock (index {}) {:?}", instance.index, ctx);
+        trace!(
+            "Context for revealmock (index {}) {:?}",
+            instance.index,
+            ctx
+        );
 
         match ctx.current_state.as_ref() {
             // TO-DO: RevealMock should never be in these states. Add warning.
-            "CommitPhase"
-            | "RevealPhase" => {
+            "CommitPhase" | "RevealPhase" => {
                 return Ok(Reaction::Idle);
             }
 
             "MatchManagerPhase" => {
-                let match_manager_instance = instance.sub_instances.get(0).ok_or(
-                    Error::from(ErrorKind::InvalidContractState(format!(
+                let match_manager_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                    ErrorKind::InvalidContractState(format!(
                         "There is no match manager instance {}",
                         ctx.current_state
-                    ))),
-                )?;
+                    )),
+                ))?;
 
-               // if state is MatchManagerPhase, control goes to matchmanager
+                // if state is MatchManagerPhase, control goes to matchmanager
                 return MatchManager::react(
                     match_manager_instance,
                     archive,
@@ -116,13 +116,12 @@ impl DApp<()> for RevealMock {
             }
         }
     }
-    
+
     fn get_pretty_instance(
         instance: &state::Instance,
         archive: &Archive,
         _: &(),
     ) -> Result<state::Instance> {
-        
         // get context (state) of the match instance
         let parsed: RevealMockCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
@@ -136,19 +135,12 @@ impl DApp<()> for RevealMock {
 
         // get context (state) of the sub instances
 
-        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let mut pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         for sub in &instance.sub_instances {
-            pretty_sub_instances.push(
-                Box::new(
-                    MatchManager::get_pretty_instance(
-                        sub,
-                        archive,
-                        &Default::default(),
-                    )
-                    .unwrap()
-                )
-            )
+            pretty_sub_instances.push(Box::new(
+                MatchManager::get_pretty_instance(sub, archive, &Default::default()).unwrap(),
+            ))
         }
 
         let pretty_instance = state::Instance {
@@ -159,7 +151,6 @@ impl DApp<()> for RevealMock {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }
-

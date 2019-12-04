@@ -1,26 +1,27 @@
-use super::{build_machine_id, build_session_read_key, build_session_proof_key, build_session_run_key};
 use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, U256Array, U256Array6, BoolField};
 use super::dispatcher::{Archive, DApp, Reaction};
+use super::dispatcher::{BoolField, Bytes32Field, String32Field, U256Array6};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
-use super::ethereum_types::{Address, H256, U256};
+use super::ethereum_types::{H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{
-    SessionRunRequest, SessionRunResult,
-    NewSessionRequest, NewSessionResult,
-    SessionReadMemoryRequest, SessionReadMemoryResult,
-    SessionGetProofRequest, SessionGetProofResult,
-    EMULATOR_METHOD_NEW, EMULATOR_SERVICE_NAME, EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF, EMULATOR_METHOD_RUN,
-    LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT, Hash, FilePath,
-    LOGGER_METHOD_DOWNLOAD, DownloadFileRequest, SubmitFileRequest, cartesi_base};
+    build_machine_id, build_session_proof_key, build_session_read_key, build_session_run_key,
+};
+use super::{
+    cartesi_base, Hash, NewSessionRequest, NewSessionResult, SessionGetProofRequest,
+    SessionGetProofResult, SessionReadMemoryRequest, SessionReadMemoryResult, SessionRunRequest,
+    SessionRunResult, SubmitFileRequest, EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF,
+    EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
+    LOGGER_SERVICE_NAME,
+};
 
-use std::time::{SystemTime, UNIX_EPOCH};
-use super::crypto::sha3::Sha3;
 use super::crypto::digest::Digest;
-use r#match::{MachineTemplate};
+use super::crypto::sha3::Sha3;
+use r#match::MachineTemplate;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct RevealCommit();
 
@@ -30,17 +31,15 @@ pub struct RevealCommit();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
 pub struct RevealCommitCtxParsed(
-    pub U256Array6,     // instantiatedAt
-                        // commitDuration
-                        // revealDuration
-                        // scoreWordPosition
-                        // logDrivePosition
-                        // logDriveLogSize
-
+    pub U256Array6, // instantiatedAt
+    // commitDuration
+    // revealDuration
+    // scoreWordPosition
+    // logDrivePosition
+    // logDriveLogSize
     pub Bytes32Field,  // logHash;
     pub BoolField,     // hasRevealed
     pub BoolField,     // logAvailable
-
     pub String32Field, // currentState
 );
 
@@ -64,12 +63,12 @@ pub struct RevealCommitCtx {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Payload {
     pub action: String,
-    pub params: Params
+    pub params: Params,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Params {
-    pub hash: H256
+    pub hash: H256,
 }
 
 fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
@@ -77,8 +76,7 @@ fn to_bytes(input: Vec<u8>) -> Option<[u8; 8]> {
         None
     } else {
         Some([
-            input[0], input[1], input[2], input[3], input[4], input[5],
-            input[6], input[7],
+            input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],
         ])
     }
 }
@@ -98,7 +96,6 @@ impl From<RevealCommitCtxParsed> for RevealCommitCtx {
             log_available: parsed.3.value,
 
             current_state: parsed.4.value,
-
         }
     }
 }
@@ -120,7 +117,11 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                 )
             })?;
         let ctx: RevealCommitCtx = parsed.into();
-        trace!("Context for reveal_commit (index {}) {:?}", instance.index, ctx);
+        trace!(
+            "Context for reveal_commit (index {}) {:?}",
+            instance.index,
+            ctx
+        );
 
         let current_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -134,13 +135,11 @@ impl DApp<(MachineTemplate)> for RevealCommit {
             }
 
             "CommitPhase" => {
-
                 match post_payload {
                     // if post_payload is not empty, commit
                     Some(s) => {
-                        let payload: Payload = serde_json::from_str(&s).chain_err(|| {
-                             format!("Could not parse post_payload: {}", &s)
-                         })?;
+                        let payload: Payload = serde_json::from_str(&s)
+                            .chain_err(|| format!("Could not parse post_payload: {}", &s))?;
 
                         // concatenate log_hash with user address
                         let mut hash_data = payload.params.hash.to_string();
@@ -161,17 +160,15 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             data: vec![
                                 Token::Uint(instance.index),
-                                Token::FixedBytes(
-                                    commit_hash.as_bytes().to_vec(),
-                                ),
+                                Token::FixedBytes(commit_hash.as_bytes().to_vec()),
                             ],
                             strategy: transaction::Strategy::Simplest,
                         };
                         return Ok(Reaction::Transaction(request));
-
                     }
                     None => {
-                        let phase_is_over = current_time > ctx.instantiated_at.as_u64() + ctx.commit_duration.as_u64();
+                        let phase_is_over = current_time
+                            > ctx.instantiated_at.as_u64() + ctx.commit_duration.as_u64();
 
                         if phase_is_over {
                             // if commit phase is over, player reveal his log and forces the phase change
@@ -187,15 +184,13 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                         return Ok(Reaction::Idle);
                     }
                 }
-
-                return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown payload state {:?}", post_payload),
-                    )));
             }
 
-
             "RevealPhase" => {
-                let phase_is_over = current_time > ctx.instantiated_at.as_u64() + ctx.commit_duration.as_u64() + ctx.reveal_duration.as_u64();
+                let phase_is_over = current_time
+                    > ctx.instantiated_at.as_u64()
+                        + ctx.commit_duration.as_u64()
+                        + ctx.reveal_duration.as_u64();
 
                 if phase_is_over && ctx.has_revealed {
                     // TO-DO: Fix race condition / lack of incentive for calling it
@@ -208,14 +203,12 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                     };
 
                     return Ok(Reaction::Transaction(request));
-
                 }
 
                 // if has player has revealed but phase is not over, return idle
                 if ctx.has_revealed {
                     return Ok(Reaction::Idle);
                 }
-
 
                 // else complete reveal
                 return complete_reveal_phase(
@@ -235,10 +228,9 @@ impl DApp<(MachineTemplate)> for RevealCommit {
 
     fn get_pretty_instance(
         instance: &state::Instance,
-        archive: &Archive,
+        _archive: &Archive,
         _: &MachineTemplate,
     ) -> Result<state::Instance> {
-
         // get context (state) of the match instance
         let parsed: RevealCommitCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
@@ -250,7 +242,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
         let ctx: RevealCommitCtx = parsed.into();
         let json_data = serde_json::to_string(&ctx).unwrap();
 
-        let pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         let pretty_instance = state::Instance {
             name: "RevealCommit".to_string(),
@@ -260,7 +252,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }
 
@@ -270,7 +262,6 @@ pub fn complete_reveal_phase(
     archive: &Archive,
     log_hash: H256,
     machine_template: &MachineTemplate,
-
 ) -> Result<Reaction> {
     // automatically submitting the log to the logger
     let path = format!("{}.br.tar", machine_template.tournament_index);
@@ -279,52 +270,59 @@ pub fn complete_reveal_phase(
     let request = SubmitFileRequest {
         path: path.clone(),
         page_log2_size: machine_template.page_log2_size,
-        tree_log2_size: machine_template.tree_log2_size
+        tree_log2_size: machine_template.tree_log2_size,
     };
 
-    let processed_response: Hash = archive.get_response(
-        LOGGER_SERVICE_NAME.to_string(),
-        path.clone(),
-        LOGGER_METHOD_SUBMIT.to_string(),
-        request.into())?
+    let processed_response: Hash = archive
+        .get_response(
+            LOGGER_SERVICE_NAME.to_string(),
+            path.clone(),
+            LOGGER_METHOD_SUBMIT.to_string(),
+            request.into(),
+        )?
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 LOGGER_SERVICE_NAME.to_string(),
                 path,
-                LOGGER_METHOD_SUBMIT.to_string()))
+                LOGGER_METHOD_SUBMIT.to_string(),
+            ))
         })?
         .into();
     trace!("Submitted! Result: {:?}...", processed_response.hash);
 
     // build machine
-    let id = build_machine_id(
-        machine_template.tournament_index,
-        &concern.user_address
-    );
+    let id = build_machine_id(machine_template.tournament_index, &concern.user_address);
 
     // send newSession request to the emulator service
     let request = NewSessionRequest {
         session_id: id.clone(),
-        machine: machine_template.machine.clone()
+        machine: machine_template.machine.clone(),
     };
     let id_clone = id.clone();
-    let duplicate_session_msg = format!("Trying to register a session with a session_id that already exists: {}", id);
-    let _processed_response: NewSessionResult = archive.get_response(
-        EMULATOR_SERVICE_NAME.to_string(),
-        id.clone(),
-        EMULATOR_METHOD_NEW.to_string(),
-        request.into())?
+    let duplicate_session_msg = format!(
+        "Trying to register a session with a session_id that already exists: {}",
+        id
+    );
+    let _processed_response: NewSessionResult = archive
+        .get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            id.clone(),
+            EMULATOR_METHOD_NEW.to_string(),
+            request.into(),
+        )?
         .map_err(move |e| {
             if e == duplicate_session_msg {
                 Error::from(ErrorKind::ArchiveNeedsDummy(
                     EMULATOR_SERVICE_NAME.to_string(),
                     id_clone,
-                    EMULATOR_METHOD_NEW.to_string()))
+                    EMULATOR_METHOD_NEW.to_string(),
+                ))
             } else {
                 Error::from(ErrorKind::ArchiveInvalidError(
                     EMULATOR_SERVICE_NAME.to_string(),
                     id_clone,
-                    EMULATOR_METHOD_NEW.to_string()))
+                    EMULATOR_METHOD_NEW.to_string(),
+                ))
             }
         })?
         .into();
@@ -334,7 +332,7 @@ pub fn complete_reveal_phase(
     // The score is there when the machine halts (final_time)
     let id_clone = id.clone();
     let time = machine_template.final_time;
-    let address = (1<<63)+(3<<61);
+    let address = (1 << 63) + (3 << 61);
 
     // TO-DO: Verify if length is in bytes!
     let length = 8;
@@ -348,23 +346,29 @@ pub fn complete_reveal_phase(
     let request = SessionReadMemoryRequest {
         session_id: id.clone(),
         time: time,
-        position: position
+        position: position,
     };
 
-    let processed_response: SessionReadMemoryResult = archive.get_response(
-        EMULATOR_SERVICE_NAME.to_string(),
-        archive_key.clone(),
-        EMULATOR_METHOD_READ.to_string(),
-        request.into())?
+    let processed_response: SessionReadMemoryResult = archive
+        .get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            archive_key.clone(),
+            EMULATOR_METHOD_READ.to_string(),
+            request.into(),
+        )?
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
                 id_clone,
-                EMULATOR_METHOD_READ.to_string()))
+                EMULATOR_METHOD_READ.to_string(),
+            ))
         })?
         .into();
 
-    trace!("Read memory result: {:?}...", processed_response.read_content.data);
+    trace!(
+        "Read memory result: {:?}...",
+        processed_response.read_content.data
+    );
 
     let score = processed_response.read_content.data;
 
@@ -379,19 +383,22 @@ pub fn complete_reveal_phase(
     let request = SessionGetProofRequest {
         session_id: id.clone(),
         time: time,
-        target: target
+        target: target,
     };
 
-    let processed_response: SessionGetProofResult = archive.get_response(
-        EMULATOR_SERVICE_NAME.to_string(),
-        archive_key.clone(),
-        EMULATOR_METHOD_PROOF.to_string(),
-        request.into())?
+    let processed_response: SessionGetProofResult = archive
+        .get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            archive_key.clone(),
+            EMULATOR_METHOD_PROOF.to_string(),
+            request.into(),
+        )?
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
                 id_clone,
-                EMULATOR_METHOD_PROOF.to_string()))
+                EMULATOR_METHOD_PROOF.to_string(),
+            ))
         })?
         .into();
 
@@ -406,7 +413,7 @@ pub fn complete_reveal_phase(
     // Siblings should be checked against template hash (time = 0)
     let id_clone = id.clone();
     let time = 0;
-    let address = (1<<63)+(2<<61);
+    let address = (1 << 63) + (2 << 61);
     let log2_size = 20; // 1MB
 
     let archive_key = build_session_proof_key(id.clone(), time, address, log2_size);
@@ -417,19 +424,22 @@ pub fn complete_reveal_phase(
     let request = SessionGetProofRequest {
         session_id: id.clone(),
         time: time,
-        target: target
+        target: target,
     };
 
-    let processed_response: SessionGetProofResult = archive.get_response(
-        EMULATOR_SERVICE_NAME.to_string(),
-        archive_key.clone(),
-        EMULATOR_METHOD_PROOF.to_string(),
-        request.into())?
+    let processed_response: SessionGetProofResult = archive
+        .get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            archive_key.clone(),
+            EMULATOR_METHOD_PROOF.to_string(),
+            request.into(),
+        )?
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
                 id_clone,
-                EMULATOR_METHOD_PROOF.to_string()))
+                EMULATOR_METHOD_PROOF.to_string(),
+            ))
         })?
         .into();
 
@@ -437,73 +447,74 @@ pub fn complete_reveal_phase(
 
     let log_siblings = processed_response.proof;
 
-
     // TO-DO: what is final time?
-    let sample_points: Vec<u64> =
-        vec![0, machine_template.final_time];
+    let sample_points: Vec<u64> = vec![0, machine_template.final_time];
 
     let request = SessionRunRequest {
         session_id: id.clone(),
         times: sample_points.clone(),
     };
-    let archive_key = build_session_run_key(
-        id.clone(),
-        sample_points.clone());
+    let archive_key = build_session_run_key(id.clone(), sample_points.clone());
     let id_clone = id.clone();
 
     trace!("Calculating final hash of machine {}", id);
     // have we sampled the final time?
-    let processed_response: SessionRunResult = archive.get_response(
-        EMULATOR_SERVICE_NAME.to_string(),
-        archive_key.clone(),
-        EMULATOR_METHOD_RUN.to_string(),
-        request.into())?
+    let processed_response: SessionRunResult = archive
+        .get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            archive_key.clone(),
+            EMULATOR_METHOD_RUN.to_string(),
+            request.into(),
+        )?
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
                 id_clone,
-                EMULATOR_METHOD_RUN.to_string()))
+                EMULATOR_METHOD_RUN.to_string(),
+            ))
         })?
         .into();
 
-        let final_hash = processed_response.hashes[1];
+    let final_hash = processed_response.hashes[1];
 
-        // get actual siblings
-        let mut log_siblings: Vec<_> = log_siblings
-            .sibling_hashes
-            .into_iter()
-            .map(|hash| Token::FixedBytes(hash.0.to_vec()))
-            .collect();
-        trace!("Size of siblings: {}", log_siblings.len());
-        // !!!!! This should not be necessary, !!!!!!!
-        // !!!!! the emulator should do it     !!!!!!!
-        log_siblings.reverse();
+    // get actual siblings
+    let mut log_siblings: Vec<_> = log_siblings
+        .sibling_hashes
+        .into_iter()
+        .map(|hash| Token::FixedBytes(hash.0.to_vec()))
+        .collect();
+    trace!("Size of siblings: {}", log_siblings.len());
+    // !!!!! This should not be necessary, !!!!!!!
+    // !!!!! the emulator should do it     !!!!!!!
+    log_siblings.reverse();
 
-        // get actual siblings
-        let mut score_siblings: Vec<_> = score_siblings
-            .sibling_hashes
-            .into_iter()
-            .map(|hash| Token::FixedBytes(hash.0.to_vec()))
-            .collect();
-        trace!("Size of siblings: {}", score_siblings.len());
-        // !!!!! This should not be necessary, !!!!!!!
-        // !!!!! the emulator should do it     !!!!!!!
-        score_siblings.reverse();
+    // get actual siblings
+    let mut score_siblings: Vec<_> = score_siblings
+        .sibling_hashes
+        .into_iter()
+        .map(|hash| Token::FixedBytes(hash.0.to_vec()))
+        .collect();
+    trace!("Size of siblings: {}", score_siblings.len());
+    // !!!!! This should not be necessary, !!!!!!!
+    // !!!!! the emulator should do it     !!!!!!!
+    score_siblings.reverse();
 
-        let request = TransactionRequest {
-            concern: concern.clone(),
-            value: U256::from(0),
-            function: "reveal".into(),
-            data: vec![
-                Token::Uint(index),
-                Token::Uint(U256::from(u64::from_le_bytes(to_bytes(score).expect("read value has the wrong size")))),
-                Token::FixedBytes(log_hash.to_vec()),
-                Token::FixedBytes(final_hash.0.to_vec()),
-                Token::Array(log_siblings),
-                Token::Array(score_siblings)
-            ],
-            strategy: transaction::Strategy::Simplest,
-        };
+    let request = TransactionRequest {
+        concern: concern.clone(),
+        value: U256::from(0),
+        function: "reveal".into(),
+        data: vec![
+            Token::Uint(index),
+            Token::Uint(U256::from(u64::from_le_bytes(
+                to_bytes(score).expect("read value has the wrong size"),
+            ))),
+            Token::FixedBytes(log_hash.to_vec()),
+            Token::FixedBytes(final_hash.0.to_vec()),
+            Token::Array(log_siblings),
+            Token::Array(score_siblings),
+        ],
+        strategy: transaction::Strategy::Simplest,
+    };
 
-        return Ok(Reaction::Transaction(request));
+    return Ok(Reaction::Transaction(request));
 }

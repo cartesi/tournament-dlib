@@ -23,19 +23,17 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 // error-chain recursion
 #![recursion_limit = "1024"]
 #![warn(unused_extern_crates)]
 
-extern crate tournament;
 extern crate dispatcher;
 extern crate env_logger;
+extern crate tournament;
 extern crate utils;
 
-use tournament::revealmock::RevealMock;
-use tournament::dappmock::DAppMock;
 use dispatcher::Dispatcher;
+use tournament::dappmock::DAppMock;
 use utils::print_error;
 
 fn main() {

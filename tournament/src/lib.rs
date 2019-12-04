@@ -23,13 +23,12 @@
 // be used independently under the Apache v2 license. After this component is
 // rewritten, the entire component will be released under the Apache v2 license.
 
-
 #![warn(unused_extern_crates)]
+pub mod dappmock;
 pub mod r#match;
 pub mod matchmanager;
-pub mod revealmock;
-pub mod dappmock;
 pub mod reveal_commit;
+pub mod revealmock;
 
 extern crate configuration;
 extern crate error;
@@ -39,40 +38,36 @@ extern crate serde_derive;
 extern crate crypto;
 #[macro_use]
 extern crate log;
+extern crate compute;
 extern crate dispatcher;
 extern crate ethabi;
 extern crate ethereum_types;
-extern crate transaction;
-extern crate emulator_interface;
-extern crate compute;
 extern crate logger_service;
+extern crate transaction;
 
 use ethereum_types::{Address, U256};
 
-pub use compute::MM;
 pub use compute::Partition;
-pub use compute::{VG, VGCtx, VGCtxParsed};
+pub use compute::MM;
 pub use compute::{
-    cartesi_base, build_session_run_key, build_session_step_key, 
-    build_session_read_key, build_session_proof_key,
-    AccessOperation, NewSessionRequest, NewSessionResult,
-    SessionRunRequest, SessionRunResult, SessionStepRequest,
-    SessionReadMemoryRequest, SessionReadMemoryResult,
-    SessionGetProofRequest, SessionGetProofResult,
-    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_NEW,
-    EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP,
-    EMULATOR_METHOD_READ, EMULATOR_METHOD_PROOF};
-    
-pub use logger_service::{
-    DownloadFileRequest, SubmitFileRequest,
-    LOGGER_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
-    LOGGER_METHOD_DOWNLOAD, Hash, FilePath};
+    build_session_proof_key, build_session_read_key, build_session_run_key, build_session_step_key,
+    cartesi_base, AccessOperation, NewSessionRequest, NewSessionResult, SessionGetProofRequest,
+    SessionGetProofResult, SessionReadMemoryRequest, SessionReadMemoryResult, SessionRunRequest,
+    SessionRunResult, SessionStepRequest, EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF,
+    EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP, EMULATOR_SERVICE_NAME,
+};
+pub use compute::{VGCtx, VGCtxParsed, VG};
 
-pub use r#match::{Match, MachineTemplate};
-pub use revealmock::RevealMock;
+pub use logger_service::{
+    DownloadFileRequest, FilePath, Hash, SubmitFileRequest, LOGGER_METHOD_DOWNLOAD,
+    LOGGER_METHOD_SUBMIT, LOGGER_SERVICE_NAME,
+};
+
 pub use dappmock::DAppMock;
-pub use reveal_commit::{RevealCommit, Payload, Params};
 pub use matchmanager::MatchManager;
+pub use r#match::{MachineTemplate, Match};
+pub use reveal_commit::{Params, Payload, RevealCommit};
+pub use revealmock::RevealMock;
 
 #[derive(Debug)]
 enum Role {

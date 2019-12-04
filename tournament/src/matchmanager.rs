@@ -1,14 +1,13 @@
-use super::configuration::Concern;
-use super::dispatcher::{AddressField, Bytes32Field, String32Field, U256Field, AddressArray3, U256Array9, BoolField};
+use super::dispatcher::{AddressArray3, BoolField, String32Field, U256Array9};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
 use super::ethabi::Token;
-use super::ethereum_types::{Address, H256, U256};
+use super::ethereum_types::{Address, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{Match, Role};
-use r#match::{MatchCtx, MatchCtxParsed, MachineTemplate};
+use r#match::{MachineTemplate, MatchCtx, MatchCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -20,42 +19,39 @@ pub struct MatchManager();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #[derive(Serialize, Deserialize)]
 pub struct MatchManagerCtxParsed(
-    U256Array9,     // epochDuration
-                    // roundDuration
-                    // currentEpoch
-                    // finalTime
-                    // lastEpochStartTime
-                    // numberOfMatchesOnEpoch
-                    // lastMatchIndex
-                    // parentInstance
-                    // lastMatchEpoch
-
-    AddressArray3,  // unmatchedplayer
-                    // machine
-                    // parentaddress
-
-    BoolField,      // registered
-    String32Field,  // currentstate
+    U256Array9, // epochDuration
+    // roundDuration
+    // currentEpoch
+    // finalTime
+    // lastEpochStartTime
+    // numberOfMatchesOnEpoch
+    // lastMatchIndex
+    // parentInstance
+    // lastMatchEpoch
+    AddressArray3, // unmatchedplayer
+    // machine
+    // parentaddress
+    BoolField,     // registered
+    String32Field, // currentstate
 );
 
 #[derive(Serialize, Debug)]
 pub struct MatchManagerCtx {
-   pub epoch_duration: U256,
-   pub round_duration: U256,
-   pub current_epoch: U256,
-   pub final_time: U256,
-   pub last_epoch_start_time: U256,
-   pub number_of_matches_on_last_epoch: U256,
-   pub unmatched_player: Address,
-   pub last_match_index: U256,
-   pub machine: Address,
-   pub parent_address: Address,
-   pub parent_instance: U256,
-   pub last_match_epoch: U256,
-   pub registered: bool,
-   pub current_state: String,
+    pub epoch_duration: U256,
+    pub round_duration: U256,
+    pub current_epoch: U256,
+    pub final_time: U256,
+    pub last_epoch_start_time: U256,
+    pub number_of_matches_on_last_epoch: U256,
+    pub unmatched_player: Address,
+    pub last_match_index: U256,
+    pub machine: Address,
+    pub parent_address: Address,
+    pub parent_instance: U256,
+    pub last_match_epoch: U256,
+    pub registered: bool,
+    pub current_state: String,
 }
-
 
 impl From<MatchManagerCtxParsed> for MatchManagerCtx {
     fn from(parsed: MatchManagerCtxParsed) -> MatchManagerCtx {
@@ -90,7 +86,7 @@ impl DApp<MachineTemplate> for MatchManager {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_payload: &Option<String>,
+        _post_payload: &Option<String>,
         machine_template: &MachineTemplate,
     ) -> Result<Reaction> {
         // get context (state) of the match instance
@@ -102,13 +98,16 @@ impl DApp<MachineTemplate> for MatchManager {
                 )
             })?;
         let ctx: MatchManagerCtx = parsed.into();
-        trace!("Context for matchmanager (index {}) {:?}", instance.index, ctx);
+        trace!(
+            "Context for matchmanager (index {}) {:?}",
+            instance.index,
+            ctx
+        );
 
         match ctx.current_state.as_ref() {
             // these states should not occur as they indicate an innactive instance,
             // but it is possible that the blockchain state changed between queries
-            "MatchesOver"
-            | "WaitingSignUps" => {
+            "MatchesOver" | "WaitingSignUps" => {
                 return Ok(Reaction::Idle);
             }
 
@@ -119,7 +118,9 @@ impl DApp<MachineTemplate> for MatchManager {
                     .chain_err(|| "System time before UNIX_EPOCH")?
                     .as_secs();
 
-                let epoch_over = current_time > ctx.last_epoch_start_time.as_u64() + ((1 + ctx.current_epoch.as_u64()) * ctx.epoch_duration.as_u64());
+                let epoch_over = current_time
+                    > ctx.last_epoch_start_time.as_u64()
+                        + ((1 + ctx.current_epoch.as_u64()) * ctx.epoch_duration.as_u64());
                 let zero_matches_last_epoch = ctx.number_of_matches_on_last_epoch.as_u64() == 0;
                 let user_is_unmatched = ctx.unmatched_player == instance.concern.user_address;
 
@@ -128,7 +129,7 @@ impl DApp<MachineTemplate> for MatchManager {
                 // advance epoch
                 //  TO-DO: The epoch doesnt have to be over if there were zero matchets last epoch
                 if epoch_over && user_is_unmatched {
-                    if zero_matches_last_epoch  {
+                    if zero_matches_last_epoch {
                         let request = TransactionRequest {
                             concern: instance.concern.clone(),
                             value: U256::from(0),
@@ -149,7 +150,6 @@ impl DApp<MachineTemplate> for MatchManager {
                     };
 
                     return Ok(Reaction::Transaction(request));
-
                 }
                 // if player hasnt registered yet and epoch is zero, register:
                 if ctx.current_epoch.as_u64() == 0 && !ctx.registered {
@@ -167,48 +167,48 @@ impl DApp<MachineTemplate> for MatchManager {
                     return Ok(Reaction::Idle);
                 }
 
-
                 // if player havent played epoch and its not the first one,
                 // we have to inspect the matches to see if he won the previous one.
-                let match_instance = instance.sub_instances.get(0).ok_or(
-                    Error::from(ErrorKind::InvalidContractState(format!(
+                let match_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                    ErrorKind::InvalidContractState(format!(
                         "There is no match instance {}",
                         ctx.current_state
-                    ))),
-                )?;
+                    )),
+                ))?;
 
-                let match_parsed: MatchCtxParsed =
-                    serde_json::from_str(&match_instance.json_data)
-                        .chain_err(|| {
-                            format!(
-                                "Could not parse match instance json_data: {}",
-                                &match_instance.json_data
-                            )
-                        })?;
+                let match_parsed: MatchCtxParsed = serde_json::from_str(&match_instance.json_data)
+                    .chain_err(|| {
+                        format!(
+                            "Could not parse match instance json_data: {}",
+                            &match_instance.json_data
+                        )
+                    })?;
                 let match_ctx: MatchCtx = match_parsed.into();
 
                 let role = match instance.concern.user_address {
                     cl if (cl == match_ctx.claimer) => Role::Claimer,
                     ch if (ch == match_ctx.challenger) => Role::Challenger,
                     _ => {
-                        return Err(Error::from(ErrorKind::InvalidContractState(
-                            String::from("User is neither claimer nor challenger"),
-                        )));
+                        return Err(Error::from(ErrorKind::InvalidContractState(String::from(
+                            "User is neither claimer nor challenger",
+                        ))));
                     }
                 };
 
                 match role {
                     Role::Claimer => match match_ctx.current_state.as_ref() {
                         "ClaimerWon" => {
-                            if epoch_over || (ctx.last_match_epoch != ctx.current_epoch && !ctx.registered){
+                            if epoch_over
+                                || (ctx.last_match_epoch != ctx.current_epoch && !ctx.registered)
+                            {
                                 let request = TransactionRequest {
-                                        concern: instance.concern.clone(),
-                                        value: U256::from(0),
-                                        function: "playNextEpoch".into(),
-                                        data: vec![Token::Uint(instance.index)],
-                                        strategy: transaction::Strategy::Simplest,
-                                 };
-                                 return Ok(Reaction::Transaction(request));
+                                    concern: instance.concern.clone(),
+                                    value: U256::from(0),
+                                    function: "playNextEpoch".into(),
+                                    data: vec![Token::Uint(instance.index)],
+                                    strategy: transaction::Strategy::Simplest,
+                                };
+                                return Ok(Reaction::Transaction(request));
                             }
                             return Ok(Reaction::Idle);
                         }
@@ -220,30 +220,25 @@ impl DApp<MachineTemplate> for MatchManager {
                         _ => {
                             // match is still running,
                             // pass control to the match instance
-                            return Match::react(
-                                match_instance,
-                                archive,
-                                &None,
-                                machine_template,
-                            );
+                            return Match::react(match_instance, archive, &None, machine_template);
                         }
-                    }
+                    },
 
                     Role::Challenger => match match_ctx.current_state.as_ref() {
                         "ChallengerWon" => {
-                            if epoch_over || (ctx.last_match_epoch != ctx.current_epoch && !ctx.registered){
+                            if epoch_over
+                                || (ctx.last_match_epoch != ctx.current_epoch && !ctx.registered)
+                            {
                                 let request = TransactionRequest {
-                                        concern: instance.concern.clone(),
-                                        value: U256::from(0),
-                                        function: "playNextEpoch".into(),
-                                        data: vec![Token::Uint(instance.index)],
-                                        strategy: transaction::Strategy::Simplest,
-                                 };
-                                 return Ok(Reaction::Transaction(request));
+                                    concern: instance.concern.clone(),
+                                    value: U256::from(0),
+                                    function: "playNextEpoch".into(),
+                                    data: vec![Token::Uint(instance.index)],
+                                    strategy: transaction::Strategy::Simplest,
+                                };
+                                return Ok(Reaction::Transaction(request));
                             }
                             return Ok(Reaction::Idle);
-
-
                         }
 
                         // you lost the previous game, so nothing else to do
@@ -254,15 +249,9 @@ impl DApp<MachineTemplate> for MatchManager {
                         _ => {
                             // match is still running,
                             // pass control to the match instance
-                            return Match::react(
-                                match_instance,
-                                archive,
-                                &None,
-                                machine_template,
-                            );
+                            return Match::react(match_instance, archive, &None, machine_template);
                         }
-                    }
-
+                    },
                 }
             }
 
@@ -277,7 +266,6 @@ impl DApp<MachineTemplate> for MatchManager {
         archive: &Archive,
         _: &MachineTemplate,
     ) -> Result<state::Instance> {
-
         // get context (state) of the match instance
         let parsed: MatchManagerCtxParsed =
             serde_json::from_str(&instance.json_data).chain_err(|| {
@@ -291,19 +279,12 @@ impl DApp<MachineTemplate> for MatchManager {
 
         // get context (state) of the sub instances
 
-        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let mut pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         for sub in &instance.sub_instances {
-            pretty_sub_instances.push(
-                Box::new(
-                    Match::get_pretty_instance(
-                        sub,
-                        archive,
-                        &Default::default(),
-                    )
-                    .unwrap()
-                )
-            )
+            pretty_sub_instances.push(Box::new(
+                Match::get_pretty_instance(sub, archive, &Default::default()).unwrap(),
+            ))
         }
 
         let pretty_instance = state::Instance {
@@ -314,7 +295,6 @@ impl DApp<MachineTemplate> for MatchManager {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }
-

@@ -26,5 +26,5 @@ state = { path = "../arbitration-dlib/dispatcher/state" }
 dispatcher = { path = "../arbitration-dlib/dispatcher/dispatcher" }
 compute = { path = "../arbitration-dlib/compute" }
 logger_service = { path = "../logger-dlib/logger_service" }
-protobuf = "=2.7.0"
-rust-crypto = "0.2.36" 
+protobuf = "2"
+rust-crypto = "0.2.36"

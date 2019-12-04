@@ -1,7 +1,5 @@
-
-use super::{build_machine_id, build_session_run_key};
 use super::configuration::Concern;
-use super::dispatcher::{AddressField, AddressArray3, U256Array4, Bytes32Field, Bytes32Array3, String32Field, U256Field};
+use super::dispatcher::{AddressArray3, Bytes32Array3, String32Field, U256Array4};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -9,10 +7,12 @@ use super::ethabi::Token;
 use super::ethereum_types::{Address, H256, U256};
 use super::transaction;
 use super::transaction::TransactionRequest;
-use super::{cartesi_base, Role, VG, SessionRunRequest, SessionRunResult,
-    NewSessionRequest, NewSessionResult, Hash, FilePath,
-    EMULATOR_SERVICE_NAME, EMULATOR_METHOD_RUN, EMULATOR_METHOD_NEW,
-    DownloadFileRequest, SubmitFileRequest, LOGGER_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD};
+use super::{build_machine_id, build_session_run_key};
+use super::{
+    cartesi_base, DownloadFileRequest, FilePath, NewSessionRequest, NewSessionResult, Role,
+    SessionRunRequest, SessionRunResult, EMULATOR_METHOD_NEW, EMULATOR_METHOD_RUN,
+    EMULATOR_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD, LOGGER_SERVICE_NAME, VG,
+};
 use super::{VGCtx, VGCtxParsed};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -26,15 +26,15 @@ pub struct Match();
 #[derive(Serialize, Deserialize)]
 pub struct MatchCtxParsed(
     AddressArray3, // challenger
-                   // claimer
-                   // machine
-    U256Array4,    // epochNumber
-                   // roundDuration
-                   // timeOfLastMove
-                   // finalTime
+    // claimer
+    // machine
+    U256Array4, // epochNumber
+    // roundDuration
+    // timeOfLastMove
+    // finalTime
     Bytes32Array3, // logHash
-                   // initialHash
-                   // finalHash
+    // initialHash
+    // finalHash
     String32Field, // currentState
 );
 
@@ -60,7 +60,7 @@ pub struct MachineTemplate {
     pub tournament_index: U256,
     pub page_log2_size: u64,
     pub tree_log2_size: u64,
-    pub final_time: u64
+    pub final_time: u64,
 }
 
 impl From<MatchCtxParsed> for MatchCtx {
@@ -87,25 +87,23 @@ impl DApp<MachineTemplate> for Match {
     fn react(
         instance: &state::Instance,
         archive: &Archive,
-        post_payload: &Option<String>,
+        _post_payload: &Option<String>,
         machine_template: &MachineTemplate,
     ) -> Result<Reaction> {
         // get context (state) of the match instance
-        let parsed: MatchCtxParsed =
-            serde_json::from_str(&instance.json_data).chain_err(|| {
-                format!(
-                    "Could not parse match instance json_data: {}",
-                    &instance.json_data
-                )
-            })?;
+        let parsed: MatchCtxParsed = serde_json::from_str(&instance.json_data).chain_err(|| {
+            format!(
+                "Could not parse match instance json_data: {}",
+                &instance.json_data
+            )
+        })?;
         let ctx: MatchCtx = parsed.into();
         trace!("Context for match (index {}) {:?}", instance.index, ctx);
 
         // these states should not occur as they indicate an innactive instance,
         // but it is possible that the blockchain state changed between queries
         match ctx.current_state.as_ref() {
-            "ChallengerWon"
-            | "ClaimerWon" => {
+            "ChallengerWon" | "ClaimerWon" => {
                 return Ok(Reaction::Idle);
             }
             _ => {}
@@ -116,9 +114,9 @@ impl DApp<MachineTemplate> for Match {
             cl if (cl == ctx.claimer) => Role::Claimer,
             ch if (ch == ctx.challenger) => Role::Challenger,
             _ => {
-                return Err(Error::from(ErrorKind::InvalidContractState(
-                    String::from("User is neither claimer nor challenger"),
-                )));
+                return Err(Error::from(ErrorKind::InvalidContractState(String::from(
+                    "User is neither claimer nor challenger",
+                ))));
             }
         };
         trace!("Role played (index {}) is: {:?}", instance.index, role);
@@ -136,20 +134,19 @@ impl DApp<MachineTemplate> for Match {
 
                 "ChallengeStarted" => {
                     // we inspect the verification contract
-                    let vg_instance = instance.sub_instances.get(0).ok_or(
-                        Error::from(ErrorKind::InvalidContractState(format!(
+                    let vg_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                        ErrorKind::InvalidContractState(format!(
                             "There is no vg instance {}",
                             ctx.current_state
-                        ))),
-                    )?;
-                    let vg_parsed: VGCtxParsed =
-                        serde_json::from_str(&vg_instance.json_data)
-                            .chain_err(|| {
-                                format!(
-                                    "Could not parse vg instance json_data: {}",
-                                    &vg_instance.json_data
-                                )
-                            })?;
+                        )),
+                    ))?;
+                    let vg_parsed: VGCtxParsed = serde_json::from_str(&vg_instance.json_data)
+                        .chain_err(|| {
+                            format!(
+                                "Could not parse vg instance json_data: {}",
+                                &vg_instance.json_data
+                            )
+                        })?;
                     let vg_ctx: VGCtx = vg_parsed.into();
 
                     match vg_ctx.current_state.as_ref() {
@@ -171,18 +168,17 @@ impl DApp<MachineTemplate> for Match {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            let id = build_machine_id(
-                                machine_template.tournament_index,
-                                &ctx.claimer
-                            );
+                            let id =
+                                build_machine_id(machine_template.tournament_index, &ctx.claimer);
                             return VG::react(vg_instance, archive, &None, &id);
                         }
                     }
                 }
                 _ => {
-                    return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown current state {}", ctx.current_state),
-                    )));
+                    return Err(Error::from(ErrorKind::InvalidContractState(format!(
+                        "Unknown current state {}",
+                        ctx.current_state
+                    ))));
                 }
             },
             Role::Challenger => match ctx.current_state.as_ref() {
@@ -194,91 +190,95 @@ impl DApp<MachineTemplate> for Match {
                         root: ctx.log_hash.clone(),
                         path: format!("{}_opponent.br.tar", machine_template.tournament_index),
                         page_log2_size: machine_template.page_log2_size,
-                        tree_log2_size: machine_template.tree_log2_size
+                        tree_log2_size: machine_template.tree_log2_size,
                     };
 
-                    let processed_response: FilePath = archive.get_response(
-                        LOGGER_SERVICE_NAME.to_string(),
-                        format!("{:x}", ctx.log_hash.clone()),
-                        LOGGER_METHOD_DOWNLOAD.to_string(),
-                        request.into())?
+                    let processed_response: FilePath = archive
+                        .get_response(
+                            LOGGER_SERVICE_NAME.to_string(),
+                            format!("{:x}", ctx.log_hash.clone()),
+                            LOGGER_METHOD_DOWNLOAD.to_string(),
+                            request.into(),
+                        )?
                         .map_err(|_| {
                             Error::from(ErrorKind::ArchiveInvalidError(
                                 LOGGER_SERVICE_NAME.to_string(),
                                 format!("{:x}", ctx.log_hash.clone()),
-                                LOGGER_METHOD_DOWNLOAD.to_string()))
+                                LOGGER_METHOD_DOWNLOAD.to_string(),
+                            ))
                         })?
                         .into();
                     trace!("Downloaded! File stored at: {}...", processed_response.path);
 
                     // machine id
-                    let id = build_machine_id(
-                        machine_template.tournament_index,
-                        &ctx.claimer
-                    );
+                    let id = build_machine_id(machine_template.tournament_index, &ctx.claimer);
 
                     let request = NewSessionRequest {
                         session_id: id.clone(),
-                        machine: machine_template.opponent_machine.clone()
+                        machine: machine_template.opponent_machine.clone(),
                     };
 
                     // send newSession request to the emulator service
                     let id_clone = id.clone();
-                    let duplicate_session_msg = format!("Trying to register a session with a session_id that already exists: {}", id);
-                    let _processed_response: NewSessionResult = archive.get_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        id.clone(),
-                        EMULATOR_METHOD_NEW.to_string(),
-                        request.into())?
+                    let duplicate_session_msg = format!(
+                        "Trying to register a session with a session_id that already exists: {}",
+                        id
+                    );
+                    let _processed_response: NewSessionResult = archive
+                        .get_response(
+                            EMULATOR_SERVICE_NAME.to_string(),
+                            id.clone(),
+                            EMULATOR_METHOD_NEW.to_string(),
+                            request.into(),
+                        )?
                         .map_err(move |e| {
                             if e == duplicate_session_msg {
                                 Error::from(ErrorKind::ArchiveNeedsDummy(
                                     EMULATOR_SERVICE_NAME.to_string(),
                                     id_clone,
-                                    EMULATOR_METHOD_NEW.to_string()))
+                                    EMULATOR_METHOD_NEW.to_string(),
+                                ))
                             } else {
                                 Error::from(ErrorKind::ArchiveInvalidError(
                                     EMULATOR_SERVICE_NAME.to_string(),
                                     id_clone,
-                                    EMULATOR_METHOD_NEW.to_string()))
+                                    EMULATOR_METHOD_NEW.to_string(),
+                                ))
                             }
                         })?
                         .into();
 
                     // here goes the calculation of the final hash
                     // to check the claim and potentialy raise challenge
-                    let sample_points: Vec<u64> =
-                        vec![0, ctx.final_time.as_u64()];
+                    let sample_points: Vec<u64> = vec![0, ctx.final_time.as_u64()];
                     let request = SessionRunRequest {
                         session_id: id.clone(),
                         times: sample_points.clone(),
                     };
-                    let archive_key = build_session_run_key(
-                        id.clone(),
-                        sample_points.clone());
+                    let archive_key = build_session_run_key(id.clone(), sample_points.clone());
                     let id_clone = id.clone();
 
                     trace!("Calculating final hash of machine {}", id);
                     // have we sampled the final time?
-                    let processed_response: SessionRunResult = archive.get_response(
-                        EMULATOR_SERVICE_NAME.to_string(),
-                        archive_key.clone(),
-                        EMULATOR_METHOD_RUN.to_string(),
-                        request.into())?
+                    let processed_response: SessionRunResult = archive
+                        .get_response(
+                            EMULATOR_SERVICE_NAME.to_string(),
+                            archive_key.clone(),
+                            EMULATOR_METHOD_RUN.to_string(),
+                            request.into(),
+                        )?
                         .map_err(move |_e| {
                             Error::from(ErrorKind::ArchiveInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
                                 id_clone,
-                                EMULATOR_METHOD_RUN.to_string()))
+                                EMULATOR_METHOD_RUN.to_string(),
+                            ))
                         })?
                         .into();
 
                     let hash = processed_response.hashes[1];
                     if hash == ctx.claimed_final_hash {
-                        info!(
-                            "Confirming final hash {:?} for {}",
-                            hash, id
-                        );
+                        info!("Confirming final hash {:?} for {}", hash, id);
                         return Ok(Reaction::Idle);
                     } else {
                         warn!(
@@ -298,20 +298,19 @@ impl DApp<MachineTemplate> for Match {
                 }
                 "ChallengeStarted" => {
                     // we inspect the verification contract
-                    let vg_instance = instance.sub_instances.get(0).ok_or(
-                        Error::from(ErrorKind::InvalidContractState(format!(
+                    let vg_instance = instance.sub_instances.get(0).ok_or(Error::from(
+                        ErrorKind::InvalidContractState(format!(
                             "There is no vg instance {}",
                             ctx.current_state
-                        ))),
-                    )?;
-                    let vg_parsed: VGCtxParsed =
-                        serde_json::from_str(&vg_instance.json_data)
-                            .chain_err(|| {
-                                format!(
-                                    "Could not parse vg instance json_data: {}",
-                                    &vg_instance.json_data
-                                )
-                            })?;
+                        )),
+                    ))?;
+                    let vg_parsed: VGCtxParsed = serde_json::from_str(&vg_instance.json_data)
+                        .chain_err(|| {
+                            format!(
+                                "Could not parse vg instance json_data: {}",
+                                &vg_instance.json_data
+                            )
+                        })?;
                     let vg_ctx: VGCtx = vg_parsed.into();
 
                     match vg_ctx.current_state.as_ref() {
@@ -333,18 +332,17 @@ impl DApp<MachineTemplate> for Match {
                         _ => {
                             // verification game is still active,
                             // pass control to the appropriate dapp
-                            let id = build_machine_id(
-                                machine_template.tournament_index,
-                                &ctx.claimer
-                            );
+                            let id =
+                                build_machine_id(machine_template.tournament_index, &ctx.claimer);
                             return VG::react(vg_instance, archive, &None, &id);
                         }
                     }
                 }
                 _ => {
-                    return Err(Error::from(ErrorKind::InvalidContractState(
-                        format!("Unknown current state {}", ctx.current_state),
-                    )));
+                    return Err(Error::from(ErrorKind::InvalidContractState(format!(
+                        "Unknown current state {}",
+                        ctx.current_state
+                    ))));
                 }
             },
         }
@@ -355,33 +353,24 @@ impl DApp<MachineTemplate> for Match {
         archive: &Archive,
         _: &MachineTemplate,
     ) -> Result<state::Instance> {
-
         // get context (state) of the match instance
-        let parsed: MatchCtxParsed =
-            serde_json::from_str(&instance.json_data).chain_err(|| {
-                format!(
-                    "Could not parse match instance json_data: {}",
-                    &instance.json_data
-                )
-            })?;
+        let parsed: MatchCtxParsed = serde_json::from_str(&instance.json_data).chain_err(|| {
+            format!(
+                "Could not parse match instance json_data: {}",
+                &instance.json_data
+            )
+        })?;
         let ctx: MatchCtx = parsed.into();
         let json_data = serde_json::to_string(&ctx).unwrap();
 
         // get context (state) of the sub instances
 
-        let mut pretty_sub_instances : Vec<Box<state::Instance>> = vec![];
+        let mut pretty_sub_instances: Vec<Box<state::Instance>> = vec![];
 
         for sub in &instance.sub_instances {
-            pretty_sub_instances.push(
-                Box::new(
-                    VG::get_pretty_instance(
-                        sub,
-                        archive,
-                        &"".to_string(),
-                    )
-                    .unwrap()
-                )
-            )
+            pretty_sub_instances.push(Box::new(
+                VG::get_pretty_instance(sub, archive, &"".to_string()).unwrap(),
+            ))
         }
 
         let pretty_instance = state::Instance {
@@ -392,7 +381,7 @@ impl DApp<MachineTemplate> for Match {
             sub_instances: pretty_sub_instances,
         };
 
-        return Ok(pretty_instance)
+        return Ok(pretty_instance);
     }
 }
 
