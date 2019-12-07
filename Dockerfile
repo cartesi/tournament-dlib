@@ -4,7 +4,7 @@ ENV BASE /opt/cartesi
 
 RUN \
     apt-get update && \
-    apt-get install --no-install-recommends -y cmake && \
+    apt-get install --no-install-recommends -y cmake protobuf-compiler && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR $BASE
