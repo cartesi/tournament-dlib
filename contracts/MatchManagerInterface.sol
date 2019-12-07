@@ -27,6 +27,8 @@ contract MatchManagerInterface is Instantiator {
 
     function claimWin(uint256 _index) public returns (address);
 
+    function getWinner(uint256 _index) public view returns (address);
+
     function isConcerned(uint256 _index, address _user) public view returns (bool);
 
     // TO-DO: Add registration duration - Also update offchain

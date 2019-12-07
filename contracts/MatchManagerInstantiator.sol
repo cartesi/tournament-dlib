@@ -189,7 +189,13 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         }
     }
 
-    // TO-DO: Remove player from this if he lost it. PlayNextEpoch should remove the loser.
+    function getWinner(uint256 _index) public view returns(address) {
+        require(instance[_index].currentState == state.MatchesOver, "Matches have to be over");
+
+        return instance[_index].unmatchedPlayer;
+    }
+
+    // TO-DO: Remove player from this if he lost. PlayNextEpoch should remove the loser.
     // doing this will make this func stopping being view
     // TO-DO: this function will probably not exist
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
@@ -201,7 +207,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         return true;
     }
 
-    // TO-DO: update msg.sender to _user
     function getState(uint256 _index, address _user) public view returns
         ( uint256[9] memory _uintValues,
           address[3] memory _addressValues,
@@ -237,7 +242,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             );
         }
 
-        // TO-DO: update this to use _user
         function getSubInstances(uint256 _index, address _user)
             public view returns (address[] memory _addresses,
                 uint256[] memory _indices)
