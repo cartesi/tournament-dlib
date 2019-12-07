@@ -21,7 +21,6 @@ ethabi = "6.1.0"
 serde_json = "1.0"
 serde = "1.0.0"
 serde_derive = "1.0.0"
-emulator_interface = { path = "../arbitration-dlib/lib/grpc-interfaces/emulator_interface" }
 state = { path = "../arbitration-dlib/dispatcher/state" }
 dispatcher = { path = "../arbitration-dlib/dispatcher/dispatcher" }
 compute = { path = "../arbitration-dlib/compute" }
