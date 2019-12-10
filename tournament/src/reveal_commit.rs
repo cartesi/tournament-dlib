@@ -264,7 +264,7 @@ pub fn complete_reveal_phase(
     machine_template: &MachineTemplate,
 ) -> Result<Reaction> {
     // automatically submitting the log to the logger
-    let path = format!("{}.br.tar", machine_template.tournament_index);
+    let path = format!("{}.json.br.tar", machine_template.tournament_index);
     trace!("Submitting file: {}...", path);
 
     let request = SubmitFileRequest {

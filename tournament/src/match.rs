@@ -188,7 +188,7 @@ impl DApp<MachineTemplate> for Match {
 
                     let request = DownloadFileRequest {
                         root: ctx.log_hash.clone(),
-                        path: format!("{}_opponent.br.tar", machine_template.tournament_index),
+                        path: format!("{}_opponent.json.br.tar", machine_template.tournament_index),
                         page_log2_size: machine_template.page_log2_size,
                         tree_log2_size: machine_template.tree_log2_size,
                     };
