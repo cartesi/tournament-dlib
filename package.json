@@ -1,6 +1,6 @@
 {
   "name": "@cartesi/tournament",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.3",
   "description": "Tournament DLib",
   "main": "main.js",
   "directories": {
@@ -12,11 +12,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "truffle": "^5.0.44"
+    "@truffle/contract": "^4.1.1",
+    "@truffle/hdwallet-provider": "^1.0.26",
+    "truffle": "^5.1.3"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cartesi-corp/tournament-dlib.git"
+    "url": "git+https://github.com/cartesi/tournament-dlib.git"
   },
   "keywords": [
     "cartesi"
@@ -26,15 +28,16 @@
   "files": [
     "contracts",
     "migrations",
-    "build"
+    "build",
+    "truffle-config.js"
   ],
   "bugs": {
     "url": "https://github.com/cartesi-corp/tournament-dlib/issues"
   },
   "homepage": "https://github.com/cartesi-corp/tournament-dlib#readme",
   "dependencies": {
-    "@cartesi/arbitration": "^0.1.0-alpha.0",
-    "@cartesi/util": "^0.1.0-alpha.6",
-    "@cartesi/logger": "^0.1.0-alpha.0"
+    "@cartesi/util": "^0.1.0",
+    "@cartesi/arbitration": "^0.1.0-alpha.3",
+    "@cartesi/logger": "^0.1.0-alpha.2"
   }
 }

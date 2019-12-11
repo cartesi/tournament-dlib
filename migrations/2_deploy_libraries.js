@@ -1,64 +1,23 @@
-const fs = require('fs');
+const contract = require("@truffle/contract");
+const BitsManipulationLibrary = contract(require("@cartesi/util/build/contracts/BitsManipulationLibrary.json"));
+const VGInstantiator = contract(require("@cartesi/arbitration/build/contracts/VGInstantiator.json"));
+const Logger = contract(require("@cartesi/logger/build/contracts/Logger.json"));
 
+const RevealInstantiator = artifacts.require("RevealInstantiator");
+const MatchManagerInstantiator = artifacts.require("MatchManagerInstantiator");
+const MatchInstantiator = artifacts.require("MatchInstantiator");
 
-var RevealInstantiator = artifacts.require("RevealInstantiator");
-var BitsManipulationLibrary = artifacts.require("@cartesi/util/BitsManipulationLibrary");
-var MatchManagerInstantiator = artifacts.require("MatchManagerInstantiator");
-var MatchInstantiator = artifacts.require("MatchInstantiator");
-var Logger = artifacts.require("@cartesi/logger/Logger");
-
-var LoggerMock = artifacts.require("LoggerMock");
-
-var VGMock = artifacts.require("VGMock");
-var RevealMock = artifacts.require("RevealMock");
-var DAppMock = artifacts.require("DAppMock");
-
-module.exports = function(deployer, network, accounts) {
+module.exports = function(deployer) {
 
     deployer.then(async () => {
-        await deployer.deploy(BitsManipulationLibrary);
+        BitsManipulationLibrary.setNetwork(deployer.network_id);
+        VGInstantiator.setNetwork(deployer.network_id);
+        Logger.setNetwork(deployer.network_id);
+
         await deployer.link(BitsManipulationLibrary, RevealInstantiator);
-
-        await deployer.deploy(Logger);
-        await deployer.deploy(VGMock);
-        await deployer.deploy(LoggerMock);
-
-        await deployer.deploy(MatchInstantiator, VGMock.address);
+        await deployer.deploy(MatchInstantiator, VGInstantiator.address);
         await deployer.deploy(MatchManagerInstantiator, MatchInstantiator.address);
-
-        // TO-DO: Should deploy with real Logger, not LoggerMock
-        //await deployer.deploy(RevealInstantiator, Logger.address);
-
-        // THIS IS JUST FOR TESTING PURPOSES
-        await deployer.deploy(RevealInstantiator, LoggerMock.address);
-
-        // add main "player" values here before adding other accounts
-        var playerAddresses = [accounts[0]];
-        var scores = [100];
-        var finalHashes = ["0x01"];
-        var logHashes = ["0x00"];
-        var initialHashes = ["0x00"];
-
-        for (var i = 1; i < accounts.length; i++) {
-            playerAddresses.push(accounts[i]);
-            scores.push(i * 20);
-            logHashes.push("0x00");
-            initialHashes.push("0x00");
-            finalHashes.push("0x00");
-        }
-
-        await deployer.deploy(RevealMock, MatchManagerInstantiator.address);
-        await deployer.deploy(DAppMock, RevealMock.address, playerAddresses, scores, logHashes, initialHashes, finalHashes);
-
-        // TO-DO: Shouldnt be logger_mock, should be actual logger
-        // Write address to file
-        let addr_json = "{\"ri_address\":\"" + RevealInstantiator.address + "\", \"logger_mock_address\":\"" + LoggerMock.address + "\"}";
-
-        fs.writeFile('../test/deployedAddresses.json', addr_json, (err) => {
-          if (err) console.log("couldnt write to file");
-        });
-
+        await deployer.deploy(RevealInstantiator, Logger.address);
     });
 
 };
-
