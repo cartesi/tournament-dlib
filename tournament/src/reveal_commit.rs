@@ -3,6 +3,7 @@ use super::dispatcher::{Archive, DApp, Reaction};
 use super::dispatcher::{BoolField, Bytes32Field, String32Field, U256Array6};
 use super::error::Result;
 use super::error::*;
+use super::hex;
 use super::ethabi::Token;
 use super::ethereum_types::{H256, U256};
 use super::transaction;
@@ -160,7 +161,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             data: vec![
                                 Token::Uint(instance.index),
-                                Token::FixedBytes(commit_hash.as_bytes().to_vec()),
+                                Token::FixedBytes(hex::decode(commit_hash).expect("Decoding failed")),
                             ],
                             strategy: transaction::Strategy::Simplest,
                         };
