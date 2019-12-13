@@ -143,11 +143,13 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                             .chain_err(|| format!("Could not parse post_payload: {}", &s))?;
 
                         // concatenate log_hash with user address
-                        let mut hash_data = payload.params.hash.to_string();
-                        hash_data.push_str(&instance.concern.user_address.to_string());
+                        let mut hash_data: [u8; 52] = [0; 52];
+                        payload.params.hash.copy_to(&mut hash_data[0..32]);
+                        instance.concern.user_address.copy_to(&mut hash_data[32..52]);
+
                         // get keccak256 of that string
                         let mut hasher = Sha3::keccak256();
-                        hasher.input_str(&hash_data);
+                        hasher.input(&hash_data);
                         let commit_hash = hasher.result_str();
 
                         let request = TransactionRequest {
