@@ -360,7 +360,7 @@ pub fn complete_reveal_phase(
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
-                id_clone,
+                archive_key,
                 EMULATOR_METHOD_READ.to_string(),
             ))
         })?
@@ -397,7 +397,7 @@ pub fn complete_reveal_phase(
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
-                id_clone,
+                archive_key,
                 EMULATOR_METHOD_PROOF.to_string(),
             ))
         })?
@@ -438,7 +438,7 @@ pub fn complete_reveal_phase(
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
-                id_clone,
+                archive_key,
                 EMULATOR_METHOD_PROOF.to_string(),
             ))
         })?
@@ -470,7 +470,7 @@ pub fn complete_reveal_phase(
         .map_err(move |_e| {
             Error::from(ErrorKind::ArchiveInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
-                id_clone,
+                archive_key,
                 EMULATOR_METHOD_RUN.to_string(),
             ))
         })?

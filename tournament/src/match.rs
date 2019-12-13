@@ -270,7 +270,7 @@ impl DApp<MachineTemplate> for Match {
                         .map_err(move |_e| {
                             Error::from(ErrorKind::ArchiveInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
-                                id_clone,
+                                archive_key,
                                 EMULATOR_METHOD_RUN.to_string(),
                             ))
                         })?
