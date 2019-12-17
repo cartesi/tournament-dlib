@@ -179,7 +179,6 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                                 &instance.concern,
                                 instance.index,
                                 archive,
-                                ctx.log_hash,
                                 machine_template,
                             );
                         }
@@ -218,7 +217,6 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                     &instance.concern,
                     instance.index,
                     archive,
-                    ctx.log_hash,
                     machine_template,
                 );
             }
@@ -263,7 +261,6 @@ pub fn complete_reveal_phase(
     concern: &Concern,
     index: U256,
     archive: &Archive,
-    log_hash: H256,
     machine_template: &MachineTemplate,
 ) -> Result<Reaction> {
     // automatically submitting the log to the logger
@@ -292,6 +289,7 @@ pub fn complete_reveal_phase(
         })?
         .into();
     trace!("Submitted! Result: {:?}...", processed_response.hash);
+    let log_hash = processed_response.hash.clone();
 
     // build machine
     let id = build_machine_id(machine_template.tournament_index, &concern.user_address);
