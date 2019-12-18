@@ -69,6 +69,7 @@ impl DApp<()> for DAppMock {
                     value: U256::from(0),
                     function: "claimDAppRunning".into(),
                     data: vec![Token::Uint(instance.index)],
+                    gas: None,
                     strategy: transaction::Strategy::Simplest,
                 };
 
@@ -101,6 +102,7 @@ impl DApp<()> for DAppMock {
                             value: U256::from(0),
                             function: "claimFinished".into(),
                             data: vec![Token::Uint(instance.index)],
+                            gas: None,
                             strategy: transaction::Strategy::Simplest,
                         };
                         return Ok(Reaction::Transaction(request));

@@ -157,6 +157,7 @@ impl DApp<MachineTemplate> for Match {
                                 value: U256::from(0),
                                 function: "winByVG".into(),
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));
@@ -290,6 +291,7 @@ impl DApp<MachineTemplate> for Match {
                             value: U256::from(0),
                             function: "challengeHighestScore".into(),
                             data: vec![Token::Uint(instance.index)],
+                            gas: None,
                             strategy: transaction::Strategy::Simplest,
                         };
 
@@ -321,6 +323,7 @@ impl DApp<MachineTemplate> for Match {
                                 value: U256::from(0),
                                 function: "winByVG".into(),
                                 data: vec![Token::Uint(instance.index)],
+                                gas: None,
                                 strategy: transaction::Strategy::Simplest,
                             };
                             return Ok(Reaction::Transaction(request));
@@ -403,6 +406,7 @@ pub fn win_by_deadline_or_idle(
             value: U256::from(0),
             function: "claimVictoryByTime".into(),
             data: vec![Token::Uint(index)],
+            gas: None,
             strategy: transaction::Strategy::Simplest,
         };
         return Ok(Reaction::Transaction(request));

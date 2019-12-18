@@ -165,6 +165,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                                 Token::Uint(instance.index),
                                 Token::FixedBytes(hex::decode(commit_hash).expect("Decoding failed")),
                             ],
+                            gas: None,
                             strategy: transaction::Strategy::Simplest,
                         };
                         return Ok(Reaction::Transaction(request));
@@ -201,6 +202,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                         value: U256::from(0),
                         function: "endCommitAndReveal".into(),
                         data: vec![Token::Uint(instance.index)],
+                        gas: None,
                         strategy: transaction::Strategy::Simplest,
                     };
 
@@ -514,6 +516,7 @@ pub fn complete_reveal_phase(
             Token::Array(log_siblings),
             Token::Array(score_siblings),
         ],
+        gas: Some(U256::from(628318)),
         strategy: transaction::Strategy::Simplest,
     };
 
