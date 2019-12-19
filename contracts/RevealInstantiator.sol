@@ -17,7 +17,6 @@ contract RevealInstantiator is RevealInterface, Decorated {
     struct RevealCtx {
         uint256 instantiatedAt;
         uint256 commitDuration;
-        uint256 revealDuration;
         uint256 scoreWordPosition;
         uint256 logDrivePosition;
         uint256 scoreDriveLogSize;
@@ -50,7 +49,6 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     /// @notice Instantiate a commit and reveal instance.
     /// @param _commitDuration commit phase duration in seconds.
-    /// @param _revealDuration reveal phase duration in seconds.
     /// @param _templateHash hash of the machine as is
     /// @param _scoreWordPosition position of the drive containing the score
     /// @param _logDrivePosition position of the drive containing the log
@@ -59,7 +57,6 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @return Reveal index.
     function instantiate(
         uint256 _commitDuration,
-        uint256 _revealDuration,
         uint256 _scoreWordPosition,
         uint256 _logDrivePosition,
         uint256 _scoreDriveLogSize,
@@ -69,7 +66,6 @@ contract RevealInstantiator is RevealInterface, Decorated {
         RevealCtx storage currentInstance = instance[currentIndex];
         currentInstance.instantiatedAt = now;
         currentInstance.commitDuration = _commitDuration;
-        currentInstance.revealDuration = _revealDuration;
         currentInstance.templateHash = _templateHash;
 
         currentInstance.scoreWordPosition = _scoreWordPosition;
@@ -170,7 +166,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
     function endCommitAndReveal(uint256 _index) public {
         require(instance[_index].currentState != state.CommitRevealDone, "Commit and Reveal is already over");
 
-        if (now > instance[_index].instantiatedAt + instance[_index].commitDuration + instance[_index].revealDuration) {
+        if (now > instance[_index].instantiatedAt + (instance[_index].commitDuration * 2))  {
             instance[_index].currentState = state.CommitRevealDone;
         }
     }
@@ -223,7 +219,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256[6] memory uintValues = [
             i.instantiatedAt,
             i.commitDuration,
-            i.revealDuration,
+            i.commitDuration,
             i.scoreWordPosition,
             i.logDrivePosition,
             i.logDriveLogSize
