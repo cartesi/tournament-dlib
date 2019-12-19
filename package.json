@@ -1,6 +1,6 @@
 {
   "name": "@cartesi/tournament",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "description": "Tournament DLib",
   "main": "main.js",
   "directories": {
