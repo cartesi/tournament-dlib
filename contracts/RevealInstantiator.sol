@@ -214,7 +214,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
             bytes32 currentState
         ) {
-
+        // TO-DO: Remove commitDuration repetition
         RevealCtx memory i = instance[_index];
         uint256[6] memory uintValues = [
             i.instantiatedAt,
