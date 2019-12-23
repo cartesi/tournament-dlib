@@ -142,16 +142,6 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                         let payload: Payload = serde_json::from_str(&s)
                             .chain_err(|| format!("Could not parse post_payload: {}", &s))?;
 
-                        // concatenate log_hash with user address
-                        let mut hash_data: [u8; 52] = [0; 52];
-                        payload.params.hash.copy_to(&mut hash_data[0..32]);
-                        instance.concern.user_address.copy_to(&mut hash_data[32..52]);
-
-                        // get keccak256 of that string
-                        let mut hasher = Sha3::keccak256();
-                        hasher.input(&hash_data);
-                        let commit_hash = hasher.result_str();
-
                         let request = TransactionRequest {
                             concern: instance.concern.clone(),
                             value: U256::from(0),
@@ -163,7 +153,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             data: vec![
                                 Token::Uint(instance.index),
-                                Token::FixedBytes(hex::decode(commit_hash).expect("Decoding failed")),
+                                Token::FixedBytes(payload.params.hash.to_vec()),
                             ],
                             gas: None,
                             strategy: transaction::Strategy::Simplest,
@@ -511,7 +501,6 @@ pub fn complete_reveal_phase(
             Token::Uint(U256::from(u64::from_le_bytes(
                 to_bytes(score).expect("read value has the wrong size"),
             ))),
-            Token::FixedBytes(log_hash.to_vec()),
             Token::FixedBytes(final_hash.0.to_vec()),
             Token::Array(log_siblings),
             Token::Array(score_siblings),
