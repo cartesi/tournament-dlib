@@ -111,7 +111,6 @@ contract RevealInstantiator is RevealInterface, Decorated {
     /// @param _scoreDriveSiblings siblings for the log drive
     function reveal(uint256 _index,
                     uint64 _score,
-                    bytes32 _logHash,
                     bytes32 _finalHash,
                     bytes32[] memory _logDriveSiblings,
                     bytes32[] memory _scoreDriveSiblings
@@ -125,13 +124,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
         require(!instance[_index].players[msg.sender].hasRevealed, "Player can only reveal one commit");
 
-        require(
-            keccak256(abi.encodePacked(_logHash, msg.sender)) ==
-            instance[_index].players[msg.sender].commitHash,
-            "The hash commited must be equal to the logHash provided hashed with the users address"
-        );
-
-        require(li.isLogAvailable(_logHash), "Hash of the log must be available at Logger-dlib");
+        require(li.isLogAvailable(instance[_index].players[msg.sender].commitHash), "Hash of the log must be available at Logger-dlib");
 
         // TO-DO: improve this - create uint64 type for dispatcher
         uint64[4] memory uint64_values;
@@ -152,7 +145,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         require(Merkle.getRootWithDrive(uint64_values[2], uint64_values[3], scoreWordHash, _scoreDriveSiblings) == _finalHash, "Score is not contained in the final hash");
 
         // Update pristine hash with flash drive containing logs
-        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], _logHash, _logDriveSiblings);
+        instance[_index].players[msg.sender].initialHash = Merkle.getRootWithDrive(uint64_values[0], uint64_values[1], instance[_index].players[msg.sender].commitHash, _logDriveSiblings);
 
         instance[_index].players[msg.sender].score = _score;
         instance[_index].players[msg.sender].finalHash = _finalHash;
