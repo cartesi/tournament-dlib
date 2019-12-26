@@ -323,7 +323,6 @@ pub fn complete_reveal_phase(
     // Score is the first word (logsize = 3) of the output drive
     // The output drive starts at address: (1<<63)+(3<<61)
     // The score is there when the machine halts (final_time)
-    let id_clone = id.clone();
     let time = machine_template.final_time;
     let address = (1 << 63) + (3 << 61);
 
@@ -366,7 +365,6 @@ pub fn complete_reveal_phase(
     let score = processed_response.read_content.data;
 
     // get score proof (siblings)
-    let id_clone = id.clone();
 
     let archive_key = build_session_proof_key(id.clone(), time, address, score_logsize_2);
     let mut target = cartesi_base::GetProofRequest::new();
@@ -404,7 +402,6 @@ pub fn complete_reveal_phase(
     // Log drive starts at address (1<<63)+(2<<61)
     // Log size is 1 MB
     // Siblings should be checked against template hash (time = 0)
-    let id_clone = id.clone();
     let time = 0;
     let address = (1 << 63) + (2 << 61);
     let log2_size = 20; // 1MB
@@ -448,7 +445,6 @@ pub fn complete_reveal_phase(
         times: sample_points.clone(),
     };
     let archive_key = build_session_run_key(id.clone(), sample_points.clone());
-    let id_clone = id.clone();
 
     trace!("Calculating final hash of machine {}", id);
     // have we sampled the final time?

@@ -58,7 +58,7 @@ impl DApp<()> for DAppMock {
         // these states should not occur as they indicate an innactive instance,
         // but it is possible that the blockchain state changed between queries
         match ctx.current_state.as_ref() {
-            "DAppFinnished" => {
+            "DAppFinished" => {
                 return Ok(Reaction::Idle);
             }
 
