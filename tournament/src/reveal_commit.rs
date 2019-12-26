@@ -498,7 +498,7 @@ pub fn complete_reveal_phase(
         function: "reveal".into(),
         data: vec![
             Token::Uint(index),
-            Token::Uint(U256::from(u64::from_le_bytes(
+            Token::Uint(U256::from(u64::from_be_bytes(
                 to_bytes(score).expect("read value has the wrong size"),
             ))),
             Token::FixedBytes(final_hash.0.to_vec()),
