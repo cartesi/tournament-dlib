@@ -98,7 +98,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         if (instance[_index].currentEpoch == 0) {
             RevealInterface parent = RevealInterface(instance[_index].parentAddress);
             require(!instance[_index].registered[msg.sender][instance[_index].currentEpoch], "Player cannot register twice");
-            require(parent.playerExist(instance[_index].parentInstance, msg.sender), "Player must have completed parent phase");
+            require(parent.hasRevealed(instance[_index].parentInstance, msg.sender), "Player must have completed parent phase");
 
             instance[_index].registered[msg.sender][instance[_index].currentEpoch] = true;
 
