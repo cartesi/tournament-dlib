@@ -124,7 +124,12 @@ contract RevealInstantiator is RevealInterface, Decorated {
         require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
         require(!instance[_index].players[msg.sender].hasRevealed, "Player can only reveal one commit");
 
-        require(li.isLogAvailable(instance[_index].players[msg.sender].commitHash), "Hash of the log must be available at Logger-dlib");
+        require(
+            li.isLogAvailable(
+                instance[_index].players[msg.sender].commitHash,
+                instance[_index].logDriveLogSize),
+            "Hash of the log must be available at Logger-dlib"
+        );
 
         // TO-DO: improve this - create uint64 type for dispatcher
         uint64[4] memory uint64_values;
