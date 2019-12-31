@@ -227,7 +227,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
             uintValues,
             instance[_index].players[_user].commitHash,
             instance[_index].players[_user].hasRevealed,
-            li.isLogAvailable(instance[_index].players[_user].commitHash),
+            li.isLogAvailable(instance[_index].players[_user].commitHash, instance[_index].logDriveLogSize),
 
             getCurrentState(_index)
         );
