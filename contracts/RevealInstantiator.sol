@@ -127,7 +127,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
         require(
             li.isLogAvailable(
                 instance[_index].players[msg.sender].commitHash,
-                instance[_index].logDriveLogSize),
+                uint64(instance[_index].logDriveLogSize)),
             "Hash of the log must be available at Logger-dlib"
         );
 
@@ -227,7 +227,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
             uintValues,
             instance[_index].players[_user].commitHash,
             instance[_index].players[_user].hasRevealed,
-            li.isLogAvailable(instance[_index].players[_user].commitHash, instance[_index].logDriveLogSize),
+            li.isLogAvailable(instance[_index].players[_user].commitHash, uint64(instance[_index].logDriveLogSize)),
 
             getCurrentState(_index)
         );
