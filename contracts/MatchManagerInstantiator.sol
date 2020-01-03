@@ -198,12 +198,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     // TO-DO: Remove player from this if he lost. PlayNextEpoch should remove the loser.
     // doing this will make this func stopping being view
     // TO-DO: this function will probably not exist
-    function isConcerned(uint256 _index, address _user) public view returns (bool) {
-        // RevealInterface parent = RevealInterface(instance[_index].parentAddress);
-
-        //bool concerned = parent.playerExist(instance[_index].parentInstance, _user);
-
-        //return concerned;
+    function isConcerned(uint256, address) public view returns (bool) {
         return true;
     }
 
