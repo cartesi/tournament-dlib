@@ -112,10 +112,7 @@ contract RevealMock is Decorated, RevealMockInterface {
     }
 
     /// @notice reveals the log and extracts its information.
-    /// @param _index index of reveal that is being interacted with.
-    /// @param _score that should be contained in the log
-    /// @param _finalHash final hash of the machine after that log has been proccessed.
-    function reveal(uint256 _index, uint256 _score, bytes32 _finalHash) public {
+    function reveal(uint256 _index, uint256, bytes32) public view {
         require(instance[_index].currentState == state.RevealPhase, "State has to be reveal phase");
     }
 
@@ -146,7 +143,7 @@ contract RevealMock is Decorated, RevealMockInterface {
         return instance[_index].players[_playerAddr].finalHash;
     }
 
-    function playerExist(uint256 _index, address _playerAddr) public returns (bool) {
+    function playerExist(uint256, address) public returns (bool) {
         //cheap way to check if player has been registered
         return true; //!(instance[_index].players[_playerAddr].playerAddr == address(0));
     }
@@ -160,7 +157,7 @@ contract RevealMock is Decorated, RevealMockInterface {
         return instance[_index].players[_user].playerAddr != address(0)? true : false;
     }
 
-    function getCurrentState(uint256 _index, address _user) public view returns (bytes32) {
+    function getCurrentState(uint256 _index, address) public view returns (bytes32) {
         if (instance[_index].currentState == state.CommitPhase) {
             return "CommitPhase";
         }
