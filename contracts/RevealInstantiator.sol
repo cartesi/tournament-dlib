@@ -253,7 +253,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
     function isConcerned(uint256 _index, address _user) public view returns (bool) {
         return instance[_index].players[_user].playerAddr != address(0);
     }
-    function getSubInstances(uint256 _index, address _user)
+    function getSubInstances(uint256, address)
         public view returns (address[] memory _addresses,
             uint256[] memory _indices)
     {
