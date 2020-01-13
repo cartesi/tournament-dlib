@@ -7,7 +7,6 @@ import "@cartesi/util/contracts/Instantiator.sol";
 contract MatchManagerInterface is Instantiator {
 
     enum state {
-        WaitingSignUps,
         WaitingMatches,
         MatchesOver
     }
