@@ -107,7 +107,7 @@ impl DApp<MachineTemplate> for MatchManager {
         match ctx.current_state.as_ref() {
             // these states should not occur as they indicate an innactive instance,
             // but it is possible that the blockchain state changed between queries
-            "MatchesOver" | "WaitingSignUps" => {
+            "MatchesOver" => {
                 return Ok(Reaction::Idle);
             }
 
