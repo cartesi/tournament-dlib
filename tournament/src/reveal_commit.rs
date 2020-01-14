@@ -164,8 +164,9 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                         let phase_is_over = current_time
                             > ctx.instantiated_at.as_u64() + ctx.commit_duration.as_u64();
 
-                        if phase_is_over {
-                            // if commit phase is over, player reveal his log and forces the phase change
+                        if phase_is_over && !ctx.log_hash.is_zero() {
+                            // if commit phase is over and player has log
+                            // reveals log and forces the phase change
                             return complete_reveal_phase(
                                 &instance.concern,
                                 instance.index,
@@ -199,8 +200,9 @@ impl DApp<(MachineTemplate)> for RevealCommit {
                     return Ok(Reaction::Transaction(request));
                 }
 
-                // if has player has revealed but phase is not over, return idle
-                if ctx.has_revealed {
+                // if has player has revealed but phase is not over
+                // or if there is no commit to reveal
+                if ctx.has_revealed || ctx.log_hash.is_zero() {
                     return Ok(Reaction::Idle);
                 }
 
