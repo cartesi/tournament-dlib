@@ -281,6 +281,8 @@ contract MatchInstantiator is MatchInterface, Decorated {
 
     }
 
-    // TO-DO: Implement clear instance
-    function clearInstance(uint256 _index) internal {}
+    // TO-DO: Clear unuseful information
+    function clearInstance(uint256 _index) internal {
+        deactivate(_index);
+    }
 }
