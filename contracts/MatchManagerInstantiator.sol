@@ -185,6 +185,8 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         bool isEpochOver = (now > (instance[_index].lastEpochStartTime + ((1 + instance[_index].currentEpoch) * instance[_index].epochDuration)));
         if (isEpochOver && (instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch] == 0)) {
             instance[_index].currentState = state.MatchesOver;
+
+            deactivate(_index);
             return instance[_index].unmatchedPlayer;
         }
     }

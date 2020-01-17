@@ -166,6 +166,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
         if (now > instance[_index].instantiatedAt + (instance[_index].commitDuration * 2))  {
             instance[_index].currentState = state.CommitRevealDone;
+            deactivate(_index);
         }
     }
 
