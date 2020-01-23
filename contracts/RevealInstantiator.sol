@@ -22,6 +22,8 @@ contract RevealInstantiator is RevealInterface, Decorated {
         uint256 scoreDriveLogSize;
         uint256 logDriveLogSize;
 
+        uint256 numberOfPlayers;
+
         bytes32 templateHash;
         mapping(address => Player) players; //player address to player
 
@@ -96,6 +98,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
             Player memory player;
             player.playerAddr = msg.sender;
             instance[_index].players[msg.sender] = player;
+            instance[_index].numberOfPlayers++;
         }
 
         instance[_index].players[msg.sender].commitHash = _commitHash;
@@ -168,6 +171,10 @@ contract RevealInstantiator is RevealInterface, Decorated {
             instance[_index].currentState = state.CommitRevealDone;
             deactivate(_index);
         }
+    }
+
+    function getNumberOfPlayers(uint256 _index) public view returns (uint256) {
+        return instance[_index].numberOfPlayers;
     }
 
     function getScore(uint256 _index, address _playerAddr) public returns (uint256) {
