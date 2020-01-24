@@ -179,7 +179,7 @@ contract RevealInstantiator is RevealInterface, Decorated {
 
     function getScore(uint256 _index, address _playerAddr) public returns (uint256) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
-        return instance[_index].players[msg.sender].score;
+        return instance[_index].players[_playerAddr].score;
     }
 
     function getFinalHash(uint256 _index, address _playerAddr) public returns (bytes32) {
