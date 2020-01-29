@@ -14,6 +14,7 @@ contract RevealInterface is Instantiator {
 
     function instantiate(
         uint256 _commitDuration,
+        uint256 _revealDuration,
         uint256 _scoreWordPosition,
         uint256 _logDrivePosition,
         uint256 _scoreDriveLogSize,

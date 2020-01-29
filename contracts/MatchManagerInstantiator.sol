@@ -38,7 +38,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     }
 
     /// @notice Instantiate a match manager.
-    /// @param _epochDuration epoch duration in seconds.
     /// @param _roundDuration duration of a round in seconds.
     /// @param _finalTime final time of matches being played.
     /// @param _parentAddress address of parent parent contract
@@ -47,7 +46,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     /// @return Match Manager index.
 
     function instantiate(
-        uint256 _epochDuration,
         uint256 _matchDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
@@ -56,7 +54,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         address _machineAddress) public returns (uint256)
     {
         MatchManagerCtx storage currentInstance = instance[currentIndex];
-        currentInstance.epochDuration = _epochDuration;
+        currentInstance.epochDuration = _matchDuration * 3;
         currentInstance.matchDuration = _matchDuration;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.finalTime = _finalTime;
