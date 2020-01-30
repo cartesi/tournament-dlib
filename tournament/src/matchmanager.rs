@@ -130,6 +130,7 @@ impl DApp<MachineTemplate> for MatchManager {
                 //  TO-DO: The epoch doesnt have to be over if there were zero matchets last epoch
                 if epoch_over && user_is_unmatched {
                     if zero_matches_last_epoch {
+                        info!("Claiming victory by unmatched (index: {})", instance.index);
                         let request = TransactionRequest {
                             concern: instance.concern.clone(),
                             value: U256::from(0),
@@ -142,6 +143,7 @@ impl DApp<MachineTemplate> for MatchManager {
                         return Ok(Reaction::Transaction(request));
                     }
 
+                    info!("Advancing epoch for MatchManager (index: {})", instance.index);
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
                         value: U256::from(0),
@@ -155,6 +157,7 @@ impl DApp<MachineTemplate> for MatchManager {
                 }
                 // if player hasnt registered yet and epoch is zero, register:
                 if ctx.current_epoch.as_u64() == 0 && !ctx.registered {
+                    info!("Playing next epoch for MatchManager (index: {})", instance.index);
                     let request = TransactionRequest {
                         concern: instance.concern.clone(),
                         value: U256::from(0),
@@ -204,6 +207,7 @@ impl DApp<MachineTemplate> for MatchManager {
                             if epoch_over
                                 || (ctx.last_match_epoch != ctx.current_epoch && !ctx.registered)
                             {
+                                info!("Playing next epoch for MatchManager (index: {})", instance.index);
                                 let request = TransactionRequest {
                                     concern: instance.concern.clone(),
                                     value: U256::from(0),
@@ -233,6 +237,7 @@ impl DApp<MachineTemplate> for MatchManager {
                             if epoch_over
                                 || (ctx.last_match_epoch != ctx.current_epoch && !ctx.registered)
                             {
+                                info!("Playing next epoch for MatchManager (index: {})", instance.index);
                                 let request = TransactionRequest {
                                     concern: instance.concern.clone(),
                                     value: U256::from(0),

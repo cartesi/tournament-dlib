@@ -57,7 +57,7 @@ pub use compute::{
     SessionRunResult, SessionStepRequest, EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF,
     EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_METHOD_STEP, EMULATOR_SERVICE_NAME,
 };
-pub use compute::{VGCtx, VGCtxParsed, VG};
+pub use compute::{VGCtx, VGCtxParsed, VG, win_by_deadline_or_idle};
 
 pub use logger_service::{
     DownloadFileRequest, FilePath, Hash, SubmitFileRequest, LOGGER_METHOD_DOWNLOAD,

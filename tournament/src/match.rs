@@ -13,7 +13,7 @@ use super::{
     SessionRunRequest, SessionRunResult, EMULATOR_METHOD_NEW, EMULATOR_METHOD_RUN,
     EMULATOR_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD, LOGGER_SERVICE_NAME, VG,
 };
-use super::{VGCtx, VGCtxParsed};
+use super::{VGCtx, VGCtxParsed, win_by_deadline_or_idle};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -152,6 +152,7 @@ impl DApp<MachineTemplate> for Match {
                     match vg_ctx.current_state.as_ref() {
                         "FinishedClaimerWon" => {
                             // claim victory in compute contract
+                            info!("Claiming victory by VG (index: {})", instance.index);
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
@@ -281,7 +282,7 @@ impl DApp<MachineTemplate> for Match {
                         info!("Confirming final hash {:?} for {}", hash, id);
                         return Ok(Reaction::Idle);
                     } else {
-                        warn!(
+                        info!(
                             "Disputing final hash {:?} != {} for {}",
                             hash, ctx.claimed_final_hash, id
                         );
@@ -317,6 +318,7 @@ impl DApp<MachineTemplate> for Match {
                     match vg_ctx.current_state.as_ref() {
                         "FinishedChallengerWon" => {
                             // claim victory in compute contract
+                            info!("Claiming victory by VG (index: {})", instance.index);
                             let request = TransactionRequest {
                                 concern: instance.concern.clone(),
                                 value: U256::from(0),
@@ -384,33 +386,5 @@ impl DApp<MachineTemplate> for Match {
         };
 
         return Ok(pretty_instance);
-    }
-}
-
-pub fn win_by_deadline_or_idle(
-    concern: &Concern,
-    index: U256,
-    time_of_last_move: u64,
-    round_duration: u64,
-) -> Result<Reaction> {
-    let current_time = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .chain_err(|| "System time before UNIX_EPOCH")?
-        .as_secs();
-
-    // if other party missed the deadline
-    if current_time > time_of_last_move + round_duration {
-        let request = TransactionRequest {
-            concern: concern.clone(),
-            value: U256::from(0),
-            function: "claimVictoryByTime".into(),
-            data: vec![Token::Uint(index)],
-            gas: None,
-            strategy: transaction::Strategy::Simplest,
-        };
-        return Ok(Reaction::Transaction(request));
-    } else {
-        // if not, then wait
-        return Ok(Reaction::Idle);
     }
 }
