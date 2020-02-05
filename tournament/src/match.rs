@@ -30,9 +30,9 @@ use super::transaction;
 use super::transaction::TransactionRequest;
 use super::{build_machine_id, build_session_run_key};
 use super::{
-    cartesi_base, DownloadFileRequest, FilePath, NewSessionRequest, NewSessionResult, Role,
+    cartesi_base, DownloadFileRequest, DownloadFileResponse, NewSessionRequest, NewSessionResult, Role,
     SessionRunRequest, SessionRunResult, EMULATOR_METHOD_NEW, EMULATOR_METHOD_RUN,
-    EMULATOR_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD, LOGGER_SERVICE_NAME, VG,
+    EMULATOR_SERVICE_NAME, LOGGER_METHOD_DOWNLOAD, LOGGER_SERVICE_NAME, VG, get_logger_response
 };
 use super::{VGCtx, VGCtxParsed, win_by_deadline_or_idle};
 
@@ -216,20 +216,13 @@ impl DApp<MachineTemplate> for Match {
                         tree_log2_size: machine_template.tree_log2_size,
                     };
 
-                    let processed_response: FilePath = archive
-                        .get_response(
+                    let processed_response: DownloadFileResponse = get_logger_response(
+                            archive,
                             LOGGER_SERVICE_NAME.to_string(),
                             format!("{:x}", ctx.log_hash.clone()),
                             LOGGER_METHOD_DOWNLOAD.to_string(),
                             request.into(),
                         )?
-                        .map_err(|_| {
-                            Error::from(ErrorKind::ArchiveInvalidError(
-                                LOGGER_SERVICE_NAME.to_string(),
-                                format!("{:x}", ctx.log_hash.clone()),
-                                LOGGER_METHOD_DOWNLOAD.to_string(),
-                            ))
-                        })?
                         .into();
                     trace!("Downloaded! File stored at: {}...", processed_response.path);
 

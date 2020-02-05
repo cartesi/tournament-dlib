@@ -33,11 +33,11 @@ use super::{
     build_machine_id, build_session_proof_key, build_session_read_key, build_session_run_key,
 };
 use super::{
-    cartesi_base, Hash, NewSessionRequest, NewSessionResult, SessionGetProofRequest,
+    cartesi_base, NewSessionRequest, NewSessionResult, SessionGetProofRequest,
     SessionGetProofResult, SessionReadMemoryRequest, SessionReadMemoryResult, SessionRunRequest,
-    SessionRunResult, SubmitFileRequest, EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF,
+    SessionRunResult, SubmitFileRequest, SubmitFileResponse, EMULATOR_METHOD_NEW, EMULATOR_METHOD_PROOF,
     EMULATOR_METHOD_READ, EMULATOR_METHOD_RUN, EMULATOR_SERVICE_NAME, LOGGER_METHOD_SUBMIT,
-    LOGGER_SERVICE_NAME,
+    LOGGER_SERVICE_NAME, get_logger_response
 };
 
 use super::crypto::digest::Digest;
@@ -288,23 +288,15 @@ pub fn complete_reveal_phase(
         tree_log2_size: machine_template.tree_log2_size,
     };
 
-    let processed_response: Hash = archive
-        .get_response(
+    let processed_response: SubmitFileResponse = get_logger_response(
+            archive,
             LOGGER_SERVICE_NAME.to_string(),
             path.clone(),
             LOGGER_METHOD_SUBMIT.to_string(),
             request.into(),
         )?
-        .map_err(move |_e| {
-            Error::from(ErrorKind::ArchiveInvalidError(
-                LOGGER_SERVICE_NAME.to_string(),
-                path,
-                LOGGER_METHOD_SUBMIT.to_string(),
-            ))
-        })?
         .into();
-    trace!("Submitted! Result: {:?}...", processed_response.hash);
-    let log_hash = processed_response.hash.clone();
+    trace!("Submitted! Result: {:?}...", processed_response.root);
 
     // build machine
     let id = build_machine_id(machine_template.tournament_index, &concern.user_address);

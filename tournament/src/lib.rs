@@ -56,7 +56,7 @@ pub use compute::{
 pub use compute::{VGCtx, VGCtxParsed, VG, win_by_deadline_or_idle};
 
 pub use logger_service::{
-    DownloadFileRequest, FilePath, Hash, SubmitFileRequest, LOGGER_METHOD_DOWNLOAD,
+    DownloadFileRequest, DownloadFileResponse, SubmitFileRequest, SubmitFileResponse, LOGGER_METHOD_DOWNLOAD,
     LOGGER_METHOD_SUBMIT, LOGGER_SERVICE_NAME,
 };
 
@@ -70,6 +70,64 @@ pub use revealmock::RevealMock;
 enum Role {
     Claimer,
     Challenger,
+}
+
+pub fn get_logger_response(
+    archive: &dispatcher::Archive,
+    service: String,
+    key: String,
+    method: String,
+    request: Vec<u8>
+) -> error::Result<Vec<u8>> {
+    let raw_response = archive
+        .get_response(
+            service.clone(),
+            key.clone(),
+            method.clone(),
+            request.clone()
+        )?
+        .map_err(|_| {
+            error::Error::from(error::ErrorKind::ArchiveInvalidError(
+                service.clone(),
+                key.clone(),
+                method.clone()
+            ))
+        })?;
+
+    match method.as_ref() {
+        LOGGER_METHOD_SUBMIT => {
+            let response: SubmitFileResponse = raw_response.clone().into();
+            if response.status == 0 {
+                Ok(raw_response)
+            }
+            else {
+                error!("Fail to get logger response, status: {}", response.status);
+                Err(error::Error::from(error::ErrorKind::ArchiveMissError(
+                    service, key, method, request,
+                )))
+            }
+        },
+        LOGGER_METHOD_DOWNLOAD => {
+            let response: DownloadFileResponse = raw_response.clone().into();
+            if response.status == 0 {
+                Ok(raw_response)
+            }
+            else {
+                error!("Fail to get logger response, status: {}", response.status);
+                Err(error::Error::from(error::ErrorKind::ArchiveMissError(
+                    service, key, method, request,
+                )))
+            }
+        },
+        _ => {
+            error!("Unknown logger method {} received, shouldn't happen!", method);
+            Err(error::Error::from(error::ErrorKind::ArchiveInvalidError(
+                service,
+                key,
+                method
+            )))
+        }
+    }
 }
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
