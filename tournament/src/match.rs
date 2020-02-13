@@ -218,6 +218,7 @@ impl DApp<MachineTemplate> for Match {
 
                     let processed_response: DownloadFileResponse = get_logger_response(
                             archive,
+                            "Match".into(),
                             LOGGER_SERVICE_NAME.to_string(),
                             format!("{:x}", ctx.log_hash.clone()),
                             LOGGER_METHOD_DOWNLOAD.to_string(),
@@ -249,13 +250,13 @@ impl DApp<MachineTemplate> for Match {
                         )?
                         .map_err(move |e| {
                             if e == duplicate_session_msg {
-                                Error::from(ErrorKind::ArchiveNeedsDummy(
+                                Error::from(ErrorKind::ResponseNeedsDummy(
                                     EMULATOR_SERVICE_NAME.to_string(),
                                     id_clone,
                                     EMULATOR_METHOD_NEW.to_string(),
                                 ))
                             } else {
-                                Error::from(ErrorKind::ArchiveInvalidError(
+                                Error::from(ErrorKind::ResponseInvalidError(
                                     EMULATOR_SERVICE_NAME.to_string(),
                                     id_clone,
                                     EMULATOR_METHOD_NEW.to_string(),
@@ -283,7 +284,7 @@ impl DApp<MachineTemplate> for Match {
                             request.into(),
                         )?
                         .map_err(move |_e| {
-                            Error::from(ErrorKind::ArchiveInvalidError(
+                            Error::from(ErrorKind::ResponseInvalidError(
                                 EMULATOR_SERVICE_NAME.to_string(),
                                 archive_key,
                                 EMULATOR_METHOD_RUN.to_string(),
@@ -395,6 +396,7 @@ impl DApp<MachineTemplate> for Match {
             name: "Match".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
+            service_status: archive.get_service("Match".into()),
             json_data: json_data,
             sub_instances: pretty_sub_instances,
         };

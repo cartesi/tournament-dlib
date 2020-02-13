@@ -74,6 +74,7 @@ enum Role {
 
 pub fn get_logger_response(
     archive: &dispatcher::Archive,
+    contract: String,
     service: String,
     key: String,
     method: String,
@@ -87,7 +88,7 @@ pub fn get_logger_response(
             request.clone()
         )?
         .map_err(|_| {
-            error::Error::from(error::ErrorKind::ArchiveInvalidError(
+            error::Error::from(error::ErrorKind::ResponseInvalidError(
                 service.clone(),
                 key.clone(),
                 method.clone()
@@ -101,9 +102,9 @@ pub fn get_logger_response(
                 Ok(raw_response)
             }
             else {
-                error!("Fail to get logger response, status: {}", response.status);
-                Err(error::Error::from(error::ErrorKind::ArchiveMissError(
-                    service, key, method, request,
+                error!("Fail to get logger response, status: {}, description: {}", response.status, response.description);
+                Err(error::Error::from(error::ErrorKind::ServiceNeedsRetry(
+                    service, key, method, request, contract, response.status, response.progress, response.description
                 )))
             }
         },
@@ -113,15 +114,15 @@ pub fn get_logger_response(
                 Ok(raw_response)
             }
             else {
-                error!("Fail to get logger response, status: {}", response.status);
-                Err(error::Error::from(error::ErrorKind::ArchiveMissError(
-                    service, key, method, request,
+                error!("Fail to get logger response, status: {}, description: {}", response.status, response.description);
+                Err(error::Error::from(error::ErrorKind::ServiceNeedsRetry(
+                    service, key, method, request, contract, response.status, response.progress, response.description
                 )))
             }
         },
         _ => {
             error!("Unknown logger method {} received, shouldn't happen!", method);
-            Err(error::Error::from(error::ErrorKind::ArchiveInvalidError(
+            Err(error::Error::from(error::ErrorKind::ResponseInvalidError(
                 service,
                 key,
                 method

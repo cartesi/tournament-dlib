@@ -171,6 +171,7 @@ impl DApp<()> for DAppMock {
             name: "DAppMock".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
+            service_status: archive.get_service("DAppMock".into()),
             json_data: json_data,
             sub_instances: pretty_sub_instances,
         };

@@ -169,6 +169,7 @@ impl DApp<()> for RevealMock {
             name: "RevealMock".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
+            service_status: archive.get_service("RevealMock".into()),
             json_data: json_data,
             sub_instances: pretty_sub_instances,
         };

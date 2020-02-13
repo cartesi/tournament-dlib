@@ -244,7 +244,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
 
     fn get_pretty_instance(
         instance: &state::Instance,
-        _archive: &Archive,
+        archive: &Archive,
         _: &MachineTemplate,
     ) -> Result<state::Instance> {
         // get context (state) of the match instance
@@ -264,6 +264,7 @@ impl DApp<(MachineTemplate)> for RevealCommit {
             name: "RevealCommit".to_string(),
             concern: instance.concern.clone(),
             index: instance.index,
+            service_status: archive.get_service("RevealCommit".into()),
             json_data: json_data,
             sub_instances: pretty_sub_instances,
         };
@@ -290,6 +291,7 @@ pub fn complete_reveal_phase(
 
     let processed_response: SubmitFileResponse = get_logger_response(
             archive,
+            "RevealCommit".into(),
             LOGGER_SERVICE_NAME.to_string(),
             path.clone(),
             LOGGER_METHOD_SUBMIT.to_string(),
@@ -320,13 +322,13 @@ pub fn complete_reveal_phase(
         )?
         .map_err(move |e| {
             if e == duplicate_session_msg {
-                Error::from(ErrorKind::ArchiveNeedsDummy(
+                Error::from(ErrorKind::ResponseNeedsDummy(
                     EMULATOR_SERVICE_NAME.to_string(),
                     id_clone,
                     EMULATOR_METHOD_NEW.to_string(),
                 ))
             } else {
-                Error::from(ErrorKind::ArchiveInvalidError(
+                Error::from(ErrorKind::ResponseInvalidError(
                     EMULATOR_SERVICE_NAME.to_string(),
                     id_clone,
                     EMULATOR_METHOD_NEW.to_string(),
@@ -364,7 +366,7 @@ pub fn complete_reveal_phase(
             request.into(),
         )?
         .map_err(move |_e| {
-            Error::from(ErrorKind::ArchiveInvalidError(
+            Error::from(ErrorKind::ResponseInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
                 archive_key,
                 EMULATOR_METHOD_READ.to_string(),
@@ -400,7 +402,7 @@ pub fn complete_reveal_phase(
             request.into(),
         )?
         .map_err(move |_e| {
-            Error::from(ErrorKind::ArchiveInvalidError(
+            Error::from(ErrorKind::ResponseInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
                 archive_key,
                 EMULATOR_METHOD_PROOF.to_string(),
@@ -440,7 +442,7 @@ pub fn complete_reveal_phase(
             request.into(),
         )?
         .map_err(move |_e| {
-            Error::from(ErrorKind::ArchiveInvalidError(
+            Error::from(ErrorKind::ResponseInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
                 archive_key,
                 EMULATOR_METHOD_PROOF.to_string(),
@@ -471,7 +473,7 @@ pub fn complete_reveal_phase(
             request.into(),
         )?
         .map_err(move |_e| {
-            Error::from(ErrorKind::ArchiveInvalidError(
+            Error::from(ErrorKind::ResponseInvalidError(
                 EMULATOR_SERVICE_NAME.to_string(),
                 archive_key,
                 EMULATOR_METHOD_RUN.to_string(),
