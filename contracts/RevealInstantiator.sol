@@ -201,32 +201,32 @@ contract RevealInstantiator is RevealInterface, Decorated {
         return instance[_index].numberOfPlayers;
     }
 
-    function getScore(uint256 _index, address _playerAddr) public returns (uint256) {
+    function getScore(uint256 _index, address _playerAddr) public view returns (uint256) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
         return instance[_index].players[_playerAddr].score;
     }
 
-    function getFinalHash(uint256 _index, address _playerAddr) public returns (bytes32) {
+    function getFinalHash(uint256 _index, address _playerAddr) public view returns (bytes32) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
         return instance[_index].players[_playerAddr].finalHash;
     }
 
-    function getLogHash(uint256 _index, address _playerAddr) public returns (bytes32) {
+    function getLogHash(uint256 _index, address _playerAddr) public view returns (bytes32) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
         return instance[_index].players[_playerAddr].commitHash;
     }
 
-    function getInitialHash(uint256 _index, address _playerAddr) public returns (bytes32) {
+    function getInitialHash(uint256 _index, address _playerAddr) public view returns (bytes32) {
         require(playerExist(_index, _playerAddr), "Player has to exist");
         return instance[_index].players[_playerAddr].initialHash;
     }
 
-    function playerExist(uint256 _index, address _playerAddr) public returns (bool) {
+    function playerExist(uint256 _index, address _playerAddr) public view returns (bool) {
         //cheap way to check if player has been registered
         return instance[_index].players[_playerAddr].playerAddr != address(0);
     }
 
-    function hasRevealed(uint256 _index, address _playerAddr) public returns (bool) {
+    function hasRevealed(uint256 _index, address _playerAddr) public view returns (bool) {
         return instance[_index].players[_playerAddr].hasRevealed;
     }
 

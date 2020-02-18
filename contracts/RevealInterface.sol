@@ -44,17 +44,17 @@ contract RevealInterface is Instantiator {
 
     function getNumberOfPlayers(uint256 _index) public view returns (uint256);
 
-    function getScore(uint256 _index, address _playerAddr) public returns (uint256);
+    function getScore(uint256 _index, address _playerAddr) public view returns (uint256);
 
-    function getLogHash(uint256 _index, address _playerAddr) public returns (bytes32);
+    function getLogHash(uint256 _index, address _playerAddr) public view returns (bytes32);
 
-    function getInitialHash(uint256 _index, address _playerAddr) public returns (bytes32);
+    function getInitialHash(uint256 _index, address _playerAddr) public view returns (bytes32);
 
-    function getFinalHash(uint256 _index, address _playerAddr) public returns (bytes32);
+    function getFinalHash(uint256 _index, address _playerAddr) public view returns (bytes32);
 
-    function playerExist(uint256 _index, address _playerAddr) public returns (bool);
+    function playerExist(uint256 _index, address _playerAddr) public view returns (bool);
 
-    function hasRevealed(uint256 _index, address _playerAddr) public returns (bool);
+    function hasRevealed(uint256 _index, address _playerAddr) public view returns (bool);
 
     function isConcerned(uint256 _index, address _user) public view returns (bool);
 
