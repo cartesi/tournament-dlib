@@ -337,10 +337,78 @@ pub fn complete_reveal_phase(
         })?
         .into();
 
+    // get hash of log drive from emulator
+    // Log drive starts at address (1<<63)+(2<<61)
+    // Log size is 1 MB
+    // Siblings should be checked against template hash (time = 0)
+    let time = 0;
+    let address = (1 << 63) + (2 << 61);
+    let log2_size = 20; // 1MB
+
+    let archive_key = build_session_proof_key(id.clone(), time, address, log2_size);
+    let mut target = cartesi_base::GetProofRequest::new();
+    target.set_address(address);
+    target.set_log2_size(log2_size);
+
+    let request = SessionGetProofRequest {
+        session_id: id.clone(),
+        time: time,
+        target: target,
+    };
+
+    let processed_response: SessionGetProofResult = archive
+        .get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            archive_key.clone(),
+            EMULATOR_METHOD_PROOF.to_string(),
+            request.into(),
+        )?
+        .map_err(move |_e| {
+            Error::from(ErrorKind::ResponseInvalidError(
+                EMULATOR_SERVICE_NAME.to_string(),
+                archive_key,
+                EMULATOR_METHOD_PROOF.to_string(),
+            ))
+        })?
+        .into();
+
+    trace!("Get proof result: {:?}...", processed_response.proof);
+
+    let log_siblings = processed_response.proof;
+
+    let time = machine_template.final_time;
+    // TO-DO: what is final time?
+    let sample_points: Vec<u64> = vec![0, time];
+
+    let request = SessionRunRequest {
+        session_id: id.clone(),
+        times: sample_points.clone(),
+    };
+    let archive_key = build_session_run_key(id.clone(), sample_points.clone());
+
+    trace!("Calculating final hash of machine {}", id);
+    // have we sampled the final time?
+    let processed_response: SessionRunResult = archive
+        .get_response(
+            EMULATOR_SERVICE_NAME.to_string(),
+            archive_key.clone(),
+            EMULATOR_METHOD_RUN.to_string(),
+            request.into(),
+        )?
+        .map_err(move |_e| {
+            Error::from(ErrorKind::ResponseInvalidError(
+                EMULATOR_SERVICE_NAME.to_string(),
+                archive_key,
+                EMULATOR_METHOD_RUN.to_string(),
+            ))
+        })?
+        .into();
+
+    let final_hash = processed_response.hashes[1];
+
     // Score is the first word (logsize = 3) of the output drive
     // The output drive starts at address: (1<<63)+(3<<61)
     // The score is there when the machine halts (final_time)
-    let time = machine_template.final_time;
     let address = (1 << 63) + (3 << 61);
 
     // TO-DO: Verify if length is in bytes!
@@ -414,74 +482,6 @@ pub fn complete_reveal_phase(
 
     // TO-DO: transform V<u8> to uint
     let score_siblings = processed_response.proof;
-
-    // get hash of log drive from emulator
-    // Log drive starts at address (1<<63)+(2<<61)
-    // Log size is 1 MB
-    // Siblings should be checked against template hash (time = 0)
-    let time = 0;
-    let address = (1 << 63) + (2 << 61);
-    let log2_size = 20; // 1MB
-
-    let archive_key = build_session_proof_key(id.clone(), time, address, log2_size);
-    let mut target = cartesi_base::GetProofRequest::new();
-    target.set_address(address);
-    target.set_log2_size(log2_size);
-
-    let request = SessionGetProofRequest {
-        session_id: id.clone(),
-        time: time,
-        target: target,
-    };
-
-    let processed_response: SessionGetProofResult = archive
-        .get_response(
-            EMULATOR_SERVICE_NAME.to_string(),
-            archive_key.clone(),
-            EMULATOR_METHOD_PROOF.to_string(),
-            request.into(),
-        )?
-        .map_err(move |_e| {
-            Error::from(ErrorKind::ResponseInvalidError(
-                EMULATOR_SERVICE_NAME.to_string(),
-                archive_key,
-                EMULATOR_METHOD_PROOF.to_string(),
-            ))
-        })?
-        .into();
-
-    trace!("Get proof result: {:?}...", processed_response.proof);
-
-    let log_siblings = processed_response.proof;
-
-    // TO-DO: what is final time?
-    let sample_points: Vec<u64> = vec![0, machine_template.final_time];
-
-    let request = SessionRunRequest {
-        session_id: id.clone(),
-        times: sample_points.clone(),
-    };
-    let archive_key = build_session_run_key(id.clone(), sample_points.clone());
-
-    trace!("Calculating final hash of machine {}", id);
-    // have we sampled the final time?
-    let processed_response: SessionRunResult = archive
-        .get_response(
-            EMULATOR_SERVICE_NAME.to_string(),
-            archive_key.clone(),
-            EMULATOR_METHOD_RUN.to_string(),
-            request.into(),
-        )?
-        .map_err(move |_e| {
-            Error::from(ErrorKind::ResponseInvalidError(
-                EMULATOR_SERVICE_NAME.to_string(),
-                archive_key,
-                EMULATOR_METHOD_RUN.to_string(),
-            ))
-        })?
-        .into();
-
-    let final_hash = processed_response.hashes[1];
 
     // get actual siblings
     let mut log_siblings: Vec<_> = log_siblings
