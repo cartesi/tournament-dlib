@@ -24,11 +24,8 @@
 pragma solidity ^0.5.0;
 
 import "@cartesi/util/contracts/Decorated.sol";
-import "@cartesi/arbitration/contracts/VGInterface.sol";
 import "./RevealInterface.sol";
-import "@cartesi/util/contracts/BitsManipulationLibrary.sol";
 import "@cartesi/util/contracts/Merkle.sol";
-import "@cartesi/logger/contracts/Logger.sol";
 import "@cartesi/logger/contracts/LoggerInterface.sol";
 
 contract RevealInstantiator is RevealInterface, Decorated {
