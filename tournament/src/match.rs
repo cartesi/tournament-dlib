@@ -148,8 +148,7 @@ impl DApp<MachineTemplate> for Match {
                     return win_by_deadline_or_idle(
                         &instance.concern,
                         instance.index,
-                        ctx.time_of_last_move.as_u64(),
-                        ctx.round_duration.as_u64(),
+                        ctx.time_of_last_move.as_u64() + ctx.round_duration.as_u64(),
                     );
                 }
 
