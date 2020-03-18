@@ -141,7 +141,7 @@ impl DApp<MachineTemplate> for MatchManager {
 
                 let epoch_over = current_time
                     > ctx.last_epoch_start_time.as_u64()
-                        + ((1 + ctx.current_epoch.as_u64()) * ctx.epoch_duration.as_u64());
+                        + ctx.epoch_duration.as_u64();
                 let zero_matches_last_epoch = ctx.number_of_matches_on_last_epoch.as_u64() == 0;
                 let user_is_unmatched = ctx.unmatched_player == instance.concern.user_address;
 
