@@ -179,9 +179,20 @@ contract MatchInstantiator is MatchInterface, Decorated {
     /// @param _index Current index.
     function claimVictoryByTime(uint256 _index) public
         onlyInstantiated(_index)
-        onlyAfter(instance[_index].timeOfLastMove + instance[_index].matchDuration)
         increasesNonce(_index)
     {
+        bool afterDeadline = (now > instance[_index].timeOfLastMove + getMaxStateDuration(
+            instance[_index].currentState,
+            instance[_index].roundDuration,
+            2400, // time to download the log (40min assumption)
+            40, // time to build machine for the first time
+            10, // querySize is hardcoded at VGInstantiator
+            instance[_index].finalTime,
+            500 // 500 pico seconds per instruction
+        ));
+
+        require(afterDeadline, "Deadline is not over for this specific state");
+
         if ((msg.sender == instance[_index].claimer) && (instance[_index].currentState == state.WaitingChallenge)) {
             instance[_index].currentState = state.ClaimerWon;
             deactivate(_index);
@@ -246,17 +257,13 @@ contract MatchInstantiator is MatchInterface, Decorated {
         uint256 _maxCycle,
         uint256 _picoSecondsToRunInsn) private view returns (uint256)
     {
-        if (_state == state.WaitChallenge) {
+        if (_state == state.WaitingChallenge) {
             // time to download the log + time to start the machine + time to run it + time to react
             return _timeToDownloadLog + _timeToStartMachine + (_maxCycle * _picoSecondsToRunInsn) / 1e12 + _roundDuration;
         }
 
         if (_state == state.ChallengeStarted) {
-            uint256 partitionInstance;
-            (address, partitionInstance) = vg.getSubInstances(instance[_index].vgInstance);
-
-            // TO-DO: 10 as partition size is hardcoded in the VGInstantiator contract, should update this when that change
-            return vg.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, 10, _maxCycle, _picoSecondsToRunInsn) + _roundDuration;
+            return vg.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, _partitionSize, _maxCycle, _picoSecondsToRunInsn) + _roundDuration;
         }
 
         if (_state == state.ClaimerWon || _state == state.ChallengerWon) {
@@ -274,7 +281,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
         uint256 _picoSecondsToRunInsn) public view returns (uint256)
     {
         uint256 waitChallengeDuration = getMaxStateDuration(
-            state.WaitingQuery,
+            state.WaitingChallenge,
             _roundDuration,
             _timeToDownloadLog,
             _timeToStartMachine,
@@ -284,10 +291,10 @@ contract MatchInstantiator is MatchInterface, Decorated {
         );
 
         uint256 challengeStartedDuration = getMaxStateDuration(
-            state.WaitingHashes,
+            state.ChallengeStarted,
             _roundDuration,
-            _timeToStartMachine,
             _timeToDownloadLog,
+            _timeToStartMachine,
             _partitionSize,
             _maxCycle,
             _picoSecondsToRunInsn
@@ -297,7 +304,7 @@ contract MatchInstantiator is MatchInterface, Decorated {
 
     function getState(uint256 _index, address) public view returns
     (   address[3] memory _addressValues,
-        uint256[4] memory _uintValues,
+        uint256[3] memory _uintValues,
         bytes32[3] memory _bytesValues,
         bytes32 _currentState
     )
@@ -305,10 +312,9 @@ contract MatchInstantiator is MatchInterface, Decorated {
 
         MatchCtx memory i = instance[_index];
 
-        uint256[4] memory uintValues = [
+        uint256[3] memory uintValues = [
             i.epochNumber,
-            i.matchDuration,
-            i.timeOfLastMove,
+            i.timeOfLastMove + getMaxStateDuration(i.currentState, i.roundDuration, 2400, 40, 10, i.finalTime, 500), //deadline (40 min to download log, 40 seconds to build machine, 500 pico seconds per insn)
             i.finalTime
         ];
 
