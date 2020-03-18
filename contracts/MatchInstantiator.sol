@@ -228,6 +228,45 @@ contract MatchInstantiator is MatchInterface, Decorated {
         return isClaimer(_index, _user) || isChallenger(_index, _user);
     }
 
+    /// @notice Get the worst case scenario duration for a specific state
+    /// @param _roundDuration security parameter, the max time an agent
+    //          has to react and submit one simple transaction
+    /// @param _timeToStartMachine time to build the machine for the first time
+    /// @param _partitionSize size of partition, how many instructions the
+    //          will run to reach the necessary hash
+    /// @param _partitionGameIndex number of interactions that already happened
+    //          in the partition interaction
+
+    /// @param _maxCycle is the maximum amount of steps a machine can perform
+    //          before being forced into becoming halted
+    function getMaxStateDuration(
+        state _state,
+        uint256 _roundDuration,
+        uint256 _timeToDownloadLog,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _partitionGameIndex,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn) public view returns (uint256)
+    {
+        if (_state == state.WaitChallenge) {
+            // time to download the log + time to start the machine + time to run it + time to react
+            return _timeToDownloadLog + _timeToStartMachine + (_maxCycle * _picoSecondsToRunInsn) / 1e12 + _roundDuration;
+        }
+
+        if (_state == state.ChallengeStarted) {
+            uint256 partitionInstance;
+            (address, partitionInstance) = vg.getSubInstances(instance[_index].vgInstance);
+
+            return vg.getMaxInstanceDuration(_roundDuration, _timeToStartMachine, vg.getPartitionQuerySize(instance[_index].vgInstance), vg.getPartitionGameIndex(instance[_index].vgInstance), _maxCycle, _picoSecondsToRunInsn);
+        }
+
+        if (_state == state.ClaimerWon || _state == state.ChallengerWon) {
+            return 0; // final state
+        }
+        require(false, "Unrecognized state");
+    }
+
     function getState(uint256 _index, address) public view returns
     (   address[3] memory _addressValues,
         uint256[4] memory _uintValues,
