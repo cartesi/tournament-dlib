@@ -20,7 +20,7 @@
 // rewritten, the entire component will be released under the Apache v2 license.
 
 use super::configuration::Concern;
-use super::dispatcher::{AddressArray3, Bytes32Array3, String32Field, U256Array4};
+use super::dispatcher::{AddressArray3, Bytes32Array3, String32Field, U256Array3};
 use super::dispatcher::{Archive, DApp, Reaction};
 use super::error::Result;
 use super::error::*;
@@ -49,9 +49,8 @@ pub struct MatchCtxParsed(
     AddressArray3, // challenger
     // claimer
     // machine
-    U256Array4, // epochNumber
-    // roundDuration
-    // timeOfLastMove
+    U256Array3, // epochNumber
+    // deadline
     // finalTime
     Bytes32Array3, // logHash
     // initialHash
@@ -65,8 +64,7 @@ pub struct MatchCtx {
     pub claimer: Address,
     pub machine: Address,
     pub epoch_number: U256,
-    pub round_duration: U256,
-    pub time_of_last_move: U256,
+    pub deadline: U256,
     pub log_hash: H256,
     pub initial_hash: H256,
     pub claimed_final_hash: H256,
@@ -91,9 +89,8 @@ impl From<MatchCtxParsed> for MatchCtx {
             claimer: parsed.0.value[1],
             machine: parsed.0.value[2],
             epoch_number: parsed.1.value[0],
-            round_duration: parsed.1.value[1],
-            time_of_last_move: parsed.1.value[2],
-            final_time: parsed.1.value[3],
+            deadline: parsed.1.value[1],
+            final_time: parsed.1.value[2],
             log_hash: parsed.2.value[0],
             initial_hash: parsed.2.value[1],
             claimed_final_hash: parsed.2.value[2],
@@ -148,7 +145,7 @@ impl DApp<MachineTemplate> for Match {
                     return win_by_deadline_or_idle(
                         &instance.concern,
                         instance.index,
-                        ctx.time_of_last_move.as_u64() + ctx.round_duration.as_u64(),
+                        ctx.deadline.as_u64(),
                     );
                 }
 
