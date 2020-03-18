@@ -102,7 +102,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     /// @notice Advances Epoch if the deadline has been met
     /// @param _index index of matchmanager that youre interacting with
     function advanceEpoch(uint256 _index) public {
-        if (now > (instance[_index].lastEpochStartTime + ((1 + instance[_index].currentEpoch) * instance[_index].epochDuration))) {
+        if (now > (instance[_index].lastEpochStartTime + instance[_index].epochDuration)) {
             instance[_index].currentEpoch++;
             instance[_index].lastEpochStartTime = now;
         }
@@ -113,7 +113,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     function playNextEpoch(uint256 _index) public {
         require(instance[_index].currentState == state.WaitingMatches, "State has to be WaitingMatches");
         // Advance epoch if deadline has been met
-        if (now > (instance[_index].lastEpochStartTime + ((1 + instance[_index].currentEpoch) * instance[_index].epochDuration))) {
+        if (now > (instance[_index].lastEpochStartTime + instance[_index].epochDuration)) {
             instance[_index].currentEpoch++;
             instance[_index].lastEpochStartTime = now;
         }
@@ -207,7 +207,7 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     function claimWin(uint256 _index) public returns (address) {
         require(instance[_index].currentState != state.MatchesOver, "PLayer cannot claim win multiple times");
-        bool isEpochOver = (now > (instance[_index].lastEpochStartTime + ((1 + instance[_index].currentEpoch) * instance[_index].epochDuration)));
+        bool isEpochOver = (now > (instance[_index].lastEpochStartTime + instance[_index].epochDuration));
         if (isEpochOver && (instance[_index].numberOfMatchesOnEpoch[instance[_index].currentEpoch] == 0)) {
             instance[_index].currentState = state.MatchesOver;
 
