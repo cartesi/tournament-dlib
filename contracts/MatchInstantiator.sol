@@ -35,7 +35,6 @@ contract MatchInstantiator is MatchInterface, Decorated {
         address challenger;
         address claimer;
         uint256 epochNumber;
-        uint256 matchDuration; // time interval to interact with this contract
         uint256 roundDuration; // time interval to interact with an eventual vg
         uint256 timeOfLastMove;
         address machine; // machine which will run the challenge
@@ -54,7 +53,6 @@ contract MatchInstantiator is MatchInterface, Decorated {
         address _challenger,
         address _claimer,
         uint256 _epochNumber,
-        uint256 _matchDuration,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _logHash,
@@ -86,7 +84,6 @@ contract MatchInstantiator is MatchInterface, Decorated {
         address _challenger,
         address _claimer,
         uint256 _epochNumber,
-        uint256 _matchDuration,
         uint256 _roundDuration,
         address _machineAddress,
         bytes32 _logHash,
@@ -100,7 +97,6 @@ contract MatchInstantiator is MatchInterface, Decorated {
         currentInstance.challenger = _challenger;
         currentInstance.claimer = _claimer;
         currentInstance.epochNumber = _epochNumber;
-        currentInstance.matchDuration = _matchDuration;
         currentInstance.roundDuration = _roundDuration;
         currentInstance.machine = _machineAddress;
         currentInstance.logHash = _logHash;
@@ -116,7 +112,6 @@ contract MatchInstantiator is MatchInterface, Decorated {
             _challenger,
             _claimer,
             _epochNumber,
-            _matchDuration,
             _roundDuration,
             _machineAddress,
             _logHash,
