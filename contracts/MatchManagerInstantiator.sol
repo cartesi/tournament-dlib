@@ -36,7 +36,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
 
     struct MatchManagerCtx {
         uint256 epochDuration;
-        uint256 matchDuration;
         uint256 roundDuration;
         uint256 currentEpoch;
         uint256 finalTime;
@@ -67,7 +66,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
     /// @return Match Manager index.
 
     function instantiate(
-        uint256 _matchDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
         address _parentAddress,
@@ -75,8 +73,17 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
         address _machineAddress) public returns (uint256)
     {
         MatchManagerCtx storage currentInstance = instance[currentIndex];
-        currentInstance.epochDuration = _matchDuration * 3;
-        currentInstance.matchDuration = _matchDuration;
+        // epochDuration is 2 times the max duration of a match plus round durations for reaction
+        // it has to be > 2*match duration, otherwise a player can always register in the end of the epoch and never lose a match
+        currentInstance.epochDuration = (mi.getMaxInstanceDuration(
+            _roundDuration,
+            2400, // 40min to download log
+            40,  // 10 seconds to start machine
+            10, // querySize = 10, hardcoded on VGInstantiator
+            _finalTime,
+            500 // pico seconds per instruction
+        ) + _roundDuration) * 2;
+
         currentInstance.roundDuration = _roundDuration;
         currentInstance.finalTime = _finalTime;
         currentInstance.machineAddress = _machineAddress;
@@ -177,7 +184,6 @@ contract MatchManagerInstantiator is MatchManagerInterface, Decorated {
             addressValues[1],
             addressValues[0],
             i.currentEpoch,
-            i.matchDuration,
             i.roundDuration,
             i.machineAddress,
             parent.getLogHash(i.parentInstance, addressValues[0]),
