@@ -111,7 +111,6 @@ contract RevealMock is Decorated, RevealMockInterface {
 
         // instantiate MatchManager
         instance[currentIndex].matchManagerIndex = mmi.instantiate(
-            instance[currentIndex].matchManagerMatchDuration,
             instance[currentIndex].matchManagerRoundDuration,
             instance[currentIndex].finalTime,
             address(this),

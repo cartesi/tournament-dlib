@@ -46,6 +46,14 @@ contract MatchInterface is Instantiator {
         uint256 _finalTime,
         uint256 _timeOfLastMove) public returns (uint256);
 
+    function getMaxInstanceDuration(
+        uint256 _roundDuration,
+        uint256 _timeToDownloadLog,
+        uint256 _timeToStartMachine,
+        uint256 _partitionSize,
+        uint256 _maxCycle,
+        uint256 _picoSecondsToRunInsn) public view returns (uint256);
+
     function challengeHighestScore(uint256 _index) public;
     function winByVG(uint256 _index) public;
     function claimVictoryByTime(uint256 _index) public;

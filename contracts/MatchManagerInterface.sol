@@ -33,7 +33,6 @@ contract MatchManagerInterface is Instantiator {
     }
 
     function instantiate(
-        uint256 _matchDuration,
         uint256 _roundDuration,
         uint256 _finalTime,
         address _parentAddress,
