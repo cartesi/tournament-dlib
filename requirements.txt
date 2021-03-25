@@ -3,5 +3,5 @@ grpcio-tools==1.18.0
 protobuf==3.6.1
 python-dateutil==2.7.5
 web3==5.0.0
-PyYAML==5.1.1
+PyYAML==5.4
 docker==4.0.2
